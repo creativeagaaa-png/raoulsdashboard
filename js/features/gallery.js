@@ -43,12 +43,13 @@ export const galleryMixin = () => ({
         if (this.galleryLoaded || this.galleryLoading) return;
         this.galleryLoading = true;
         try {
-            const photos = [];
-            for (const date of this.photoDates) {
-                const url = Supa.getPhotoUrl(date);
-                const entry = this.history.find(h => h.date === date);
-                photos.push({ date, photo: url, weight: entry ? entry.weight : null });
-            }
+            const photos = await Promise.all(
+                this.photoDates.map(async (date) => {
+                    const url = await Supa.getPhotoUrl(date);
+                    const entry = this.history.find(h => h.date === date);
+                    return { date, photo: url, weight: entry ? entry.weight : null };
+                })
+            );
             this.galleryPhotos = photos.reverse();
             this.galleryLoaded = true;
         } catch (e) {
@@ -76,7 +77,7 @@ export const galleryMixin = () => ({
     async loadProgressPic(which, date) {
         if (!date) return;
         try {
-            const url = Supa.getPhotoUrl(date);
+            const url = await Supa.getPhotoUrl(date);
             if (which === 'before') this.progressPics.beforePhoto = url;
             else this.progressPics.afterPhoto = url;
         } catch (e) {

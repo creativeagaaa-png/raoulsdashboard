@@ -226,12 +226,13 @@ export async function savePhoto(date, base64String) {
     if (error) throw error;
 }
 
-export function getPhotoUrl(date) {
+export async function getPhotoUrl(date) {
     const path = `${date}.jpg`;
-    const { data } = db.storage
+    const { data, error } = await db.storage
         .from(PHOTO_BUCKET)
-        .getPublicUrl(path);
-    return data.publicUrl + '?t=' + Date.now();
+        .createSignedUrl(path, 86400); // 24 hour expiry
+    if (error) throw error;
+    return data.signedUrl;
 }
 
 export async function deletePhoto(date) {
