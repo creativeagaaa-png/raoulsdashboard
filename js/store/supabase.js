@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://liuekokgchfzatodsaxo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpdWVrb2tnY2hmemF0b2RzYXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNzI1MTAsImV4cCI6MjA4Njc0ODUxMH0.3CBZnoZCZiUKNRdVF0GewDxNHpJVdYsYPMswRld3vz8';
-const PHOTO_BUCKET = 'photos';
+const PHOTO_BUCKET = 'progress-pics';
 
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -207,8 +207,14 @@ export async function saveLayout(widgetLayout) {
 // ── Photo Storage ───────────────────────────────────────
 
 export async function savePhoto(date, base64String) {
-    const response = await fetch(base64String);
-    const blob = await response.blob();
+    // Convert base64 data URL to Blob
+    const parts = base64String.split(',');
+    const byteString = atob(parts[1]);
+    const bytes = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) {
+        bytes[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: 'image/jpeg' });
 
     const path = `${date}.jpg`;
     const { error } = await db.storage

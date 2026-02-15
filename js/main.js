@@ -318,19 +318,23 @@ function app() {
                 this.showToast('Fehler beim Speichern');
             }
 
-            this.$nextTick(() => {
+            this.$nextTick(async () => {
                 this.updateChart();
                 this.refreshAnimations();
                 this.checkUnlocks(oldW, w);
 
                 if (photoData) {
-                    Supa.savePhoto(entryDate, photoData).then(() => {
+                    try {
+                        await Supa.savePhoto(entryDate, photoData);
                         if (!this.photoDates.includes(entryDate)) {
                             this.photoDates.push(entryDate);
                             this.photoDates.sort();
                         }
                         if (this.galleryLoaded) this.refreshGallery();
-                    }).catch(e => console.error('Failed to save photo:', e));
+                    } catch (e) {
+                        console.error('Failed to save photo:', e);
+                        this.showToast('Foto konnte nicht gespeichert werden');
+                    }
                 }
                 this._saving = false;
             });
