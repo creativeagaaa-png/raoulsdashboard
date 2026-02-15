@@ -77,11 +77,16 @@ export async function getRewards() {
         .select('*')
         .order('target', { ascending: false });
     if (error) throw error;
-    return (data || []).map(r => ({
-        target: Number(r.target),
-        title: r.title,
-        icon: r.icon
-    }));
+    const LEGACY_ICON_MAP = {
+        'ph-star': '⭐', 'ph-trophy': '🏆', 'ph-heart': '❤️', 'ph-flag': '🏁',
+        'ph-cake': '🎂', 'ph-confetti': '🎉', 'ph-crown': '👑', 'ph-fire': '🔥',
+        'ph-lightning': '⚡', 'ph-medal': '🏅', 'ph-target': '🎯', 'ph-sparkle': '✨'
+    };
+    return (data || []).map(r => {
+        let icon = r.icon || '⭐';
+        if (icon.startsWith('ph-')) icon = LEGACY_ICON_MAP[icon] || '⭐';
+        return { target: Number(r.target), title: r.title, icon };
+    });
 }
 
 export async function saveRewards(rewards) {
@@ -95,7 +100,7 @@ export async function saveRewards(rewards) {
         const rows = rewards.map((r, i) => ({
             target: r.target,
             title: r.title,
-            icon: r.icon || 'ph-star',
+            icon: r.icon || '⭐',
             sort_order: i
         }));
         const { error: insErr } = await db
@@ -251,5 +256,69 @@ export async function clearAllPhotos() {
     const { error } = await db.storage
         .from(PHOTO_BUCKET)
         .remove(paths);
+    if (error) throw error;
+}
+
+// ── Workout Logs ────────────────────────────────────────
+
+export async function getWorkoutLogs() {
+    const { data, error } = await db
+        .from('workout_logs')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(50);
+    if (error) throw error;
+    return (data || []).map(row => ({
+        id: row.id,
+        date: row.date,
+        dayIndex: row.day_index,
+        startedAt: row.started_at,
+        finishedAt: row.finished_at,
+        durationSeconds: row.duration_seconds,
+        exercises: row.exercises || []
+    }));
+}
+
+export async function saveWorkoutLog(session) {
+    const row = {
+        date: session.date,
+        day_index: session.dayIndex,
+        started_at: session.startedAt,
+        finished_at: session.finishedAt,
+        duration_seconds: session.durationSeconds,
+        exercises: session.exercises
+    };
+    const { error } = await db
+        .from('workout_logs')
+        .insert(row);
+    if (error) throw error;
+}
+
+// ── Personal Records ────────────────────────────────────
+
+export async function getPersonalRecords() {
+    const { data, error } = await db
+        .from('personal_records')
+        .select('*')
+        .order('date', { ascending: false });
+    if (error) throw error;
+    return (data || []).map(r => ({
+        id: r.id,
+        exercise_name: r.exercise_name,
+        weight: Number(r.weight),
+        reps: r.reps,
+        date: r.date
+    }));
+}
+
+export async function savePersonalRecord(pr) {
+    const { error } = await db
+        .from('personal_records')
+        .insert({
+            exercise_name: pr.exercise_name,
+            weight: pr.weight,
+            reps: pr.reps,
+            date: pr.date
+        });
     if (error) throw error;
 }

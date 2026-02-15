@@ -17,7 +17,7 @@
         <div class="p-6 border-b border-white/5 flex justify-between items-center bg-surface z-20 shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
-                    <i class="ph-duotone ph-barbell text-lg"></i>
+                    <span class="text-lg">🏋️</span>
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-white">Training Plan</h2>
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <button type="button" @click="closeTraining()" class="text-muted hover:text-white transition-colors p-2 -mr-2 hover:bg-white/5 rounded-xl">
-                <i class="ph-bold ph-x text-lg"></i>
+                <span class="text-lg">✕</span>
             </button>
         </div>
 
@@ -75,13 +75,13 @@
                             </div>
                             <div class="flex flex-col gap-1 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
                                 <button @click="moveExercise(trainingSelectedDay, exIdx, -1)" class="p-1 text-muted hover:text-white transition-colors" :class="exIdx === 0 && 'opacity-30 pointer-events-none'">
-                                    <i class="ph-bold ph-caret-up text-xs"></i>
+                                    <span class="text-xs">▲</span>
                                 </button>
                                 <button @click="removeExercise(trainingSelectedDay, exIdx)" class="p-1 text-muted hover:text-rose-400 transition-colors">
-                                    <i class="ph-bold ph-trash text-xs"></i>
+                                    <span class="text-xs">🗑️</span>
                                 </button>
                                 <button @click="moveExercise(trainingSelectedDay, exIdx, 1)" class="p-1 text-muted hover:text-white transition-colors" :class="exIdx === trainingForm[trainingSelectedDay].length - 1 && 'opacity-30 pointer-events-none'">
-                                    <i class="ph-bold ph-caret-down text-xs"></i>
+                                    <span class="text-xs">▼</span>
                                 </button>
                             </div>
                         </div>
@@ -96,7 +96,7 @@
             <div x-show="trainingForm[trainingSelectedDay].length === 0"
                  class="flex flex-col items-center justify-center py-10 text-center">
                 <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mb-4">
-                    <i class="ph-duotone ph-moon-stars text-3xl text-white/20"></i>
+                    <span class="text-3xl text-white/20">🌙</span>
                 </div>
                 <p class="text-sm font-medium text-white/40 mb-1">Rest Day</p>
                 <p class="text-[11px] text-muted">Keine Übungen geplant. Füge welche hinzu!</p>
@@ -118,7 +118,7 @@
                         </div>
                         <button @click="addExercise()"
                                 class="py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
-                            <i class="ph-bold ph-plus"></i> Add
+                            <span>＋</span> Add
                         </button>
                     </div>
                     <input type="text" x-model="trainingNewExercise.note" @keydown.enter="addExercise()"

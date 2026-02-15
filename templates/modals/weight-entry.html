@@ -20,7 +20,7 @@
         <div class="flex justify-between items-center mb-8">
             <span class="text-xs font-bold text-muted uppercase tracking-widest">New Entry</span>
             <button @click="closeModal()" aria-label="Close dialog" class="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-muted hover:text-white transition-colors">
-                <i class="ph-bold ph-x text-sm" aria-hidden="true"></i>
+                <span class="text-sm" aria-hidden="true">✕</span>
             </button>
         </div>
 
@@ -39,7 +39,7 @@
             <div class="space-y-2">
                  <label for="dateInput" class="text-[10px] text-muted font-bold uppercase ml-1">Date</label>
                 <div class="bg-black/20 rounded-xl px-4 py-3 flex items-center gap-3 border border-white/5 hover:border-white/10 focus-within:border-white/20 transition-all">
-                    <i class="ph ph-calendar text-muted"></i>
+                    <span class="text-muted">📅</span>
                     <input type="date" x-model="inputDate" id="dateInput" class="bg-transparent border-none focus:outline-none text-white w-full font-sans text-sm font-medium">
                 </div>
             </div>
@@ -55,7 +55,7 @@
                         @click="document.getElementById('photoFileInput').click()"
                         type="button"
                         class="w-full py-3.5 rounded-xl border border-dashed border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2 text-xs text-muted hover:text-white">
-                    <i class="ph-duotone ph-image text-lg"></i>
+                    <span class="text-lg">🖼️</span>
                     <span>Foto hinzufügen</span>
                 </button>
 
@@ -63,7 +63,7 @@
                     <img :src="photoPreview" class="w-full h-32 object-cover rounded-xl">
                     <button @click="removePhotoPreview()" type="button"
                             class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rose-500/80 transition-colors">
-                        <i class="ph-bold ph-x text-xs"></i>
+                        <span class="text-xs">✕</span>
                     </button>
                 </div>
             </div>

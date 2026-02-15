@@ -24,7 +24,7 @@ export const settingsMixin = () => ({
     milestonesOpen: false,
     milestonesForm: [],
     milestonesDirty: false,
-    newMilestone: { title: '', target: '', icon: 'ph-star' },
+    newMilestone: { title: '', target: '', icon: '⭐' },
 
     async saveSettings() {
         try {
@@ -122,7 +122,7 @@ export const settingsMixin = () => ({
     openMilestones() {
         this.milestonesForm = JSON.parse(JSON.stringify(this.rewards));
         this.milestonesDirty = false;
-        this.newMilestone = { title: '', target: '', icon: 'ph-star' };
+        this.newMilestone = { title: '', target: '', icon: '⭐' };
         this.milestonesOpen = true;
     },
 
@@ -156,9 +156,9 @@ export const settingsMixin = () => ({
         this.milestonesForm.push({
             target: target,
             title: String(m.title).trim(),
-            icon: m.icon ? String(m.icon).trim() : 'ph-star'
+            icon: m.icon ? String(m.icon).trim() : '⭐'
         });
-        this.newMilestone = { title: '', target: '', icon: 'ph-star' };
+        this.newMilestone = { title: '', target: '', icon: '⭐' };
         this.milestonesDirty = true;
     },
 
@@ -182,7 +182,7 @@ export const settingsMixin = () => ({
         this.rewards = validRewards.map(r => ({
             target: safeFloat(r.target),
             title: String(r.title).trim(),
-            icon: r.icon ? String(r.icon).trim() : 'ph-star'
+            icon: r.icon ? String(r.icon).trim() : '⭐'
         })).sort((a, b) => b.target - a.target);
 
         try {

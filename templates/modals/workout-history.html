@@ -1,0 +1,77 @@
+<!-- Workout History Modal -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-mobile-sheet"
+     :class="workoutHistoryOpen ? 'pointer-events-auto' : 'pointer-events-none'"
+     role="dialog" aria-modal="true" aria-label="Workout History">
+
+    <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
+         x-show="workoutHistoryOpen"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @click="closeWorkoutHistory()"></div>
+
+    <div class="bg-surface border border-[var(--glass-border)] rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col relative z-10 shadow-2xl overflow-hidden"
+         x-show="workoutHistoryOpen"
+         x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-12 opacity-0 scale-90">
+
+        <div class="p-6 border-b border-[var(--glass-border)] flex justify-between items-center bg-surface z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                    <span class="text-lg">📋</span>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-foreground">Workout Log</h2>
+                    <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="workoutHistory.length + ' Workouts'"></p>
+                </div>
+            </div>
+            <button type="button" @click="closeWorkoutHistory()" class="text-muted hover:text-foreground transition-colors p-2 -mr-2 hover:bg-[var(--glass)] rounded-xl">
+                <span class="text-lg">✕</span>
+            </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 p-6 custom-scrollbar">
+            <div class="space-y-3">
+                <template x-for="(workout, wIdx) in workoutHistory" :key="wIdx">
+                    <div class="p-4 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] hover:border-[var(--glass-hover)] transition-all"
+                         x-data="{ expanded: false }">
+                        <div class="flex items-center justify-between cursor-pointer" @click="expanded = !expanded">
+                            <div>
+                                <p class="text-sm font-bold text-foreground" x-text="new Date(workout.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short', year: 'numeric'})"></p>
+                                <p class="text-[10px] text-muted font-mono mt-0.5">
+                                    <span x-text="formatWorkoutDuration(workout.durationSeconds)"></span> &middot;
+                                    <span x-text="getWorkoutExerciseCount(workout) + ' Uebungen'"></span> &middot;
+                                    <span x-text="getWorkoutSetsCompleted(workout) + ' Sets'"></span>
+                                </p>
+                            </div>
+                            <span class="text-muted transition-transform duration-200" :class="expanded && 'rotate-180'">▼</span>
+                        </div>
+                        <div x-show="expanded" x-collapse class="mt-3 space-y-2">
+                            <template x-for="(ex, eIdx) in workout.exercises" :key="eIdx">
+                                <div class="p-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                    <p class="text-xs font-bold text-foreground mb-1" x-text="ex.name"></p>
+                                    <div class="space-y-0.5">
+                                        <template x-for="(set, sIdx) in (ex.sets || []).filter(s => s.done)" :key="sIdx">
+                                            <p class="text-[10px] font-mono text-muted">
+                                                <span x-text="set.weight"></span> kg x <span x-text="set.reps"></span>
+                                            </p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <div x-show="workoutHistory.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+                <span class="text-4xl mb-4">🏋️</span>
+                <p class="text-sm text-muted">Noch keine Workouts absolviert</p>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-[var(--glass-border)] bg-surface z-20 shrink-0">
+            <button type="button" @click="closeWorkoutHistory()" class="w-full py-3.5 rounded-xl border border-[var(--glass-border)] text-muted font-bold text-xs hover:bg-[var(--glass)] active:scale-[0.97] transition-all">
+                Schliessen
+            </button>
+        </div>
+    </div>
+</div>

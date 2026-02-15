@@ -18,7 +18,7 @@
         <div class="mb-10 relative inline-block">
             <div class="absolute inset-0 bg-white/30 blur-[60px] rounded-full animate-pulse"></div>
             <div class="w-32 h-32 rounded-[2rem] bg-gradient-to-tr from-white to-gray-400 text-black flex items-center justify-center shadow-2xl relative z-10 animate-float border-4 border-white/20">
-                <i class="ph-duotone text-6xl" :class="unlockedReward?.icon || 'ph-star'"></i>
+                <span class="text-6xl" x-text="unlockedReward?.icon || '⭐'"></span>
             </div>
         </div>
 

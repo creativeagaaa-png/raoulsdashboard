@@ -10,6 +10,9 @@ import { trainingMixin } from './features/training.js';
 import { galleryMixin, getPendingPhotoBlob } from './features/gallery.js';
 import { rewardsMixin } from './features/rewards.js';
 import { layoutMixin } from './features/layout.js';
+import { workoutMixin } from './features/workout.js';
+import { restTimerMixin } from './features/rest-timer.js';
+import { recordsMixin } from './features/records.js';
 
 // Modal templates (loaded as raw HTML via Vite)
 import bmiDetailModal from '../templates/modals/bmi-detail.html?raw';
@@ -22,6 +25,9 @@ import lootboxModal from '../templates/modals/lootbox.html?raw';
 import progressPicsModal from '../templates/modals/progress-pics.html?raw';
 import confirmModal from '../templates/modals/confirm.html?raw';
 import toastComponent from '../templates/modals/toast.html?raw';
+import workoutModal from '../templates/modals/workout.html?raw';
+import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
+import prCelebrationModal from '../templates/modals/pr-celebration.html?raw';
 
 Chart.register(...registerables);
 window.confetti = confetti;
@@ -39,8 +45,15 @@ if (modalsContainer) {
         lootboxModal,
         progressPicsModal,
         confirmModal,
-        toastComponent
+        toastComponent,
+        workoutModal,
+        workoutHistoryModal,
+        prCelebrationModal
     ].join('\n');
+}
+
+function getCSSVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 function app() {
@@ -87,18 +100,22 @@ function app() {
         ...galleryMixin(),
         ...rewardsMixin(),
         ...layoutMixin(),
+        ...workoutMixin(),
+        ...restTimerMixin(),
+        ...recordsMixin(),
 
         // --- INIT ---
         async initApp() {
             try {
-                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates] =
+                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords] =
                     await Promise.all([
                         Supa.getSettings().catch(() => null),
                         Supa.getRewards().catch(() => []),
                         Supa.getTrainingPlan().catch(() => null),
                         Supa.getLayout().catch(() => null),
                         Supa.getWeightEntries().catch(() => []),
-                        Supa.getAllPhotoDates().catch(() => [])
+                        Supa.getAllPhotoDates().catch(() => []),
+                        Supa.getPersonalRecords().catch(() => [])
                     ]);
 
                 // Apply settings
@@ -140,6 +157,9 @@ function app() {
                 // Apply photo dates
                 this.photoDates = (photoDates || []).sort();
 
+                // Apply personal records
+                this.personalRecords = personalRecords || [];
+
             } catch (e) {
                 console.error('Failed to initialize app:', e);
             }
@@ -155,6 +175,11 @@ function app() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
             }
+
+            // Re-render chart when OS theme changes
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+                this.renderChart();
+            });
         },
 
         // --- PULL TO REFRESH ---
@@ -171,7 +196,8 @@ function app() {
             const isAnyModalOpen = () =>
                 this.modalOpen || this.settingsOpen || this.profileOpen ||
                 this.trainingOpen || this.milestonesOpen || this.bmiDetailOpen ||
-                this.lootboxOpen || this.progressPicsOpen || this.editMode;
+                this.lootboxOpen || this.progressPicsOpen || this.editMode ||
+                this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen;
 
             document.addEventListener('touchstart', (e) => {
                 if (getScrollTop() > 5 || isAnyModalOpen() || this._ptr.refreshing) return;
@@ -597,6 +623,9 @@ function app() {
         // --- ESCAPE KEY HANDLER (centralized) ---
         handleEscape() {
             if (this.confirmModal.show) { this.cancelConfirm(); return; }
+            if (this.prCelebrationOpen) { this.closePRCelebration(); return; }
+            if (this.workoutHistoryOpen) { this.closeWorkoutHistory(); return; }
+            if (this.workoutOpen) { this.closeWorkout(); return; }
             if (this.lootboxOpen) { this.closeLootbox(); return; }
             if (this.progressPicsOpen) { this.closeProgressPics(); return; }
             if (this.bmiDetailOpen) { this.closeBmiDetail(); return; }
@@ -720,11 +749,12 @@ function app() {
             if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 
             const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
-            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            const isLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+            gradient.addColorStop(0, isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.15)');
+            gradient.addColorStop(1, isLight ? 'rgba(0, 0, 0, 0)' : 'rgba(255, 255, 255, 0)');
 
             Chart.defaults.font.family = 'JetBrains Mono';
-            Chart.defaults.color = '#8b8b94';
+            Chart.defaults.color = getCSSVar('--muted') || '#8b8b94';
 
             const data = this.getRawChartData();
             const weights = data.map(h => h.weight);
@@ -734,7 +764,7 @@ function app() {
             const datasets = [{
                 label: 'Weight',
                 data: weights,
-                borderColor: '#fff',
+                borderColor: getCSSVar('--text-primary') || '#fff',
                 borderWidth: 2,
                 backgroundColor: gradient,
                 fill: true,
@@ -778,7 +808,7 @@ function app() {
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { display: false }, ticks: { maxTicksLimit: 6 } },
-                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false } }
+                        y: { grid: { color: getCSSVar('--glass') || 'rgba(255,255,255,0.03)' }, border: { display: false } }
                     }
                 }
             });

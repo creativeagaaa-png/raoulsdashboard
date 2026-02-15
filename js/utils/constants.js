@@ -18,6 +18,7 @@ export const WIDGET_REGISTRY = {
     'milestone': { label: 'Milestone' },
     'achievements': { label: 'Achievements' },
     'progress-pics': { label: 'Progress Pics' },
+    'workout-history': { label: 'Workout Log' },
     'logs': { label: 'Logs' }
 };
 

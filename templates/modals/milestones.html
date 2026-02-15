@@ -17,7 +17,7 @@
         <div class="p-6 border-b border-white/5 flex justify-between items-center bg-surface z-20 shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-yellow-500/15 flex items-center justify-center text-yellow-400 border border-yellow-500/20">
-                    <i class="ph-duotone ph-trophy text-lg"></i>
+                    <span class="text-lg">🏆</span>
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-white">Milestones</h2>
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <button type="button" @click="closeMilestones()" class="text-muted hover:text-white transition-colors p-2 -mr-2 hover:bg-white/5 rounded-xl">
-                <i class="ph-bold ph-x text-lg"></i>
+                <span class="text-lg">✕</span>
             </button>
         </div>
 
@@ -48,27 +48,27 @@
                         </div>
                         <div class="flex items-end gap-3">
                             <div class="flex-grow space-y-1">
-                                <label class="text-[10px] text-muted uppercase font-bold">Icon (Phosphor Class)</label>
+                                <label class="text-[10px] text-muted uppercase font-bold">Icon (Emoji)</label>
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded bg-black/20 flex items-center justify-center text-white/50 border border-transparent group-focus-within:border-white/10 transition-colors">
-                                        <i class="ph-duotone text-lg" :class="reward.icon || 'ph-question'"></i>
+                                        <span class="text-lg" x-text="reward.icon || '⭐'"></span>
                                     </div>
-                                    <input type="text" x-model="reward.icon" @input="markMilestonesDirty()" class="flex-grow bg-black/20 border border-transparent rounded-lg px-2 py-1.5 text-xs font-mono text-muted focus:border-white/20 focus:text-white outline-none transition-colors" placeholder="ph-star">
+                                    <input type="text" x-model="reward.icon" @input="markMilestonesDirty()" class="flex-grow bg-black/20 border border-transparent rounded-lg px-2 py-1.5 text-xs font-mono text-muted focus:border-white/20 focus:text-white outline-none transition-colors" placeholder="⭐">
                                 </div>
                             </div>
                             <button type="button" @click="removeMilestone(index)" class="h-8 w-8 flex items-center justify-center rounded-lg text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors border border-transparent hover:border-rose-500/20" title="Milestone löschen">
-                                <i class="ph-bold ph-trash"></i>
+                                <span>🗑️</span>
                             </button>
                         </div>
                         <div class="mt-2 flex items-center gap-2" x-show="currentWeight <= reward.target">
-                            <i class="ph-fill ph-check-circle text-emerald-400 text-sm"></i>
+                            <span class="text-emerald-400 text-sm">✅</span>
                             <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Erreicht</span>
                         </div>
                     </div>
                 </template>
                 <div x-show="milestonesForm.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
                     <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mb-4">
-                        <i class="ph-duotone ph-trophy text-3xl text-white/20"></i>
+                        <span class="text-3xl text-white/20">🏆</span>
                     </div>
                     <p class="text-sm font-medium text-white/40 mb-1">Keine Milestones</p>
                     <p class="text-[11px] text-muted">Füge Belohnungen hinzu um deine Ziele zu feiern!</p>
@@ -87,15 +87,15 @@
                         </div>
                         <button @click="addMilestone()"
                                 class="py-2.5 rounded-xl bg-yellow-500/15 text-yellow-400 font-bold text-xs border border-yellow-500/20 hover:bg-yellow-500/25 hover:border-yellow-500/40 active:scale-95 transition-all">
-                            <i class="ph-bold ph-plus"></i> Hinzufügen
+                            <span>＋</span> Hinzufügen
                         </button>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded bg-black/20 flex items-center justify-center text-white/50 border border-white/5">
-                            <i class="ph-duotone text-lg" :class="newMilestone.icon || 'ph-star'"></i>
+                            <span class="text-lg" x-text="newMilestone.icon || '⭐'"></span>
                         </div>
                         <input type="text" x-model="newMilestone.icon" @keydown.enter="addMilestone()"
-                               class="flex-grow bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-xs font-mono text-muted focus:border-white/20 focus:text-white outline-none transition-colors" placeholder="Icon (z.B. ph-star)">
+                               class="flex-grow bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-xs font-mono text-muted focus:border-white/20 focus:text-white outline-none transition-colors" placeholder="Emoji (z.B. ⭐)">
                     </div>
                 </div>
             </div>
