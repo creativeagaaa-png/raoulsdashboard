@@ -1,4 +1,4 @@
-const CACHE_NAME = 'health-os-v7';
+const CACHE_NAME = 'health-os-v8';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(

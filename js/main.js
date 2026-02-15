@@ -300,10 +300,14 @@ function app() {
 
             this._saving = true;
             const oldW = this.currentWeight;
-            const photoData = this.photoPreview;
+            const photoBlob = this._photoBlob;
             const entryDate = this.inputDate;
+
+            // Clean up preview URL before closing
+            if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
             this.closeModal();
             this.photoPreview = null;
+            this._photoBlob = null;
             this.inputWeight = null;
 
             // Optimistic UI update
@@ -318,26 +322,26 @@ function app() {
                 this.showToast('Fehler beim Speichern');
             }
 
-            this.$nextTick(async () => {
+            this.$nextTick(() => {
                 this.updateChart();
                 this.refreshAnimations();
                 this.checkUnlocks(oldW, w);
-
-                if (photoData) {
-                    try {
-                        await Supa.savePhoto(entryDate, photoData);
-                        if (!this.photoDates.includes(entryDate)) {
-                            this.photoDates.push(entryDate);
-                            this.photoDates.sort();
-                        }
-                        if (this.galleryLoaded) this.refreshGallery();
-                    } catch (e) {
-                        console.error('Failed to save photo:', e);
-                        this.showToast('Foto konnte nicht gespeichert werden');
-                    }
-                }
-                this._saving = false;
             });
+
+            if (photoBlob) {
+                try {
+                    await Supa.savePhoto(entryDate, photoBlob);
+                    if (!this.photoDates.includes(entryDate)) {
+                        this.photoDates.push(entryDate);
+                        this.photoDates.sort();
+                    }
+                    if (this.galleryLoaded) this.refreshGallery();
+                } catch (e) {
+                    console.error('Failed to save photo:', e);
+                    this.showToast('Foto konnte nicht gespeichert werden');
+                }
+            }
+            this._saving = false;
         },
 
         get todayWeight() {

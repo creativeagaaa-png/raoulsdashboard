@@ -5,6 +5,7 @@ import { formatGalleryDate } from '../utils/formatting.js';
 export const galleryMixin = () => ({
     photoDates: [],
     photoPreview: null,
+    _photoBlob: null,
     galleryPhotos: [],
     galleryLoaded: false,
     galleryLoading: false,
@@ -26,7 +27,9 @@ export const galleryMixin = () => ({
         const file = event.target.files?.[0];
         if (!file) return;
         try {
-            this.photoPreview = await compressImage(file);
+            const blob = await compressImage(file);
+            this._photoBlob = blob;
+            this.photoPreview = URL.createObjectURL(blob);
         } catch (e) {
             console.error('Failed to compress image:', e);
             this.showToast('Foto konnte nicht geladen werden');
@@ -34,7 +37,9 @@ export const galleryMixin = () => ({
     },
 
     removePhotoPreview() {
+        if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
         this.photoPreview = null;
+        this._photoBlob = null;
         const input = document.querySelector('#photoFileInput');
         if (input) input.value = '';
     },

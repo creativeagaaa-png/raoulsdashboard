@@ -206,16 +206,7 @@ export async function saveLayout(widgetLayout) {
 
 // ── Photo Storage ───────────────────────────────────────
 
-export async function savePhoto(date, base64String) {
-    // Convert base64 data URL to Blob
-    const parts = base64String.split(',');
-    const byteString = atob(parts[1]);
-    const bytes = new Uint8Array(byteString.length);
-    for (let i = 0; i < byteString.length; i++) {
-        bytes[i] = byteString.charCodeAt(i);
-    }
-    const blob = new Blob([bytes], { type: 'image/jpeg' });
-
+export async function savePhoto(date, blob) {
     const path = `${date}.jpg`;
     const { error } = await db.storage
         .from(PHOTO_BUCKET)
