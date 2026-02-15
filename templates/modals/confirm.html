@@ -1,0 +1,30 @@
+<!-- Confirmation Dialog Modal -->
+<div class="fixed inset-0 z-[70] flex items-center justify-center p-4 modal-mobile-sheet"
+     :class="confirmModal.show ? 'pointer-events-auto' : 'pointer-events-none'">
+
+    <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
+         x-show="confirmModal.show"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @click="cancelConfirm()"></div>
+
+    <div class="bg-surface border border-white/10 rounded-2xl w-full max-w-xs p-6 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+         x-show="confirmModal.show"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-4 opacity-0 scale-95" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-4 opacity-0 scale-95"
+         role="alertdialog" aria-modal="true" :aria-labelledby="'confirm-title'">
+
+        <div class="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">
+            <i class="ph-bold ph-warning text-rose-400 text-lg"></i>
+        </div>
+        <h3 id="confirm-title" class="text-white font-bold text-sm mb-1" x-text="confirmModal.title"></h3>
+        <p class="text-muted text-xs mb-6" x-text="confirmModal.message"></p>
+        <div class="grid grid-cols-2 gap-2">
+            <button type="button" @click="cancelConfirm()" class="py-3 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
+                Abbrechen
+            </button>
+            <button type="button" @click="confirmAction()" class="py-3 rounded-xl bg-rose-500 text-white font-bold text-xs hover:bg-rose-600 active:scale-[0.97] transition-all" x-text="confirmModal.confirmLabel || 'Löschen'">
+            </button>
+        </div>
+    </div>
+</div>

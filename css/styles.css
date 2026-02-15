@@ -1,0 +1,531 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --color-background: #050505;
+    --color-surface: #0a0a0a;
+    --color-surface-highlight: #121212;
+    --color-foreground: #e4e4e7;
+    --color-muted: #8b8b94;
+    --color-accent: #ffffff;
+}
+
+[x-cloak] { display: none !important; }
+
+/* Theme Variables */
+:root {
+    --bg: #050505;
+    --surface: #0a0a0a;
+    --surface-highlight: #121212;
+    --border: rgba(255, 255, 255, 0.06);
+    --accent: #ffffff;
+}
+
+body {
+    background-color: var(--bg);
+    color: #e4e4e7;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: pan-x pan-y;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Safe area insets for iPhone Dynamic Island & home indicator */
+.safe-area-body {
+    padding-top: calc(1rem + env(safe-area-inset-top));
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    padding-left: calc(1rem + env(safe-area-inset-left));
+    padding-right: calc(1rem + env(safe-area-inset-right));
+}
+
+@media (min-width: 768px) {
+    .safe-area-body {
+        padding-top: calc(2rem + env(safe-area-inset-top));
+        padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+        padding-left: calc(2rem + env(safe-area-inset-left));
+        padding-right: calc(2rem + env(safe-area-inset-right));
+    }
+}
+
+/* Pull to Refresh */
+.ptr-container {
+    position: fixed;
+    top: env(safe-area-inset-top, 0px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+}
+
+.ptr-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.ptr-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.25rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.ptr-icon.ptr-ready {
+    color: #fff;
+}
+
+.ptr-refreshing .ptr-icon {
+    animation: ptrSpin 0.8s linear infinite;
+    color: #fff;
+}
+
+.ptr-refreshing .ptr-content {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes ptrSpin {
+    to { transform: rotate(360deg); }
+}
+
+@media (min-width: 768px) {
+    .ptr-container {
+        display: none;
+    }
+}
+
+/* Mobile FAB (Floating Action Button) */
+.mobile-fab {
+    position: fixed;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    right: 1.5rem;
+    z-index: 40;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15), 0 0 40px rgba(255, 255, 255, 0.05);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.mobile-fab:active {
+    transform: scale(0.92);
+}
+
+@media (min-width: 768px) {
+    .mobile-fab { display: none; }
+}
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+    .bento-card:hover {
+        transform: none;
+        border-color: rgba(255, 255, 255, 0.06);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0), 0 10px 40px -10px rgba(0,0,0,0.5);
+    }
+    .glass-panel:hover {
+        box-shadow: none;
+    }
+}
+
+/* Modal safe area adjustments */
+.modal-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Toast safe area */
+.toast-safe-area {
+    bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+}
+
+@media (min-width: 768px) {
+    .toast-safe-area {
+        bottom: 1.5rem !important;
+    }
+}
+
+/* Hide all scrollbars globally */
+::-webkit-scrollbar { display: none; }
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Custom Scrollbar (opt-in for specific elements) */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; display: block; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+/* Glass Panel Utility */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+}
+
+/* Modern Bento Card */
+.bento-card {
+    background-color: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0), 0 10px 40px -10px rgba(0,0,0,0.5);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.bento-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px -12px rgba(0,0,0,0.8);
+}
+
+/* ===== ANIMATIONS ===== */
+
+/* Initial page load - staggered slide up */
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+    opacity: 0;
+    animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--delay, 0s);
+}
+
+/* Floating animation for lootbox icon */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.animate-float {
+    animation: float 5s ease-in-out infinite;
+}
+
+/* Staggered list item animation (for exercise lists) */
+@keyframes listItemEnter {
+    0% {
+        opacity: 0;
+        transform: translateX(-12px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.animate-list-item {
+    opacity: 0;
+    animation: listItemEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--item-delay, 0s);
+}
+
+/* Subtle shimmer for active day indicator */
+@keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+/* Pulse ring for training button when there's a workout today */
+@keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Mobile modal: full-screen bottom sheet style */
+@media (max-width: 767px) {
+    .modal-mobile-sheet {
+        align-items: flex-end !important;
+        padding: 0 !important;
+    }
+    .modal-mobile-sheet > div:last-child {
+        border-radius: 24px 24px 0 0 !important;
+        max-height: calc(95vh - env(safe-area-inset-top)) !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+    }
+}
+
+/* Modal backdrop fade with blur ramp */
+@keyframes backdropIn {
+    0% { opacity: 0; backdrop-filter: blur(0px); }
+    100% { opacity: 1; backdrop-filter: blur(24px); }
+}
+
+/* Smooth scale bounce for modal content */
+@keyframes modalContentIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.92);
+        filter: blur(4px);
+    }
+    60% {
+        transform: translateY(-4px) scale(1.01);
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes modalContentOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(16px) scale(0.95);
+    }
+}
+
+/* Button press effect */
+.btn-press {
+    transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.15s ease;
+}
+
+.btn-press:active {
+    transform: scale(0.96);
+}
+
+/* Glass panel hover glow */
+.glass-panel {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-panel:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+}
+
+/* Smooth input focus glow */
+input:focus {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.03);
+}
+
+/* Toast slide animation */
+@keyframes toastSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+/* Bento card subtle entrance on scroll */
+@keyframes cardReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Number counter tick animation */
+@keyframes tickUp {
+    0% { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Smooth skeleton shimmer for loading states */
+@keyframes skeletonShimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+/* Touch-friendly: disable tap highlight on interactive elements */
+@media (hover: none) {
+    button, [role="button"], .bento-card[class*="cursor-pointer"] {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+}
+
+/* Prevent iOS zoom on input focus (font-size must be >= 16px) */
+@media (max-width: 767px) {
+    input[type="number"],
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+        font-size: max(16px, inherit) !important;
+    }
+}
+
+/* Inputs */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.4); cursor: pointer; opacity: 0.6; transition: opacity 0.2s;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* Remove number input spinners for cleaner look */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Drag & Drop Edit Mode */
+[draggable="true"] {
+    cursor: grab;
+}
+
+[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.edit-mode .bento-card:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.edit-mode .bento-card {
+    transition: all 0.3s ease;
+}
+
+/* Progress Pics Slider */
+.progress-slider-container img {
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Chart Tooltip Customization via CSS (optional fallback) */
+#chartjs-tooltip {
+    opacity: 1;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    pointer-events: none;
+    transition: all .1s ease;
+}
+
+/* Photo Gallery */
+.aspect-square {
+    aspect-ratio: 1 / 1;
+}
+
+/* ===== LOADING SCREEN ===== */
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #050505;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.loading-logo {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    border-top-color: rgba(255, 255, 255, 0.6);
+    animation: loadingSpin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.loading-icon {
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.8);
+    animation: loadingPulse 2s ease-in-out infinite;
+}
+
+.loading-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.loading-bar-track {
+    width: 120px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.loading-bar-fill {
+    height: 100%;
+    width: 40%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    animation: loadingSlide 1.2s ease-in-out infinite;
+}
+
+@keyframes loadingSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes loadingPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes loadingSlide {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(200%); }
+    100% { transform: translateX(-100%); }
+}

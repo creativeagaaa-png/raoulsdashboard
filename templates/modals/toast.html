@@ -1,0 +1,14 @@
+<!-- Toast Notification -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] transition-all duration-300 toast-safe-area"
+     x-show="toast.show" x-cloak
+     x-transition:enter="translate-y-4 opacity-0 scale-95"
+     x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+     x-transition:leave="translate-y-4 opacity-0 scale-95">
+    <div class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-surface border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl" role="alert" aria-live="polite">
+        <span class="text-sm text-white font-medium" x-text="toast.message"></span>
+        <button x-show="toast.undoAction" @click="undoToast()"
+                class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors">
+            Undo
+        </button>
+    </div>
+</div>

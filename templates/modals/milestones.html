@@ -1,0 +1,113 @@
+<!-- Milestones Modal -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-mobile-sheet"
+     :class="milestonesOpen ? 'pointer-events-auto' : 'pointer-events-none'"
+     role="dialog" aria-modal="true" aria-label="Milestones">
+
+    <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
+         x-show="milestonesOpen"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @click="closeMilestones()"></div>
+
+    <div class="bg-surface border border-white/10 rounded-3xl w-full max-w-md max-h-[85vh] flex flex-col relative z-10 shadow-2xl overflow-hidden"
+         x-show="milestonesOpen"
+         x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-12 opacity-0 scale-90">
+
+        <div class="p-6 border-b border-white/5 flex justify-between items-center bg-surface z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-yellow-500/15 flex items-center justify-center text-yellow-400 border border-yellow-500/20">
+                    <i class="ph-duotone ph-trophy text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-white">Milestones</h2>
+                    <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="milestonesForm.length + ' Belohnungen'"></p>
+                </div>
+            </div>
+            <button type="button" @click="closeMilestones()" class="text-muted hover:text-white transition-colors p-2 -mr-2 hover:bg-white/5 rounded-xl">
+                <i class="ph-bold ph-x text-lg"></i>
+            </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 p-6 custom-scrollbar">
+            <div class="space-y-3 mb-4">
+                <template x-for="(reward, index) in milestonesForm" :key="index">
+                    <div class="group p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-300 animate-list-item"
+                         :style="'--item-delay: ' + (index * 0.05) + 's'">
+                        <div class="grid grid-cols-[1fr,80px] gap-3 mb-3">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-muted uppercase font-bold">Titel</label>
+                                <input type="text" x-model="reward.title" @input="markMilestonesDirty()" class="w-full bg-black/20 border border-transparent rounded-lg px-2 py-1.5 text-sm text-white focus:border-white/20 outline-none transition-colors placeholder-white/20" placeholder="Reward Titel">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-muted uppercase font-bold">Ziel</label>
+                                <div class="relative">
+                                    <input type="number" step="0.1" x-model="reward.target" @input="markMilestonesDirty()" class="w-full bg-black/20 border border-transparent rounded-lg px-2 py-1.5 text-sm text-white focus:border-white/20 outline-none tabular-nums text-center transition-colors">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-3">
+                            <div class="flex-grow space-y-1">
+                                <label class="text-[10px] text-muted uppercase font-bold">Icon (Phosphor Class)</label>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded bg-black/20 flex items-center justify-center text-white/50 border border-transparent group-focus-within:border-white/10 transition-colors">
+                                        <i class="ph-duotone text-lg" :class="reward.icon || 'ph-question'"></i>
+                                    </div>
+                                    <input type="text" x-model="reward.icon" @input="markMilestonesDirty()" class="flex-grow bg-black/20 border border-transparent rounded-lg px-2 py-1.5 text-xs font-mono text-muted focus:border-white/20 focus:text-white outline-none transition-colors" placeholder="ph-star">
+                                </div>
+                            </div>
+                            <button type="button" @click="removeMilestone(index)" class="h-8 w-8 flex items-center justify-center rounded-lg text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors border border-transparent hover:border-rose-500/20" title="Milestone löschen">
+                                <i class="ph-bold ph-trash"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center gap-2" x-show="currentWeight <= reward.target">
+                            <i class="ph-fill ph-check-circle text-emerald-400 text-sm"></i>
+                            <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Erreicht</span>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="milestonesForm.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mb-4">
+                        <i class="ph-duotone ph-trophy text-3xl text-white/20"></i>
+                    </div>
+                    <p class="text-sm font-medium text-white/40 mb-1">Keine Milestones</p>
+                    <p class="text-[11px] text-muted">Füge Belohnungen hinzu um deine Ziele zu feiern!</p>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] hover:border-white/20 transition-all duration-300 mb-4">
+                <p class="text-[10px] text-muted uppercase tracking-widest font-bold mb-3">Milestone hinzufügen</p>
+                <div class="space-y-3">
+                    <input type="text" x-model="newMilestone.title" @keydown.enter="addMilestone()"
+                           class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-sm text-white font-medium focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Titel der Belohnung">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="relative">
+                            <input type="number" step="0.1" x-model="newMilestone.target" @keydown.enter="addMilestone()"
+                                   class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Ziel (kg)">
+                        </div>
+                        <button @click="addMilestone()"
+                                class="py-2.5 rounded-xl bg-yellow-500/15 text-yellow-400 font-bold text-xs border border-yellow-500/20 hover:bg-yellow-500/25 hover:border-yellow-500/40 active:scale-95 transition-all">
+                            <i class="ph-bold ph-plus"></i> Hinzufügen
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded bg-black/20 flex items-center justify-center text-white/50 border border-white/5">
+                            <i class="ph-duotone text-lg" :class="newMilestone.icon || 'ph-star'"></i>
+                        </div>
+                        <input type="text" x-model="newMilestone.icon" @keydown.enter="addMilestone()"
+                               class="flex-grow bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-xs font-mono text-muted focus:border-white/20 focus:text-white outline-none transition-colors" placeholder="Icon (z.B. ph-star)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-white/5 bg-surface z-20 flex gap-3 shrink-0">
+            <button type="button" @click="closeMilestones()" class="flex-1 py-3.5 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
+                Abbrechen
+            </button>
+            <button type="button" @click="applyMilestones()" class="flex-1 py-3.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-gray-200 active:scale-[0.97] transition-all shadow-lg shadow-white/5">
+                Speichern
+            </button>
+        </div>
+    </div>
+</div>

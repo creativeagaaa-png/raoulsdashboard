@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#050505">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Health OS">
+    <title>Raoul Agachi | Health OS</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script type="module" src="js/main.js"></script>
+</head>
+<body class="bg-background text-foreground antialiased min-h-screen flex justify-center px-4 md:px-8 selection:bg-accent/30 safe-area-body"
+      x-data="app()"
+      x-init="initApp()"
+      @keydown.escape.window="handleEscape()"
+      x-cloak>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" x-show="!appLoaded" x-transition:leave="transition ease-in duration-500" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <div class="loading-ring"></div>
+                <i class="ph-duotone ph-heartbeat loading-icon"></i>
+            </div>
+            <h1 class="loading-title">Health OS</h1>
+            <div class="loading-bar-track">
+                <div class="loading-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed inset-0 pointer-events-none z-[-1] opacity-[0.04] mix-blend-overlay" aria-hidden="true"
+         style="background-image: url('https://grainy-gradients.vercel.app/noise.svg');"></div>
+
+    <div class="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-accent/5 via-background to-background" aria-hidden="true"></div>
+    <div class="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] bg-accent/10 blur-[120px] rounded-full pointer-events-none" aria-hidden="true"></div>
+
+    <!-- Pull to Refresh Indicator -->
+    <div id="ptr-indicator" class="ptr-container" aria-hidden="true">
+        <div class="ptr-content">
+            <div class="ptr-icon">
+                <i class="ph-bold ph-arrow-clockwise"></i>
+            </div>
+        </div>
+    </div>
+
+    <main class="w-full max-w-[1100px] grid grid-cols-1 md:grid-cols-12 gap-5 pb-24 stagger-load" role="main" aria-label="Health Dashboard">
+
+        <header class="md:col-span-12 flex flex-col md:flex-row justify-between items-start md:items-end mb-2 gap-4 md:gap-6 animate-slide-up" style="--delay: 0s">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <p class="text-muted text-[10px] font-bold tracking-[0.2em] uppercase font-mono">Health & Fitness Dashboard</p>
+                </div>
+                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+                    Hello, <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">Raoul</span>
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-2 md:gap-3 flex-wrap w-full md:w-auto justify-end">
+                <button x-show="editMode" @click="resetLayout()"
+                        class="glass-panel px-3 md:px-4 h-11 md:h-[52px] rounded-full flex items-center gap-2 hover:bg-white/10 text-xs font-bold text-muted hover:text-white transition-all"
+                        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
+                    <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                    Reset
+                </button>
+                <button @click="toggleEditMode()"
+                        class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group"
+                        :class="editMode ? 'bg-indigo-500/20 border-indigo-500/30' : ''"
+                        aria-label="Toggle edit mode">
+                    <i class="ph-duotone text-xl md:text-2xl transition-all duration-400"
+                       :class="editMode ? 'ph-check text-indigo-400' : 'ph-squares-four group-hover:scale-110'"></i>
+                </button>
+                <button @click="openTraining()" class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group" aria-label="Training Plan">
+                    <i class="ph-duotone ph-barbell text-xl md:text-2xl group-hover:scale-110 group-hover:text-emerald-400 transition-all duration-400"></i>
+                    <span x-show="!isRestDay" class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background animate-pulse" aria-hidden="true"></span>
+                </button>
+                <button @click="openSettings()" class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group" aria-label="Settings">
+                    <i class="ph-duotone ph-gear text-xl md:text-2xl group-hover:rotate-90 transition-transform duration-500"></i>
+                </button>
+
+                <button @click="openMilestones()" class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group" aria-label="Milestones">
+                    <i class="ph-duotone ph-trophy text-xl md:text-2xl group-hover:scale-110 group-hover:text-yellow-400 transition-all duration-400"></i>
+                    <span x-show="rewards.length > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-background text-[9px] font-bold flex items-center justify-center text-black" x-text="rewards.filter(r => currentWeight <= r.target).length"></span>
+                </button>
+                <div class="glass-panel p-1.5 pr-4 md:pr-5 rounded-full flex items-center gap-3 md:gap-4 hover:border-white/20 transition-colors duration-300">
+                    <div class="h-9 w-9 md:h-10 md:w-10 rounded-full bg-surface-highlight border border-white/10 overflow-hidden relative group cursor-pointer" role="button" tabindex="0" aria-label="Profile settings" @click="openProfile()" @keydown.enter="openProfile()">
+                        <img src="https://ui-avatars.com/api/?name=Raoul+Agachi&background=000&color=fff&bold=true" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+
+                    <div class="flex flex-col items-end">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] md:text-xs font-bold text-white tabular-nums"><span x-text="streakDays"></span> Day Streak</span>
+                        </div>
+                        <div class="flex gap-[3px] mt-1.5" role="img" :aria-label="streakDays + ' day logging streak'">
+                            <template x-for="i in 5">
+                                <div class="w-2.5 h-1 rounded-full transition-all duration-500"
+                                     :class="i <= Math.min(streakDays, 5) ? 'bg-accent shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'bg-white/10'" aria-hidden="true"></div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="md:col-span-4 flex flex-col gap-5 animate-slide-up" style="--delay: 0.1s"
+             :class="{ 'edit-mode': editMode }"
+             @dragover.prevent="editMode && onDragOver($event, 'left', widgetLayout.left.length)"
+             @drop="editMode && onDropAtEnd($event, 'left')">
+
+            <template x-for="(widgetId, wIdx) in widgetLayout.left" :key="'left-'+widgetId">
+                <div :draggable="editMode ? 'true' : 'false'"
+                     @dragstart="onDragStart($event, widgetId, 'left', wIdx)"
+                     @dragend="onDragEnd($event)"
+                     @dragover.prevent.stop="editMode && onDragOver($event, 'left', wIdx)"
+                     @drop.stop="editMode && onDrop($event, 'left', wIdx)"
+                     class="relative transition-all duration-200"
+                     :class="{ 'ring-2 ring-dashed ring-white/10 rounded-3xl': editMode, 'ring-indigo-500/40': editMode && dragState.overCol === 'left' && dragState.overIndex === wIdx && dragState.widgetId !== widgetId }">
+
+                    <div x-show="editMode" class="absolute top-3 left-3 z-30 cursor-grab active:cursor-grabbing px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm flex items-center gap-1.5 text-[10px] text-white/60 border border-white/10">
+                        <i class="ph-bold ph-dots-six-vertical"></i>
+                        <span x-text="WIDGET_REGISTRY[widgetId]?.label"></span>
+                    </div>
+                    <template x-if="widgetId === 'current-status'">
+                       <div class="bento-card p-8 flex flex-col justify-between min-h-[380px] relative group overflow-hidden" role="region" aria-label="Current weight status">
+                            <div class="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 blur-[80px] rounded-full group-hover:bg-accent/20 transition-colors duration-700" aria-hidden="true"></div>
+                            <div class="relative z-10">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-muted text-[10px] font-bold uppercase tracking-widest">Current Status</span>
+                                        <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
+                                    </div>
+                                    <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
+                                        <i :class="trend.isLoss ? 'ph-trend-down text-emerald-400' : 'ph-trend-up text-rose-400'" class="text-sm" aria-hidden="true"></i>
+                                        <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-baseline gap-1 mt-6 relative">
+                                    <h2 class="text-6xl md:text-8xl font-bold text-white tracking-tighter tabular-nums" x-text="displayWeight.toFixed(1)"></h2>
+                                    <span class="text-2xl text-white/40 font-medium">kg</span>
+                                </div>
+                                <div class="mt-8 grid grid-cols-2 gap-3">
+                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-pointer hover:bg-white/10 transition-colors" @click="openBmiDetail()">
+                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">BMI</p>
+                                        <div class="flex items-end gap-2">
+                                            <span class="text-xl font-bold text-white tabular-nums" x-text="displayBmi.toFixed(1)"></span>
+                                            <div class="w-2 h-2 rounded-full mb-1.5" :class="bmi.color"></div>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1" x-text="displayLost >= 0 ? 'Lost' : 'Gained'"></p>
+                                        <div class="flex items-end gap-2">
+                                            <span class="text-xl font-bold tabular-nums" :class="displayLost >= 0 ? 'text-white' : 'text-rose-400'" x-text="Math.abs(displayLost).toFixed(1)"></span>
+                                            <span class="text-xs text-muted mb-0.5">kg</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-4 z-10 mt-auto pt-6">
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2">
+                                        <span>Goal Progress</span>
+                                        <span x-text="Math.round(displayProgress) + '%'"></span>
+                                    </div>
+                                    <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]">
+                                        <div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div>
+                                    </div>
+                                </div>
+                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                                    <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
+                                    <span>Log Weight</span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="widgetId === 'prediction'">
+                        <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
+                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
+                            <div class="flex items-center gap-3 mb-4 relative z-10">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph-fill ph-sparkle"></i></div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
+                                <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
+                            </div>
+                            <div x-show="oracle.valid && !oracle.noProgress" class="relative z-10">
+                                <div class="flex flex-col"><span class="text-xs text-muted mb-1">Voraussichtliches Ziel</span><span class="text-2xl font-bold text-white tabular-nums tracking-tight" x-text="oracle.date"></span></div>
+                                <div class="mt-3 flex items-center gap-2 flex-wrap">
+                                    <span class="bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20 text-xs font-mono text-indigo-300" x-text="oracle.rate + ' kg/Woche'"></span>
+                                    <span x-show="weeklyTrend.change !== null" class="px-2 py-1 rounded border text-xs font-mono" :class="weeklyTrend.change < 0 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'" x-text="'Woche: ' + (weeklyTrend.change > 0 ? '+' : '') + (weeklyTrend.change ? weeklyTrend.change.toFixed(2) : '0.00') + ' kg'"></span>
+                                </div>
+                            </div>
+                            <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
+                                <div class="flex items-center gap-2 mb-1"><i class="ph-fill ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
+                                <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
+                            </div>
+                            <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
+                            <div x-show="!oracle.valid" class="relative z-10 opacity-60"><p class="text-xs text-muted leading-relaxed">Nicht gen&uuml;gend Daten.</p></div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'training'">
+                        <div class="bento-card p-6 relative overflow-hidden group cursor-pointer" @click="!editMode && openTraining()" role="region" aria-label="Today's training">
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><i :class="isRestDay ? 'ph-duotone ph-moon-stars' : 'ph-duotone ph-barbell'"></i></div>
+                                        <div><h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3><p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p></div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
+                                        <i :class="isRestDay ? 'ph ph-pause' : 'ph ph-lightning'" class="text-xs"></i>
+                                        <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Exercises'"></span>
+                                    </div>
+                                </div>
+                                <template x-if="!isRestDay">
+                                    <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
+                                        <template x-for="(ex, i) in todayTraining" :key="i">
+                                            <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
+                                                <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
+                                                <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
+                                                <span x-show="ex.sets" class="text-[10px] font-mono text-muted" x-text="ex.sets + 'x' + ex.reps"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'analytics'">
+                        <div class="bento-card p-5 md:p-8 h-[300px] md:h-[400px] flex flex-col relative overflow-hidden" role="region" aria-label="Weight analytics chart"
+                             x-init="$nextTick(() => { renderChart(); })">
+                            <div class="flex justify-between items-start mb-6 z-10">
+                                <div><h3 class="font-bold text-white text-lg">Analytics</h3><p class="text-xs text-muted mt-1">Weight Trajectory & Moving Average</p></div>
+                                <div class="flex gap-2" role="group">
+                                    <template x-for="f in ['1M', '3M', 'ALL']" :key="f">
+                                        <button @click="setChartFilter(f)" class="px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200" :class="chartFilter === f ? 'bg-white/10 text-white border-white/5' : 'bg-transparent text-muted border-transparent hover:text-white'"><span x-text="f"></span></button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="flex-grow w-full h-full relative z-10"><canvas id="mainChart" role="img" aria-label="Weight trajectory chart"></canvas></div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'milestone'">
+                        <div class="bento-card p-6 relative overflow-hidden group" role="region" aria-label="Next milestone">
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="relative z-10 h-full flex flex-col">
+                                <div class="flex justify-between items-start mb-4">
+                                    <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
+                                    <i class="ph-duotone ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
+                                </div>
+                                <template x-if="nextReward">
+                                    <div class="mt-auto">
+                                        <h4 class="text-xl font-bold text-white mb-2" x-text="nextReward.title"></h4>
+                                        <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-1000" :style="`width: ${Math.min(Math.max(((startWeight - currentWeight) / (startWeight - nextReward.target)) * 100, 0), 100)}%`"></div></div>
+                                        <div class="flex justify-between items-center text-xs font-mono text-muted"><span x-text="nextReward.target + ' kg'"></span><span class="text-emerald-400" x-text="(currentWeight - nextReward.target).toFixed(1) + ' kg left'"></span></div>
+                                    </div>
+                                </template>
+                                <template x-if="!nextReward"><div class="mt-auto"><p class="text-white font-medium">All goals crushed! Set new ones.</p></div></template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'achievements'">
+                        <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph-duotone ph-trophy text-2xl text-yellow-500"></i></div>
+                            <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
+                            <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'progress-pics'">
+                        <div class="bento-card p-6 relative overflow-hidden" x-show="photoDates.length >= 2" x-init="$watch('photoDates', () => { if (photoDates.length >= 2) initProgressPics(); })" role="region" aria-label="Progress photos comparison">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+                            <div class="flex items-center gap-3 mb-4 relative z-10">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph-fill ph-images-square"></i></div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
+                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
+                            </div>
+                            <div class="flex gap-3 mb-4 relative z-10">
+                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Vorher</label><select x-model="progressPics.beforeDate" @change="loadProgressPic('before', progressPics.beforeDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in photoDates" :key="'before1-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
+                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Nachher</label><select x-model="progressPics.afterDate" @change="loadProgressPic('after', progressPics.afterDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in [...photoDates].reverse()" :key="'after1-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
+                            </div>
+                            <div x-show="progressPics.beforePhoto && progressPics.afterPhoto" class="relative rounded-xl overflow-hidden h-[280px] select-none z-10" style="cursor: col-resize; touch-action: none;" @mousedown="startSliderDrag($event)" @mousemove="handleSliderDrag($event, $el)" @mouseup="stopSliderDrag()" @mouseleave="stopSliderDrag()" @touchstart.prevent="startSliderDrag($event)" @touchmove.prevent="handleSliderDrag($event, $el)" @touchend="stopSliderDrag()">
+                                <img :src="progressPics.afterPhoto" class="absolute inset-0 w-full h-full object-cover" draggable="false">
+                                <div class="absolute inset-0 overflow-hidden" :style="`width: ${progressPics.sliderPosition}%`"><img :src="progressPics.beforePhoto" class="absolute top-0 left-0 h-full object-cover" :style="`width: ${(10000 / progressPics.sliderPosition)}%`" draggable="false"></div>
+                                <div class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] pointer-events-none" :style="`left: ${progressPics.sliderPosition}%`"><div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-none"><i class="ph-bold ph-arrows-horizontal text-black text-sm"></i></div></div>
+                                <span class="absolute top-3 left-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Vorher</span>
+                                <span class="absolute top-3 right-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Nachher</span>
+                            </div>
+                            <div x-show="!(progressPics.beforePhoto && progressPics.afterPhoto)" class="h-[280px] rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center relative z-10"><p class="text-xs text-muted">Fotos werden geladen...</p></div>
+                            <div class="flex justify-between mt-3 text-xs font-mono text-muted relative z-10">
+                                <span x-text="getWeightForDate(progressPics.beforeDate)"></span>
+                                <template x-if="progressPics.beforeDate && progressPics.afterDate"><span class="text-emerald-400" x-text="(() => { const bw = history.find(h => h.date === progressPics.beforeDate); const aw = history.find(h => h.date === progressPics.afterDate); if (!bw || !aw) return ''; const diff = aw.weight - bw.weight; return (diff > 0 ? '+' : '') + diff.toFixed(1) + ' kg'; })()"></span></template>
+                                <span x-text="getWeightForDate(progressPics.afterDate)"></span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'photo-gallery'">
+                        <div class="bento-card p-6 relative overflow-hidden"
+                             x-init="$nextTick(() => loadGalleryPhotos())"
+                             role="region" aria-label="Foto Galerie">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" aria-hidden="true"></div>
+                            <div class="flex items-center gap-3 mb-4 relative z-10">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
+                                    <i class="ph-fill ph-images"></i>
+                                </div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Foto Galerie</h3>
+                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold"
+                                      x-text="photoDates.length + ' Fotos'"></span>
+                            </div>
+                            <div x-show="galleryLoading && !galleryLoaded" class="relative z-10 py-8 text-center">
+                                <div class="w-8 h-8 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-3"></div>
+                                <p class="text-xs text-muted">Fotos werden geladen...</p>
+                            </div>
+                            <div x-show="!galleryLoading && galleryLoaded && galleryPhotos.length === 0" class="relative z-10 py-8 text-center">
+                                <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
+                                    <i class="ph-duotone ph-image text-2xl text-white/20"></i>
+                                </div>
+                                <p class="text-xs text-muted mb-1">Noch keine Fotos</p>
+                                <p class="text-[10px] text-white/20">F&uuml;ge Fotos beim Gewicht-Loggen hinzu</p>
+                            </div>
+                            <div x-show="galleryLoaded && galleryPhotos.length > 0"
+                                 class="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
+                                <template x-for="(item, idx) in galleryPhotos" :key="item.date">
+                                    <div @click="openGalleryLightbox(item)"
+                                         class="relative rounded-xl overflow-hidden cursor-pointer group aspect-square">
+                                        <img :src="item.photo"
+                                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                             :alt="'Foto vom ' + formatGalleryDate(item.date)"
+                                             loading="lazy">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        <div class="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                            <p class="text-[10px] text-white font-bold" x-text="formatGalleryDate(item.date)"></p>
+                                            <p x-show="item.weight" class="text-[10px] text-white/70 font-mono" x-text="item.weight ? item.weight.toFixed(1) + ' kg' : ''"></p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                   <template x-if="widgetId === 'logs'">
+                        <div class="bento-card p-6" role="region" aria-label="Recent weight logs">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Logs</h3>
+                                <span class="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold text-muted font-mono" x-text="history.length + ' Entries'"></span>
+                            </div>
+                            <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
+                                <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
+                                    <div class="group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5" role="listitem">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
+                                            <div>
+                                                <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors">
+                                                    <span x-text="entry.weight.toFixed(1)"></span> kg
+                                                    <i x-show="photoDates.includes(entry.date)" class="ph-fill ph-camera text-[10px] text-purple-400 ml-1"></i>
+                                                </p>
+                                                <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-5">
+                                            <template x-if="getLogDelta(index) !== null">
+                                                <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
+                                                      :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
+                                                      x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
+                                            </template>
+                                            <button @click="deleteEntry(index)" class="opacity-60 md:opacity-0 md:group-hover:opacity-100 p-2 text-muted hover:text-rose-500 transition-all transform hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                                                <i class="ph-bold ph-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+        
+        <div class="md:col-span-8 flex flex-col gap-5 animate-slide-up" style="--delay: 0.2s"
+             :class="{ 'edit-mode': editMode }"
+             @dragover.prevent="editMode && onDragOver($event, 'right', widgetLayout.right.length)"
+             @drop="editMode && onDropAtEnd($event, 'right')">
+
+             <template x-for="(widgetId, wIdx) in widgetLayout.right" :key="'right-'+widgetId">
+                <div :draggable="editMode ? 'true' : 'false'"
+                     @dragstart="onDragStart($event, widgetId, 'right', wIdx)"
+                     @dragend="onDragEnd($event)"
+                     @dragover.prevent.stop="editMode && onDragOver($event, 'right', wIdx)"
+                     @drop.stop="editMode && onDrop($event, 'right', wIdx)"
+                     class="relative transition-all duration-200"
+                     :class="{ 'ring-2 ring-dashed ring-white/10 rounded-3xl': editMode, 'ring-indigo-500/40': editMode && dragState.overCol === 'right' && dragState.overIndex === wIdx && dragState.widgetId !== widgetId }">
+
+                    <div x-show="editMode" class="absolute top-3 left-3 z-30 cursor-grab active:cursor-grabbing px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm flex items-center gap-1.5 text-[10px] text-white/60 border border-white/10">
+                        <i class="ph-bold ph-dots-six-vertical"></i>
+                        <span x-text="WIDGET_REGISTRY[widgetId]?.label"></span>
+                    </div>
+
+                    <template x-if="widgetId === 'current-status'">
+                         <div class="bento-card p-8 flex flex-col justify-between min-h-[380px] relative group overflow-hidden" role="region" aria-label="Current weight status">
+                            <div class="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 blur-[80px] rounded-full group-hover:bg-accent/20 transition-colors duration-700" aria-hidden="true"></div>
+                            <div class="relative z-10">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-muted text-[10px] font-bold uppercase tracking-widest">Current Status</span>
+                                        <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
+                                    </div>
+                                    <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
+                                        <i :class="trend.isLoss ? 'ph-trend-down text-emerald-400' : 'ph-trend-up text-rose-400'" class="text-sm"></i>
+                                        <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-baseline gap-1 mt-6 relative">
+                                    <h2 class="text-6xl md:text-8xl font-bold text-white tracking-tighter tabular-nums" x-text="displayWeight.toFixed(1)"></h2>
+                                    <span class="text-2xl text-white/40 font-medium">kg</span>
+                                </div>
+                                <div class="mt-8 grid grid-cols-2 gap-3">
+                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-pointer hover:bg-white/10 transition-colors" @click="openBmiDetail()">
+                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">BMI</p>
+                                        <div class="flex items-end gap-2"><span class="text-xl font-bold text-white tabular-nums" x-text="displayBmi.toFixed(1)"></span><div class="w-2 h-2 rounded-full mb-1.5" :class="bmi.color"></div></div>
+                                    </div>
+                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1" x-text="displayLost >= 0 ? 'Lost' : 'Gained'"></p>
+                                        <div class="flex items-end gap-2"><span class="text-xl font-bold tabular-nums" :class="displayLost >= 0 ? 'text-white' : 'text-rose-400'" x-text="Math.abs(displayLost).toFixed(1)"></span><span class="text-xs text-muted mb-0.5">kg</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-4 z-10 mt-auto pt-6">
+                                <div>
+                                    <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2"><span>Goal Progress</span><span x-text="Math.round(displayProgress) + '%'"></span></div>
+                                    <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]"><div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div></div>
+                                </div>
+                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'prediction'">
+                        <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
+                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
+                            <div class="flex items-center gap-3 mb-4 relative z-10">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph-fill ph-sparkle"></i></div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
+                                <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
+                            </div>
+                            <div x-show="oracle.valid && !oracle.noProgress" class="relative z-10">
+                                <div class="flex flex-col"><span class="text-xs text-muted mb-1">Voraussichtliches Ziel</span><span class="text-2xl font-bold text-white tabular-nums tracking-tight" x-text="oracle.date"></span></div>
+                                <div class="mt-3 flex items-center gap-2 flex-wrap">
+                                    <span class="bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20 text-xs font-mono text-indigo-300" x-text="oracle.rate + ' kg/Woche'"></span>
+                                    <span x-show="weeklyTrend.change !== null" class="px-2 py-1 rounded border text-xs font-mono" :class="weeklyTrend.change < 0 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'" x-text="'Woche: ' + (weeklyTrend.change > 0 ? '+' : '') + (weeklyTrend.change ? weeklyTrend.change.toFixed(2) : '0.00') + ' kg'"></span>
+                                </div>
+                            </div>
+                            <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
+                                <div class="flex items-center gap-2 mb-1"><i class="ph-fill ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
+                                <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
+                            </div>
+                            <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
+                            <div x-show="!oracle.valid" class="relative z-10 opacity-60"><p class="text-xs text-muted leading-relaxed">Nicht gen&uuml;gend Daten.</p></div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'training'">
+                        <div class="bento-card p-6 relative overflow-hidden group cursor-pointer" @click="!editMode && openTraining()" role="region" aria-label="Today's training">
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><i :class="isRestDay ? 'ph-duotone ph-moon-stars' : 'ph-duotone ph-barbell'"></i></div>
+                                        <div><h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3><p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p></div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
+                                        <i :class="isRestDay ? 'ph ph-pause' : 'ph ph-lightning'" class="text-xs"></i>
+                                        <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Exercises'"></span>
+                                    </div>
+                                </div>
+                                <template x-if="!isRestDay">
+                                    <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
+                                        <template x-for="(ex, i) in todayTraining" :key="i">
+                                            <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
+                                                <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
+                                                <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
+                                                <span x-show="ex.sets" class="text-[10px] font-mono text-muted" x-text="ex.sets + 'x' + ex.reps"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'analytics'">
+                        <div class="bento-card p-5 md:p-8 h-[300px] md:h-[400px] flex flex-col relative overflow-hidden" role="region" aria-label="Weight analytics chart"
+                             x-init="$nextTick(() => { renderChart(); })">
+                            <div class="flex justify-between items-start mb-6 z-10">
+                                <div><h3 class="font-bold text-white text-lg">Analytics</h3><p class="text-xs text-muted mt-1">Weight Trajectory & Moving Average</p></div>
+                                <div class="flex gap-2" role="group">
+                                    <template x-for="f in ['1M', '3M', 'ALL']" :key="f">
+                                        <button @click="setChartFilter(f)" class="px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200" :class="chartFilter === f ? 'bg-white/10 text-white border-white/5' : 'bg-transparent text-muted border-transparent hover:text-white'"><span x-text="f"></span></button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="flex-grow w-full h-full relative z-10"><canvas id="mainChart" role="img" aria-label="Weight trajectory chart"></canvas></div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'milestone'">
+                        <div class="bento-card p-6 relative overflow-hidden group" role="region" aria-label="Next milestone">
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="relative z-10 h-full flex flex-col">
+                                <div class="flex justify-between items-start mb-4">
+                                    <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
+                                    <i class="ph-duotone ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
+                                </div>
+                                <template x-if="nextReward">
+                                    <div class="mt-auto">
+                                        <h4 class="text-xl font-bold text-white mb-2" x-text="nextReward.title"></h4>
+                                        <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-1000" :style="`width: ${Math.min(Math.max(((startWeight - currentWeight) / (startWeight - nextReward.target)) * 100, 0), 100)}%`"></div></div>
+                                        <div class="flex justify-between items-center text-xs font-mono text-muted"><span x-text="nextReward.target + ' kg'"></span><span class="text-emerald-400" x-text="(currentWeight - nextReward.target).toFixed(1) + ' kg left'"></span></div>
+                                    </div>
+                                </template>
+                                <template x-if="!nextReward"><div class="mt-auto"><p class="text-white font-medium">All goals crushed! Set new ones.</p></div></template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'achievements'">
+                        <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph-duotone ph-trophy text-2xl text-yellow-500"></i></div>
+                            <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
+                            <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'progress-pics'">
+                        <div class="bento-card p-6 relative overflow-hidden" x-show="photoDates.length >= 2" x-init="$watch('photoDates', () => { if (photoDates.length >= 2) initProgressPics(); })" role="region" aria-label="Progress photos comparison">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+                            <div class="flex items-center gap-3 mb-4 relative z-10">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph-fill ph-images-square"></i></div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
+                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
+                            </div>
+                            <div class="flex gap-3 mb-4 relative z-10">
+                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Vorher</label><select x-model="progressPics.beforeDate" @change="loadProgressPic('before', progressPics.beforeDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in photoDates" :key="'before2-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
+                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Nachher</label><select x-model="progressPics.afterDate" @change="loadProgressPic('after', progressPics.afterDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in [...photoDates].reverse()" :key="'after2-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
+                            </div>
+                            <div x-show="progressPics.beforePhoto && progressPics.afterPhoto" class="relative rounded-xl overflow-hidden h-[280px] select-none z-10" style="cursor: col-resize; touch-action: none;" @mousedown="startSliderDrag($event)" @mousemove="handleSliderDrag($event, $el)" @mouseup="stopSliderDrag()" @mouseleave="stopSliderDrag()" @touchstart.prevent="startSliderDrag($event)" @touchmove.prevent="handleSliderDrag($event, $el)" @touchend="stopSliderDrag()">
+                                <img :src="progressPics.afterPhoto" class="absolute inset-0 w-full h-full object-cover" draggable="false">
+                                <div class="absolute inset-0 overflow-hidden" :style="`width: ${progressPics.sliderPosition}%`"><img :src="progressPics.beforePhoto" class="absolute top-0 left-0 h-full object-cover" :style="`width: ${(10000 / progressPics.sliderPosition)}%`" draggable="false"></div>
+                                <div class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] pointer-events-none" :style="`left: ${progressPics.sliderPosition}%`"><div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-none"><i class="ph-bold ph-arrows-horizontal text-black text-sm"></i></div></div>
+                                <span class="absolute top-3 left-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Vorher</span>
+                                <span class="absolute top-3 right-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Nachher</span>
+                            </div>
+                            <div x-show="!(progressPics.beforePhoto && progressPics.afterPhoto)" class="h-[280px] rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center relative z-10"><p class="text-xs text-muted">Fotos werden geladen...</p></div>
+                            <div class="flex justify-between mt-3 text-xs font-mono text-muted relative z-10">
+                                <span x-text="getWeightForDate(progressPics.beforeDate)"></span>
+                                <template x-if="progressPics.beforeDate && progressPics.afterDate"><span class="text-emerald-400" x-text="(() => { const bw = history.find(h => h.date === progressPics.beforeDate); const aw = history.find(h => h.date === progressPics.afterDate); if (!bw || !aw) return ''; const diff = aw.weight - bw.weight; return (diff > 0 ? '+' : '') + diff.toFixed(1) + ' kg'; })()"></span></template>
+                                <span x-text="getWeightForDate(progressPics.afterDate)"></span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'photo-gallery'">
+                        <div class="bento-card p-6 relative overflow-hidden"
+                             x-init="$nextTick(() => loadGalleryPhotos())"
+                             role="region" aria-label="Foto Galerie">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" aria-hidden="true"></div>
+                            <div class="flex items-center gap-3 mb-4 relative z-10">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
+                                    <i class="ph-fill ph-images"></i>
+                                </div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Foto Galerie</h3>
+                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold"
+                                      x-text="photoDates.length + ' Fotos'"></span>
+                            </div>
+
+                            <div x-show="galleryLoading && !galleryLoaded" class="relative z-10 py-8 text-center">
+                                <div class="w-8 h-8 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-3"></div>
+                                <p class="text-xs text-muted">Fotos werden geladen...</p>
+                            </div>
+
+                            <div x-show="!galleryLoading && galleryLoaded && galleryPhotos.length === 0" class="relative z-10 py-8 text-center">
+                                <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
+                                    <i class="ph-duotone ph-image text-2xl text-white/20"></i>
+                                </div>
+                                <p class="text-xs text-muted mb-1">Noch keine Fotos</p>
+                                <p class="text-[10px] text-white/20">F&uuml;ge Fotos beim Gewicht-Loggen hinzu</p>
+                            </div>
+
+                            <div x-show="galleryLoaded && galleryPhotos.length > 0"
+                                 class="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
+                                <template x-for="(item, idx) in galleryPhotos" :key="item.date">
+                                    <div @click="openGalleryLightbox(item)"
+                                         class="relative rounded-xl overflow-hidden cursor-pointer group aspect-square">
+                                        <img :src="item.photo"
+                                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                             :alt="'Foto vom ' + formatGalleryDate(item.date)"
+                                             loading="lazy">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        <div class="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                            <p class="text-[10px] text-white font-bold" x-text="formatGalleryDate(item.date)"></p>
+                                            <p x-show="item.weight" class="text-[10px] text-white/70 font-mono" x-text="item.weight ? item.weight.toFixed(1) + ' kg' : ''"></p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'logs'">
+                        <div class="bento-card p-6" role="region" aria-label="Recent weight logs">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Logs</h3>
+                                <span class="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] text-muted font-mono" x-text="history.length + ' Entries'"></span>
+                            </div>
+                            <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
+                                <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
+                                    <div class="group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5" role="listitem">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
+                                            <div>
+                                                <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors"><span x-text="entry.weight.toFixed(1)"></span> kg <i x-show="photoDates.includes(entry.date)" class="ph-fill ph-camera text-[10px] text-purple-400 ml-1"></i></p>
+                                                <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-5">
+                                            <template x-if="getLogDelta(index) !== null">
+                                                <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
+                                                      :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
+                                                      x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
+                                            </template>
+                                            <button @click="deleteEntry(index)" class="opacity-60 md:opacity-0 md:group-hover:opacity-100 p-2 text-muted hover:text-rose-500 transition-all transform hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"><i class="ph-bold ph-trash"></i></button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+    </main>
+
+    <!-- Mobile FAB: Log Weight (visible only on mobile) -->
+    <button @click="openModal()"
+            class="mobile-fab md:hidden transition-transform duration-150"
+            aria-label="Log Weight"
+            x-show="appLoaded && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !milestonesOpen && !bmiDetailOpen && !lootboxOpen"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-75"
+            x-transition:enter-end="opacity-100 scale-100">
+        <i class="ph-bold ph-plus text-2xl"></i>
+    </button>
+
+    <!-- Modals Container (injected by JS) -->
+    <div id="modals"></div>
+
+
+</body>
+</html>

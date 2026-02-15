@@ -1,0 +1,81 @@
+<!-- Weight Entry Modal -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-sheet"
+     x-show="modalOpen" x-cloak
+     @keydown.tab.window="modalOpen && trapFocus($event, $el)"
+     role="dialog" aria-modal="true" aria-label="Log weight entry">
+
+    <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
+         x-show="modalOpen"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @click="closeModal()"></div>
+
+    <div class="bg-surface border border-white/10 rounded-3xl w-full max-w-sm p-8 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+         x-show="modalOpen"
+         x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-12 opacity-0 scale-90">
+
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+
+        <div class="flex justify-between items-center mb-8">
+            <span class="text-xs font-bold text-muted uppercase tracking-widest">New Entry</span>
+            <button @click="closeModal()" aria-label="Close dialog" class="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-muted hover:text-white transition-colors">
+                <i class="ph-bold ph-x text-sm" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-8">
+            <div class="relative group text-center">
+                <label for="weightInput" class="block text-[10px] text-muted font-bold uppercase mb-4 tracking-widest">Weight Today</label>
+                <div class="flex items-baseline justify-center gap-2 pb-2 transition-colors">
+                    <input type="text" x-model="inputWeight" inputmode="decimal" id="weightInput"
+                           @keydown.enter="addEntry()"
+                           class="bg-transparent border-none p-0 text-7xl font-bold text-white text-center w-48 focus:outline-none focus:ring-0 placeholder-white/5 tabular-nums tracking-tighter"
+                           placeholder="00.0">
+                    <span class="text-xl font-medium text-muted">kg</span>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                 <label for="dateInput" class="text-[10px] text-muted font-bold uppercase ml-1">Date</label>
+                <div class="bg-black/20 rounded-xl px-4 py-3 flex items-center gap-3 border border-white/5 hover:border-white/10 focus-within:border-white/20 transition-all">
+                    <i class="ph ph-calendar text-muted"></i>
+                    <input type="date" x-model="inputDate" id="dateInput" class="bg-transparent border-none focus:outline-none text-white w-full font-sans text-sm font-medium">
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-[10px] text-muted font-bold uppercase ml-1 tracking-widest">Foto (Optional)</label>
+                <input type="file" accept="image/*" capture="environment"
+                       @change="handlePhotoUpload($event)"
+                       id="photoFileInput"
+                       class="hidden">
+
+                <button x-show="!photoPreview"
+                        @click="document.getElementById('photoFileInput').click()"
+                        type="button"
+                        class="w-full py-3.5 rounded-xl border border-dashed border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2 text-xs text-muted hover:text-white">
+                    <i class="ph-duotone ph-camera text-lg"></i>
+                    <span>Foto hinzufügen</span>
+                </button>
+
+                <div x-show="photoPreview" class="relative rounded-xl overflow-hidden">
+                    <img :src="photoPreview" class="w-full h-32 object-cover rounded-xl">
+                    <button @click="removePhotoPreview()" type="button"
+                            class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rose-500/80 transition-colors">
+                        <i class="ph-bold ph-x text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-2">
+                <button @click="closeModal()" class="py-4 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
+                    Cancel
+                </button>
+                <button @click="addEntry()" class="py-4 rounded-xl bg-white text-black font-bold text-xs hover:bg-gray-200 active:scale-[0.97] transition-all shadow-lg shadow-white/5">
+                    Save Entry
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
