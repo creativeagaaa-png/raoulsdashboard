@@ -182,20 +182,22 @@
                                         <div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div>
                                     </div>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button @click="openModal()" class="group flex-1 py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                                        <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
-                                        <span>Log Weight</span>
+                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                                    <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
+                                    <span>Log Weight</span>
+                                </button>
+                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
+                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Heute</span>
+                                    <button @click="quickLogStep(-0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Minus 0.1 kg">
+                                        <i class="ph-bold ph-minus text-xs"></i>
                                     </button>
-                                </div>
-                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-3 mt-1">
-                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Quick</span>
-                                    <button @click="quickLog(-0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/30 text-muted hover:text-emerald-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Minus 0.1 kg">
-                                        <i class="ph-bold ph-minus"></i>
+                                    <span class="text-sm font-mono tabular-nums w-16 text-center transition-colors" :class="quickLogWeight !== null ? 'text-white' : 'text-white/40'" x-text="quickLogDisplay.toFixed(1)"></span>
+                                    <button @click="quickLogStep(+0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Plus 0.1 kg">
+                                        <i class="ph-bold ph-plus text-xs"></i>
                                     </button>
-                                    <span class="text-sm font-mono text-white/60 tabular-nums w-16 text-center" x-text="currentWeight.toFixed(1)"></span>
-                                    <button @click="quickLog(+0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 text-muted hover:text-rose-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Plus 0.1 kg">
-                                        <i class="ph-bold ph-plus"></i>
+                                    <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
+                                            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
+                                        <i class="ph-bold ph-check text-sm"></i>
                                     </button>
                                 </div>
                             </div>
@@ -475,17 +477,19 @@
                                     <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2"><span>Goal Progress</span><span x-text="Math.round(displayProgress) + '%'"></span></div>
                                     <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]"><div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div></div>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button @click="openModal()" class="group flex-1 py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
-                                </div>
-                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-3 mt-1">
-                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Quick</span>
-                                    <button @click="quickLog(-0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/30 text-muted hover:text-emerald-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Minus 0.1 kg">
-                                        <i class="ph-bold ph-minus"></i>
+                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
+                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
+                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Heute</span>
+                                    <button @click="quickLogStep(-0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Minus 0.1 kg">
+                                        <i class="ph-bold ph-minus text-xs"></i>
                                     </button>
-                                    <span class="text-sm font-mono text-white/60 tabular-nums w-16 text-center" x-text="currentWeight.toFixed(1)"></span>
-                                    <button @click="quickLog(+0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 text-muted hover:text-rose-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Plus 0.1 kg">
-                                        <i class="ph-bold ph-plus"></i>
+                                    <span class="text-sm font-mono tabular-nums w-16 text-center transition-colors" :class="quickLogWeight !== null ? 'text-white' : 'text-white/40'" x-text="quickLogDisplay.toFixed(1)"></span>
+                                    <button @click="quickLogStep(+0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Plus 0.1 kg">
+                                        <i class="ph-bold ph-plus text-xs"></i>
+                                    </button>
+                                    <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
+                                            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
+                                        <i class="ph-bold ph-check text-sm"></i>
                                     </button>
                                 </div>
                             </div>

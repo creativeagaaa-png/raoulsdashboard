@@ -79,6 +79,7 @@ function app() {
         displayLost: 0,
         _animFrames: {},
         _saving: false,
+        quickLogWeight: null,
 
         // --- MIXINS ---
         ...settingsMixin(),
@@ -335,11 +336,26 @@ function app() {
             });
         },
 
-        async quickLog(delta) {
-            if (this._saving) return;
-            const lastWeight = this.currentWeight;
-            if (!lastWeight || lastWeight === 0) return;
-            const w = Math.round((lastWeight + delta) * 10) / 10;
+        get todayWeight() {
+            const today = new Date().toISOString().split('T')[0];
+            const entry = this.history.find(h => h.date === today);
+            return entry ? entry.weight : null;
+        },
+
+        get quickLogDisplay() {
+            if (this.quickLogWeight !== null) return this.quickLogWeight;
+            return this.todayWeight !== null ? this.todayWeight : this.currentWeight;
+        },
+
+        quickLogStep(delta) {
+            const base = this.quickLogDisplay;
+            if (!base || base === 0) return;
+            this.quickLogWeight = Math.round((base + delta) * 10) / 10;
+        },
+
+        async quickLogSave() {
+            const w = this.quickLogDisplay;
+            if (!w || w === 0 || this._saving) return;
             const entryDate = new Date().toISOString().split('T')[0];
 
             this._saving = true;
@@ -363,6 +379,7 @@ function app() {
                 this._saving = false;
             });
 
+            this.quickLogWeight = null;
             this.showToast(w.toFixed(1) + ' kg gespeichert');
         },
 
