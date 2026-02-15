@@ -7,7 +7,7 @@ import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './u
 import * as Supa from './store/supabase.js';
 import { settingsMixin } from './store/settings.js';
 import { trainingMixin } from './features/training.js';
-import { galleryMixin } from './features/gallery.js';
+import { galleryMixin, getPendingPhotoBlob } from './features/gallery.js';
 import { rewardsMixin } from './features/rewards.js';
 import { layoutMixin } from './features/layout.js';
 
@@ -300,14 +300,13 @@ function app() {
 
             this._saving = true;
             const oldW = this.currentWeight;
-            const photoBlob = this._photoBlob;
+            const photoBlob = getPendingPhotoBlob();
             const entryDate = this.inputDate;
 
             // Clean up preview URL before closing
             if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
             this.closeModal();
             this.photoPreview = null;
-            this._photoBlob = null;
             this.inputWeight = null;
 
             // Optimistic UI update

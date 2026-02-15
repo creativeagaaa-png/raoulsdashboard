@@ -2,10 +2,18 @@ import * as Supa from '../store/supabase.js';
 import { compressImage } from '../utils/image.js';
 import { formatGalleryDate } from '../utils/formatting.js';
 
+// Store blob outside Alpine's reactive proxy to keep it as a native Blob
+let _pendingPhotoBlob = null;
+
+export function getPendingPhotoBlob() {
+    const blob = _pendingPhotoBlob;
+    _pendingPhotoBlob = null;
+    return blob;
+}
+
 export const galleryMixin = () => ({
     photoDates: [],
     photoPreview: null,
-    _photoBlob: null,
     galleryPhotos: [],
     galleryLoaded: false,
     galleryLoading: false,
@@ -28,7 +36,7 @@ export const galleryMixin = () => ({
         if (!file) return;
         try {
             const blob = await compressImage(file);
-            this._photoBlob = blob;
+            _pendingPhotoBlob = blob;
             this.photoPreview = URL.createObjectURL(blob);
         } catch (e) {
             console.error('Failed to compress image:', e);
@@ -39,13 +47,14 @@ export const galleryMixin = () => ({
     removePhotoPreview() {
         if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
         this.photoPreview = null;
-        this._photoBlob = null;
+        _pendingPhotoBlob = null;
         const input = document.querySelector('#photoFileInput');
         if (input) input.value = '';
     },
 
     async loadGalleryPhotos() {
-        if (this.galleryLoaded || this.galleryLoading) return;
+        if (this.galleryLoading) return;
+        if (this.photoDates.length === 0) return;
         this.galleryLoading = true;
         try {
             const photos = await Promise.all(

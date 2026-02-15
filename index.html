@@ -330,7 +330,7 @@
 
                     <template x-if="widgetId === 'photo-gallery'">
                         <div class="bento-card p-6 relative overflow-hidden"
-                             x-init="$nextTick(() => loadGalleryPhotos())"
+                             x-init="if (appLoaded) loadGalleryPhotos(); else $watch('appLoaded', v => { if (v) loadGalleryPhotos() })"
                              role="region" aria-label="Foto Galerie">
                             <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" aria-hidden="true"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">
@@ -623,7 +623,7 @@
 
                     <template x-if="widgetId === 'photo-gallery'">
                         <div class="bento-card p-6 relative overflow-hidden"
-                             x-init="$nextTick(() => loadGalleryPhotos())"
+                             x-init="if (appLoaded) loadGalleryPhotos(); else $watch('appLoaded', v => { if (v) loadGalleryPhotos() })"
                              role="region" aria-label="Foto Galerie">
                             <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" aria-hidden="true"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">

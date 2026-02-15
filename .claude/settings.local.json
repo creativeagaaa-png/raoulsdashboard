@@ -21,7 +21,11 @@
       "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard commit -m \"$\\(cat <<''EOF''\nInitial commit: Health OS Dashboard\n\n- Vite + Tailwind CSS + Alpine.js project setup\n- PWA support with manifest and service worker\n- Add netlify.toml for automatic CI/CD deployment\n- Disable pinch-zoom and auto-zoom on iOS inputs\n- Hide scrollbars globally for cleaner mobile experience\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard push -u origin main)",
       "Bash(gh auth:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx supabase:*)",
+      "Bash(node -e \"\nconst { createClient } = require\\(''@supabase/supabase-js''\\);\nconst db = createClient\\(''https://liuekokgchfzatodsaxo.supabase.co'', ''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpdWVrb2tnY2hmemF0b2RzYXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNzI1MTAsImV4cCI6MjA4Njc0ODUxMH0.3CBZnoZCZiUKNRdVF0GewDxNHpJVdYsYPMswRld3vz8''\\);\n\nasync function test\\(\\) {\n    // Test 1: List buckets\n    const { data: buckets, error: buckErr } = await db.storage.listBuckets\\(\\);\n    console.log\\(''Buckets:'', JSON.stringify\\(buckets, null, 2\\)\\);\n    if \\(buckErr\\) console.log\\(''Bucket error:'', buckErr\\);\n\n    // Test 2: List files in progress-pics\n    const { data: files, error: fileErr } = await db.storage.from\\(''progress-pics''\\).list\\('''', { limit: 10 }\\);\n    console.log\\(''Files:'', JSON.stringify\\(files, null, 2\\)\\);\n    if \\(fileErr\\) console.log\\(''File error:'', fileErr\\);\n\n    // Test 3: Try uploading a small test blob\n    const testBlob = Buffer.from\\([0xFF, 0xD8, 0xFF, 0xE0]\\); // Minimal JPEG header bytes\n    const { data: upData, error: upErr } = await db.storage.from\\(''progress-pics''\\).upload\\(''_test.jpg'', testBlob, { contentType: ''image/jpeg'', upsert: true }\\);\n    console.log\\(''Upload result:'', JSON.stringify\\(upData\\)\\);\n    if \\(upErr\\) console.log\\(''Upload error:'', JSON.stringify\\(upErr\\)\\);\n\n    // Test 4: Clean up\n    if \\(!upErr\\) {\n        await db.storage.from\\(''progress-pics''\\).remove\\([''_test.jpg'']\\);\n        console.log\\(''Cleanup done''\\);\n    }\n}\ntest\\(\\).catch\\(e => console.error\\(''Fatal:'', e\\)\\);\n\")",
+      "Bash(node:*)",
+      "Bash(pkill:*)"
     ]
   }
 }
