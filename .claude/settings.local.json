@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -c:*)",
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(wc:*)",
+      "Bash(npm init -y)",
+      "Bash(npm install:*)",
+      "Bash(timeout 10 npx vite:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard status)",
+      "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard log --oneline -5)",
+      "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard add .gitignore css/ icons/ index.html js/ manifest.json netlify.toml package-lock.json package.json public/ sw.js templates/ vite.config.js)",
+      "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard commit -m \"$\\(cat <<''EOF''\nInitial commit: Health OS Dashboard\n\n- Vite + Tailwind CSS + Alpine.js project setup\n- PWA support with manifest and service worker\n- Add netlify.toml for automatic CI/CD deployment\n- Disable pinch-zoom and auto-zoom on iOS inputs\n- Hide scrollbars globally for cleaner mobile experience\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard push -u origin main)",
+      "Bash(gh auth:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}
