@@ -182,10 +182,22 @@
                                         <div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div>
                                     </div>
                                 </div>
-                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                                    <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
-                                    <span>Log Weight</span>
-                                </button>
+                                <div class="flex gap-2">
+                                    <button @click="openModal()" class="group flex-1 py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                                        <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
+                                        <span>Log Weight</span>
+                                    </button>
+                                </div>
+                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-3 mt-1">
+                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Quick</span>
+                                    <button @click="quickLog(-0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/30 text-muted hover:text-emerald-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Minus 0.1 kg">
+                                        <i class="ph-bold ph-minus"></i>
+                                    </button>
+                                    <span class="text-sm font-mono text-white/60 tabular-nums w-16 text-center" x-text="currentWeight.toFixed(1)"></span>
+                                    <button @click="quickLog(+0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 text-muted hover:text-rose-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Plus 0.1 kg">
+                                        <i class="ph-bold ph-plus"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -366,26 +378,40 @@
                             </div>
                             <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
                                 <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
-                                    <div class="group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5" role="listitem">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
-                                            <div>
-                                                <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors">
-                                                    <span x-text="entry.weight.toFixed(1)"></span> kg
-                                                    <i x-show="photoDates.includes(entry.date)" class="ph-fill ph-camera text-[10px] text-purple-400 ml-1"></i>
-                                                </p>
-                                                <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
-                                            </div>
+                                    <div class="swipe-container" role="listitem"
+                                         x-data="{ startX: 0, currentX: 0, swiping: false }"
+                                         @touchstart.passive="startX = $event.touches[0].clientX; currentX = 0; swiping = false"
+                                         @touchmove="(() => {
+                                             const dx = $event.touches[0].clientX - startX;
+                                             if (dx < -10) { swiping = true; currentX = Math.max(dx, -120); $event.preventDefault(); }
+                                         })()"
+                                         @touchend="(() => {
+                                             if (currentX < -80) { $el.querySelector('.swipe-content').classList.add('removing'); $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)'; setTimeout(() => deleteEntry(index), 300); }
+                                             else { currentX = 0; swiping = false; }
+                                         })()">
+                                        <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
+                                            <i class="ph-bold ph-trash text-rose-400 text-lg"></i>
                                         </div>
-                                        <div class="flex items-center gap-5">
-                                            <template x-if="getLogDelta(index) !== null">
-                                                <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
-                                                      :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
-                                                      x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
-                                            </template>
-                                            <button @click="deleteEntry(index)" class="opacity-60 md:opacity-0 md:group-hover:opacity-100 p-2 text-muted hover:text-rose-500 transition-all transform hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center">
-                                                <i class="ph-bold ph-trash" aria-hidden="true"></i>
-                                            </button>
+                                        <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
+                                             :class="{ 'swiping': swiping }"
+                                             :style="currentX < 0 ? 'transform: translateX(' + currentX + 'px)' : ''">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
+                                                <div>
+                                                    <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors">
+                                                        <span x-text="entry.weight.toFixed(1)"></span> kg
+                                                        <i x-show="photoDates.includes(entry.date)" class="ph-fill ph-camera text-[10px] text-purple-400 ml-1"></i>
+                                                    </p>
+                                                    <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <template x-if="getLogDelta(index) !== null">
+                                                    <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
+                                                          :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
+                                                          x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                 </template>
@@ -449,7 +475,19 @@
                                     <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2"><span>Goal Progress</span><span x-text="Math.round(displayProgress) + '%'"></span></div>
                                     <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]"><div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div></div>
                                 </div>
-                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
+                                <div class="flex gap-2">
+                                    <button @click="openModal()" class="group flex-1 py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
+                                </div>
+                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-3 mt-1">
+                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Quick</span>
+                                    <button @click="quickLog(-0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/30 text-muted hover:text-emerald-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Minus 0.1 kg">
+                                        <i class="ph-bold ph-minus"></i>
+                                    </button>
+                                    <span class="text-sm font-mono text-white/60 tabular-nums w-16 text-center" x-text="currentWeight.toFixed(1)"></span>
+                                    <button @click="quickLog(+0.1)" class="w-10 h-10 rounded-full bg-white/5 border border-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 text-muted hover:text-rose-400 transition-all active:scale-90 flex items-center justify-center text-sm font-bold" aria-label="Plus 0.1 kg">
+                                        <i class="ph-bold ph-plus"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -634,21 +672,37 @@
                             </div>
                             <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
                                 <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
-                                    <div class="group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5" role="listitem">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
-                                            <div>
-                                                <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors"><span x-text="entry.weight.toFixed(1)"></span> kg <i x-show="photoDates.includes(entry.date)" class="ph-fill ph-camera text-[10px] text-purple-400 ml-1"></i></p>
-                                                <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
-                                            </div>
+                                    <div class="swipe-container" role="listitem"
+                                         x-data="{ startX: 0, currentX: 0, swiping: false }"
+                                         @touchstart.passive="startX = $event.touches[0].clientX; currentX = 0; swiping = false"
+                                         @touchmove="(() => {
+                                             const dx = $event.touches[0].clientX - startX;
+                                             if (dx < -10) { swiping = true; currentX = Math.max(dx, -120); $event.preventDefault(); }
+                                         })()"
+                                         @touchend="(() => {
+                                             if (currentX < -80) { $el.querySelector('.swipe-content').classList.add('removing'); $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)'; setTimeout(() => deleteEntry(index), 300); }
+                                             else { currentX = 0; swiping = false; }
+                                         })()">
+                                        <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
+                                            <i class="ph-bold ph-trash text-rose-400 text-lg"></i>
                                         </div>
-                                        <div class="flex items-center gap-5">
-                                            <template x-if="getLogDelta(index) !== null">
-                                                <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
-                                                      :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
-                                                      x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
-                                            </template>
-                                            <button @click="deleteEntry(index)" class="opacity-60 md:opacity-0 md:group-hover:opacity-100 p-2 text-muted hover:text-rose-500 transition-all transform hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"><i class="ph-bold ph-trash"></i></button>
+                                        <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
+                                             :class="{ 'swiping': swiping }"
+                                             :style="currentX < 0 ? 'transform: translateX(' + currentX + 'px)' : ''">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
+                                                <div>
+                                                    <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors"><span x-text="entry.weight.toFixed(1)"></span> kg <i x-show="photoDates.includes(entry.date)" class="ph-fill ph-camera text-[10px] text-purple-400 ml-1"></i></p>
+                                                    <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <template x-if="getLogDelta(index) !== null">
+                                                    <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
+                                                          :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
+                                                          x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                 </template>

@@ -335,6 +335,37 @@ function app() {
             });
         },
 
+        async quickLog(delta) {
+            if (this._saving) return;
+            const lastWeight = this.currentWeight;
+            if (!lastWeight || lastWeight === 0) return;
+            const w = Math.round((lastWeight + delta) * 10) / 10;
+            const entryDate = new Date().toISOString().split('T')[0];
+
+            this._saving = true;
+            const oldW = this.currentWeight;
+
+            this.history = this.history.filter(h => h.date !== entryDate);
+            this.history.push({ date: entryDate, weight: w });
+            this.history.sort((a, b) => a.date.localeCompare(b.date));
+
+            try {
+                await Supa.upsertWeightEntry(entryDate, w);
+            } catch (e) {
+                console.error('Failed to save quick entry:', e);
+                this.showToast('Fehler beim Speichern');
+            }
+
+            this.$nextTick(() => {
+                this.updateChart();
+                this.refreshAnimations();
+                this.checkUnlocks(oldW, w);
+                this._saving = false;
+            });
+
+            this.showToast(w.toFixed(1) + ' kg gespeichert');
+        },
+
         deleteEntry(index) {
             const logEntry = this.logs[index];
             if (!logEntry) return;

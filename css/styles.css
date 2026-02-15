@@ -443,6 +443,48 @@ input[type="number"] {
     transition: all .1s ease;
 }
 
+/* Swipe-to-Delete for Log Entries */
+.swipe-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.swipe-delete-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 1.25rem;
+    background: linear-gradient(90deg, transparent 60%, rgba(239, 68, 68, 0.2) 100%);
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.swipe-delete-bg.visible {
+    opacity: 1;
+}
+
+.swipe-content {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    will-change: transform;
+    touch-action: pan-y;
+}
+
+.swipe-content.swiping {
+    transition: none;
+}
+
+.swipe-content.removing {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
 /* Photo Gallery */
 .aspect-square {
     aspect-ratio: 1 / 1;
