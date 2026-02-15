@@ -19,7 +19,7 @@ import profileModal from '../templates/modals/profile.html?raw';
 import milestonesModal from '../templates/modals/milestones.html?raw';
 import weightEntryModal from '../templates/modals/weight-entry.html?raw';
 import lootboxModal from '../templates/modals/lootbox.html?raw';
-import galleryLightboxModal from '../templates/modals/gallery-lightbox.html?raw';
+import progressPicsModal from '../templates/modals/progress-pics.html?raw';
 import confirmModal from '../templates/modals/confirm.html?raw';
 import toastComponent from '../templates/modals/toast.html?raw';
 
@@ -37,7 +37,7 @@ if (modalsContainer) {
         milestonesModal,
         weightEntryModal,
         lootboxModal,
-        galleryLightboxModal,
+        progressPicsModal,
         confirmModal,
         toastComponent
     ].join('\n');
@@ -149,6 +149,7 @@ function app() {
                 this.refreshAnimations();
                 this.appLoaded = true;
                 this.initPullToRefresh();
+                if (this.photoDates.length > 0) this.loadPreviewThumbnails();
             });
 
             if ('serviceWorker' in navigator) {
@@ -170,7 +171,7 @@ function app() {
             const isAnyModalOpen = () =>
                 this.modalOpen || this.settingsOpen || this.profileOpen ||
                 this.trainingOpen || this.milestonesOpen || this.bmiDetailOpen ||
-                this.lootboxOpen || this.editMode;
+                this.lootboxOpen || this.progressPicsOpen || this.editMode;
 
             document.addEventListener('touchstart', (e) => {
                 if (getScrollTop() > 5 || isAnyModalOpen() || this._ptr.refreshing) return;
@@ -274,7 +275,6 @@ function app() {
                 this.$nextTick(() => {
                     this.updateChart();
                     this.refreshAnimations();
-                    if (this.galleryLoaded) this.refreshGallery();
                 });
 
                 this.showToast('Dashboard aktualisiert');
@@ -334,7 +334,8 @@ function app() {
                         this.photoDates.push(entryDate);
                         this.photoDates.sort();
                     }
-                    if (this.galleryLoaded) this.refreshGallery();
+                    if (this.progressPicsLoaded) this.refreshProgressPicsPhotos();
+                    this.loadPreviewThumbnails();
                 } catch (e) {
                     console.error('Failed to save photo:', e);
                     this.showToast('Foto konnte nicht gespeichert werden');
@@ -406,7 +407,6 @@ function app() {
             if (hadPhoto) {
                 Supa.deletePhoto(removed.date).then(() => {
                     this.photoDates = this.photoDates.filter(d => d !== removed.date);
-                    if (this.galleryLoaded) this.refreshGallery();
                 }).catch(e => console.error('Failed to delete photo:', e));
             }
 
@@ -427,8 +427,6 @@ function app() {
                 onConfirm: async () => {
                     this.history = [];
                     this.photoDates = [];
-                    this.galleryPhotos = [];
-                    this.galleryLoaded = false;
                     try {
                         await Promise.all([
                             Supa.clearAllWeightEntries(),
@@ -487,8 +485,6 @@ function app() {
                     this.rewards = [];
                     this.trainingPlan = Array.from({ length: 7 }, () => []);
                     this.photoDates = [];
-                    this.galleryPhotos = [];
-                    this.galleryLoaded = false;
                     this.widgetLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
 
                     this.settingsOpen = false;
@@ -602,7 +598,7 @@ function app() {
         handleEscape() {
             if (this.confirmModal.show) { this.cancelConfirm(); return; }
             if (this.lootboxOpen) { this.closeLootbox(); return; }
-            if (this.galleryLightbox.open) { this.closeGalleryLightbox(); return; }
+            if (this.progressPicsOpen) { this.closeProgressPics(); return; }
             if (this.bmiDetailOpen) { this.closeBmiDetail(); return; }
             if (this.modalOpen) { this.closeModal(); return; }
             if (this.profileOpen) { this.closeProfile(); return; }

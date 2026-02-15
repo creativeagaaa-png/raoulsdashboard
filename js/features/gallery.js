@@ -1,6 +1,5 @@
 import * as Supa from '../store/supabase.js';
 import { compressImage } from '../utils/image.js';
-import { formatGalleryDate } from '../utils/formatting.js';
 
 // Store blob outside Alpine's reactive proxy to keep it as a native Blob
 let _pendingPhotoBlob = null;
@@ -14,22 +13,24 @@ export function getPendingPhotoBlob() {
 export const galleryMixin = () => ({
     photoDates: [],
     photoPreview: null,
-    galleryPhotos: [],
-    galleryLoaded: false,
-    galleryLoading: false,
-    galleryLightbox: { open: false, photo: null, date: null, weight: null },
 
-    // Progress Pics State
+    // Progress Pics Modal
+    progressPicsOpen: false,
+    progressPicsPhotos: [],
+    progressPicsLoading: false,
+    progressPicsLoaded: false,
+    progressPicsPreview: [],
+
+    // Comparison slider
     progressPics: {
         beforeDate: null,
         afterDate: null,
         beforePhoto: null,
         afterPhoto: null,
         sliderPosition: 50,
-        isDragging: false
+        isDragging: false,
+        _selectMode: 'before'
     },
-
-    formatGalleryDate,
 
     async handlePhotoUpload(event) {
         const file = event.target.files?.[0];
@@ -52,10 +53,37 @@ export const galleryMixin = () => ({
         if (input) input.value = '';
     },
 
-    async loadGalleryPhotos() {
-        if (this.galleryLoading) return;
+    async loadPreviewThumbnails() {
         if (this.photoDates.length === 0) return;
-        this.galleryLoading = true;
+        const recent = this.photoDates.slice(-3).reverse();
+        try {
+            const previews = await Promise.all(
+                recent.map(async (date) => {
+                    const url = await Supa.getPhotoUrl(date);
+                    return { date, photo: url };
+                })
+            );
+            this.progressPicsPreview = previews;
+        } catch (e) {
+            console.error('Failed to load preview thumbnails:', e);
+        }
+    },
+
+    // Open the full-screen progress pics modal
+    async openProgressPics() {
+        this.progressPicsOpen = true;
+        if (!this.progressPicsLoaded) {
+            await this.loadProgressPicsPhotos();
+        }
+    },
+
+    closeProgressPics() {
+        this.progressPicsOpen = false;
+    },
+
+    async loadProgressPicsPhotos() {
+        if (this.progressPicsLoading || this.photoDates.length === 0) return;
+        this.progressPicsLoading = true;
         try {
             const photos = await Promise.all(
                 this.photoDates.map(async (date) => {
@@ -64,49 +92,51 @@ export const galleryMixin = () => ({
                     return { date, photo: url, weight: entry ? entry.weight : null };
                 })
             );
-            this.galleryPhotos = photos.reverse();
-            this.galleryLoaded = true;
+            this.progressPicsPhotos = photos.reverse();
+            this.progressPicsLoaded = true;
+
+            // Auto-select first and last for comparison if we have 2+
+            if (photos.length >= 2 && !this.progressPics.beforeDate) {
+                this.selectForCompare(this.progressPicsPhotos[this.progressPicsPhotos.length - 1], 'before');
+                this.selectForCompare(this.progressPicsPhotos[0], 'after');
+            }
         } catch (e) {
-            console.error('Failed to load gallery photos:', e);
+            console.error('Failed to load progress pics:', e);
         } finally {
-            this.galleryLoading = false;
+            this.progressPicsLoading = false;
         }
     },
 
-    openGalleryLightbox(item) {
-        this.galleryLightbox = { open: true, photo: item.photo, date: item.date, weight: item.weight };
+    async refreshProgressPicsPhotos() {
+        this.progressPicsLoaded = false;
+        this.progressPicsPhotos = [];
+        await this.loadProgressPicsPhotos();
     },
 
-    closeGalleryLightbox() {
-        this.galleryLightbox.open = false;
-    },
-
-    async refreshGallery() {
-        this.galleryLoaded = false;
-        this.galleryPhotos = [];
-        await this.loadGalleryPhotos();
-    },
-
-    // Progress Pics specific methods
-    async loadProgressPic(which, date) {
-        if (!date) return;
-        try {
-            const url = await Supa.getPhotoUrl(date);
-            if (which === 'before') this.progressPics.beforePhoto = url;
-            else this.progressPics.afterPhoto = url;
-        } catch (e) {
-            console.error('Failed to load progress pic:', e);
+    selectForCompare(item, slot) {
+        if (slot === 'before') {
+            this.progressPics.beforeDate = item.date;
+            this.progressPics.beforePhoto = item.photo;
+        } else {
+            this.progressPics.afterDate = item.date;
+            this.progressPics.afterPhoto = item.photo;
         }
+        this.progressPics.sliderPosition = 50;
     },
 
-    async initProgressPics() {
-        if (this.photoDates.length < 2) return;
-        this.progressPics.beforeDate = this.photoDates[0];
-        this.progressPics.afterDate = this.photoDates[this.photoDates.length - 1];
-        await Promise.all([
-            this.loadProgressPic('before', this.progressPics.beforeDate),
-            this.loadProgressPic('after', this.progressPics.afterDate)
-        ]);
+    isSelectedForCompare(date) {
+        return date === this.progressPics.beforeDate || date === this.progressPics.afterDate;
+    },
+
+    getCompareLabel(date) {
+        if (date === this.progressPics.beforeDate) return 'Vorher';
+        if (date === this.progressPics.afterDate) return 'Nachher';
+        return null;
+    },
+
+    formatPhotoDate(dateStr) {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: '2-digit' });
     },
 
     startSliderDrag(event) {

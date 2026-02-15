@@ -18,11 +18,10 @@ export const WIDGET_REGISTRY = {
     'milestone': { label: 'Milestone' },
     'achievements': { label: 'Achievements' },
     'progress-pics': { label: 'Progress Pics' },
-    'photo-gallery': { label: 'Foto Galerie' },
     'logs': { label: 'Logs' }
 };
 
 export const DEFAULT_LAYOUT = {
     left: ['current-status', 'prediction', 'training'],
-    right: ['analytics', 'milestone', 'achievements', 'progress-pics', 'photo-gallery', 'logs']
+    right: ['analytics', 'milestone', 'achievements', 'progress-pics', 'logs']
 };

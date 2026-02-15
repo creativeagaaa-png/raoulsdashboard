@@ -301,73 +301,26 @@
                     </template>
 
                     <template x-if="widgetId === 'progress-pics'">
-                        <div class="bento-card p-6 relative overflow-hidden" x-show="photoDates.length >= 2" x-init="$watch('photoDates', () => { if (photoDates.length >= 2) initProgressPics(); })" role="region" aria-label="Progress photos comparison">
+                        <div class="bento-card p-6 relative overflow-hidden cursor-pointer hover:border-white/15 transition-all"
+                             x-show="photoDates.length >= 1"
+                             @click="if (!editMode) openProgressPics()"
+                             role="button" aria-label="Progress Pics oeffnen">
                             <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">
                                 <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph-fill ph-images-square"></i></div>
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
                                 <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
                             </div>
-                            <div class="flex gap-3 mb-4 relative z-10">
-                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Vorher</label><select x-model="progressPics.beforeDate" @change="loadProgressPic('before', progressPics.beforeDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in photoDates" :key="'before1-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
-                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Nachher</label><select x-model="progressPics.afterDate" @change="loadProgressPic('after', progressPics.afterDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in [...photoDates].reverse()" :key="'after1-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
-                            </div>
-                            <div x-show="progressPics.beforePhoto && progressPics.afterPhoto" class="relative rounded-xl overflow-hidden h-[280px] select-none z-10" style="cursor: col-resize; touch-action: none;" @mousedown="startSliderDrag($event)" @mousemove="handleSliderDrag($event, $el)" @mouseup="stopSliderDrag()" @mouseleave="stopSliderDrag()" @touchstart.prevent="startSliderDrag($event)" @touchmove.prevent="handleSliderDrag($event, $el)" @touchend="stopSliderDrag()">
-                                <img :src="progressPics.afterPhoto" class="absolute inset-0 w-full h-full object-cover" draggable="false">
-                                <div class="absolute inset-0 overflow-hidden" :style="`width: ${progressPics.sliderPosition}%`"><img :src="progressPics.beforePhoto" class="absolute top-0 left-0 h-full object-cover" :style="`width: ${(10000 / progressPics.sliderPosition)}%`" draggable="false"></div>
-                                <div class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] pointer-events-none" :style="`left: ${progressPics.sliderPosition}%`"><div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-none"><i class="ph-bold ph-arrows-horizontal text-black text-sm"></i></div></div>
-                                <span class="absolute top-3 left-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Vorher</span>
-                                <span class="absolute top-3 right-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Nachher</span>
-                            </div>
-                            <div x-show="!(progressPics.beforePhoto && progressPics.afterPhoto)" class="h-[280px] rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center relative z-10"><p class="text-xs text-muted">Fotos werden geladen...</p></div>
-                            <div class="flex justify-between mt-3 text-xs font-mono text-muted relative z-10">
-                                <span x-text="getWeightForDate(progressPics.beforeDate)"></span>
-                                <template x-if="progressPics.beforeDate && progressPics.afterDate"><span class="text-emerald-400" x-text="(() => { const bw = history.find(h => h.date === progressPics.beforeDate); const aw = history.find(h => h.date === progressPics.afterDate); if (!bw || !aw) return ''; const diff = aw.weight - bw.weight; return (diff > 0 ? '+' : '') + diff.toFixed(1) + ' kg'; })()"></span></template>
-                                <span x-text="getWeightForDate(progressPics.afterDate)"></span>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'photo-gallery'">
-                        <div class="bento-card p-6 relative overflow-hidden"
-                             x-init="if (appLoaded) loadGalleryPhotos(); else $watch('appLoaded', v => { if (v) loadGalleryPhotos() })"
-                             role="region" aria-label="Foto Galerie">
-                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" aria-hidden="true"></div>
-                            <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
-                                    <i class="ph-fill ph-images"></i>
-                                </div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Foto Galerie</h3>
-                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold"
-                                      x-text="photoDates.length + ' Fotos'"></span>
-                            </div>
-                            <div x-show="galleryLoading && !galleryLoaded" class="relative z-10 py-8 text-center">
-                                <div class="w-8 h-8 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-3"></div>
-                                <p class="text-xs text-muted">Fotos werden geladen...</p>
-                            </div>
-                            <div x-show="!galleryLoading && galleryLoaded && galleryPhotos.length === 0" class="relative z-10 py-8 text-center">
-                                <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
-                                    <i class="ph-duotone ph-image text-2xl text-white/20"></i>
-                                </div>
-                                <p class="text-xs text-muted mb-1">Noch keine Fotos</p>
-                                <p class="text-[10px] text-white/20">F&uuml;ge Fotos beim Gewicht-Loggen hinzu</p>
-                            </div>
-                            <div x-show="galleryLoaded && galleryPhotos.length > 0"
-                                 class="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
-                                <template x-for="(item, idx) in galleryPhotos" :key="item.date">
-                                    <div @click="openGalleryLightbox(item)"
-                                         class="relative rounded-xl overflow-hidden cursor-pointer group aspect-square">
-                                        <img :src="item.photo"
-                                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                             :alt="'Foto vom ' + formatGalleryDate(item.date)"
-                                             loading="lazy">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        <div class="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                                            <p class="text-[10px] text-white font-bold" x-text="formatGalleryDate(item.date)"></p>
-                                            <p x-show="item.weight" class="text-[10px] text-white/70 font-mono" x-text="item.weight ? item.weight.toFixed(1) + ' kg' : ''"></p>
-                                        </div>
+                            <div class="relative z-10 grid grid-cols-3 gap-2">
+                                <template x-for="item in progressPicsPreview" :key="'preview-'+item.date">
+                                    <div class="aspect-square rounded-xl bg-white/5 border border-white/5 overflow-hidden">
+                                        <img :src="item.photo" class="w-full h-full object-cover" loading="lazy" :alt="'Foto vom ' + item.date">
                                     </div>
                                 </template>
+                            </div>
+                            <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60">
+                                <span>Antippen zum Ansehen</span>
+                                <i class="ph-bold ph-arrow-right text-[10px]"></i>
                             </div>
                         </div>
                     </template>
@@ -594,76 +547,26 @@
                     </template>
 
                     <template x-if="widgetId === 'progress-pics'">
-                        <div class="bento-card p-6 relative overflow-hidden" x-show="photoDates.length >= 2" x-init="$watch('photoDates', () => { if (photoDates.length >= 2) initProgressPics(); })" role="region" aria-label="Progress photos comparison">
+                        <div class="bento-card p-6 relative overflow-hidden cursor-pointer hover:border-white/15 transition-all"
+                             x-show="photoDates.length >= 1"
+                             @click="if (!editMode) openProgressPics()"
+                             role="button" aria-label="Progress Pics oeffnen">
                             <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">
                                 <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph-fill ph-images-square"></i></div>
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
                                 <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
                             </div>
-                            <div class="flex gap-3 mb-4 relative z-10">
-                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Vorher</label><select x-model="progressPics.beforeDate" @change="loadProgressPic('before', progressPics.beforeDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in photoDates" :key="'before2-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
-                                <div class="flex-1"><label class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1 block">Nachher</label><select x-model="progressPics.afterDate" @change="loadProgressPic('after', progressPics.afterDate)" class="w-full bg-black/30 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-white/20"><template x-for="d in [...photoDates].reverse()" :key="'after2-'+d"><option :value="d" x-text="new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'short', year:'2-digit'})"></option></template></select></div>
-                            </div>
-                            <div x-show="progressPics.beforePhoto && progressPics.afterPhoto" class="relative rounded-xl overflow-hidden h-[280px] select-none z-10" style="cursor: col-resize; touch-action: none;" @mousedown="startSliderDrag($event)" @mousemove="handleSliderDrag($event, $el)" @mouseup="stopSliderDrag()" @mouseleave="stopSliderDrag()" @touchstart.prevent="startSliderDrag($event)" @touchmove.prevent="handleSliderDrag($event, $el)" @touchend="stopSliderDrag()">
-                                <img :src="progressPics.afterPhoto" class="absolute inset-0 w-full h-full object-cover" draggable="false">
-                                <div class="absolute inset-0 overflow-hidden" :style="`width: ${progressPics.sliderPosition}%`"><img :src="progressPics.beforePhoto" class="absolute top-0 left-0 h-full object-cover" :style="`width: ${(10000 / progressPics.sliderPosition)}%`" draggable="false"></div>
-                                <div class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] pointer-events-none" :style="`left: ${progressPics.sliderPosition}%`"><div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-none"><i class="ph-bold ph-arrows-horizontal text-black text-sm"></i></div></div>
-                                <span class="absolute top-3 left-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Vorher</span>
-                                <span class="absolute top-3 right-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase pointer-events-none">Nachher</span>
-                            </div>
-                            <div x-show="!(progressPics.beforePhoto && progressPics.afterPhoto)" class="h-[280px] rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center relative z-10"><p class="text-xs text-muted">Fotos werden geladen...</p></div>
-                            <div class="flex justify-between mt-3 text-xs font-mono text-muted relative z-10">
-                                <span x-text="getWeightForDate(progressPics.beforeDate)"></span>
-                                <template x-if="progressPics.beforeDate && progressPics.afterDate"><span class="text-emerald-400" x-text="(() => { const bw = history.find(h => h.date === progressPics.beforeDate); const aw = history.find(h => h.date === progressPics.afterDate); if (!bw || !aw) return ''; const diff = aw.weight - bw.weight; return (diff > 0 ? '+' : '') + diff.toFixed(1) + ' kg'; })()"></span></template>
-                                <span x-text="getWeightForDate(progressPics.afterDate)"></span>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'photo-gallery'">
-                        <div class="bento-card p-6 relative overflow-hidden"
-                             x-init="if (appLoaded) loadGalleryPhotos(); else $watch('appLoaded', v => { if (v) loadGalleryPhotos() })"
-                             role="region" aria-label="Foto Galerie">
-                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5" aria-hidden="true"></div>
-                            <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
-                                    <i class="ph-fill ph-images"></i>
-                                </div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Foto Galerie</h3>
-                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold"
-                                      x-text="photoDates.length + ' Fotos'"></span>
-                            </div>
-
-                            <div x-show="galleryLoading && !galleryLoaded" class="relative z-10 py-8 text-center">
-                                <div class="w-8 h-8 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-3"></div>
-                                <p class="text-xs text-muted">Fotos werden geladen...</p>
-                            </div>
-
-                            <div x-show="!galleryLoading && galleryLoaded && galleryPhotos.length === 0" class="relative z-10 py-8 text-center">
-                                <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
-                                    <i class="ph-duotone ph-image text-2xl text-white/20"></i>
-                                </div>
-                                <p class="text-xs text-muted mb-1">Noch keine Fotos</p>
-                                <p class="text-[10px] text-white/20">F&uuml;ge Fotos beim Gewicht-Loggen hinzu</p>
-                            </div>
-
-                            <div x-show="galleryLoaded && galleryPhotos.length > 0"
-                                 class="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
-                                <template x-for="(item, idx) in galleryPhotos" :key="item.date">
-                                    <div @click="openGalleryLightbox(item)"
-                                         class="relative rounded-xl overflow-hidden cursor-pointer group aspect-square">
-                                        <img :src="item.photo"
-                                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                             :alt="'Foto vom ' + formatGalleryDate(item.date)"
-                                             loading="lazy">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        <div class="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                                            <p class="text-[10px] text-white font-bold" x-text="formatGalleryDate(item.date)"></p>
-                                            <p x-show="item.weight" class="text-[10px] text-white/70 font-mono" x-text="item.weight ? item.weight.toFixed(1) + ' kg' : ''"></p>
-                                        </div>
+                            <div class="relative z-10 grid grid-cols-3 gap-2">
+                                <template x-for="item in progressPicsPreview" :key="'preview-'+item.date">
+                                    <div class="aspect-square rounded-xl bg-white/5 border border-white/5 overflow-hidden">
+                                        <img :src="item.photo" class="w-full h-full object-cover" loading="lazy" :alt="'Foto vom ' + item.date">
                                     </div>
                                 </template>
+                            </div>
+                            <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60">
+                                <span>Antippen zum Ansehen</span>
+                                <i class="ph-bold ph-arrow-right text-[10px]"></i>
                             </div>
                         </div>
                     </template>
