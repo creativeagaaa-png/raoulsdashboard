@@ -2,7 +2,7 @@ import Alpine from 'alpinejs';
 import { Chart, registerables } from 'chart.js';
 import confetti from 'canvas-confetti';
 
-import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT, WEEKDAYS, WEEKDAY_SHORT } from './utils/constants.js';
+import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT, WEEKDAYS, WEEKDAY_SHORT, STEPS_GOAL } from './utils/constants.js';
 import { getTodayWeekdayIndex } from './utils/formatting.js';
 import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './utils/analytics.js';
 import * as Supa from './store/supabase.js';
@@ -135,6 +135,11 @@ function app() {
         _saving: false,
         quickLogWeight: null,
 
+        // Steps state
+        todaySteps: 0,
+        displaySteps: 0,
+        _stepsCelebrated: false,
+
         // --- MIXINS ---
         ...settingsMixin(),
         ...trainingMixin(),
@@ -233,7 +238,7 @@ function app() {
         // --- INIT ---
         async initApp() {
             try {
-                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords, workoutLogs] =
+                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords, workoutLogs, todaySteps] =
                     await Promise.all([
                         Supa.getSettings().catch(() => null),
                         Supa.getRewards().catch(() => []),
@@ -242,7 +247,8 @@ function app() {
                         Supa.getWeightEntries().catch(() => []),
                         Supa.getAllPhotoDates().catch(() => []),
                         Supa.getPersonalRecords().catch(() => []),
-                        Supa.getWorkoutLogs().catch(() => [])
+                        Supa.getWorkoutLogs().catch(() => []),
+                        Supa.getTodaySteps().catch(() => 0)
                     ]);
 
                 // Apply settings
@@ -299,6 +305,9 @@ function app() {
                 // Apply workout logs
                 this.workoutHistory = workoutLogs || [];
                 this.workoutHistoryLoaded = true;
+
+                // Apply today's steps
+                this.todaySteps = todaySteps || 0;
 
             } catch (e) {
                 console.error('Failed to initialize app:', e);
@@ -423,7 +432,7 @@ function app() {
 
         async refreshDashboard() {
             try {
-                const [settings, rewards, trainingPlan, weightEntries, photoDates, workoutLogs, personalRecords] =
+                const [settings, rewards, trainingPlan, weightEntries, photoDates, workoutLogs, personalRecords, todaySteps] =
                     await Promise.all([
                         Supa.getSettings().catch(() => null),
                         Supa.getRewards().catch(() => []),
@@ -431,7 +440,8 @@ function app() {
                         Supa.getWeightEntries().catch(() => []),
                         Supa.getAllPhotoDates().catch(() => []),
                         Supa.getWorkoutLogs().catch(() => []),
-                        Supa.getPersonalRecords().catch(() => [])
+                        Supa.getPersonalRecords().catch(() => []),
+                        Supa.getTodaySteps().catch(() => 0)
                     ]);
 
                 if (settings) {
@@ -449,6 +459,11 @@ function app() {
                 this.workoutHistory = workoutLogs || [];
                 this.workoutHistoryLoaded = true;
                 this.personalRecords = personalRecords || [];
+
+                // Apply steps and check celebration
+                const oldSteps = this.todaySteps;
+                this.todaySteps = todaySteps || 0;
+                this.checkStepsCelebration(oldSteps, this.todaySteps);
 
                 this.$nextTick(() => {
                     this.updateChart();
@@ -683,6 +698,8 @@ function app() {
                     this.photoDates = [];
                     this.workoutHistory = [];
                     this.personalRecords = [];
+                    this.todaySteps = 0;
+                    this._stepsCelebrated = false;
                     this.widgetLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
 
                     this.settingsOpen = false;
@@ -691,6 +708,30 @@ function app() {
                     this.showToast('Alle Daten gelöscht');
                 }
             };
+        },
+
+        // --- STEPS COMPUTED ---
+        get stepsProgress() {
+            return Math.min((this.todaySteps / STEPS_GOAL) * 100, 100);
+        },
+
+        get stepsRingColor() {
+            if (this.todaySteps >= STEPS_GOAL) return '#facc15';
+            if (this.todaySteps >= 5000) return '#f59e0b';
+            return '#ef4444';
+        },
+
+        get stepsRingGlow() {
+            if (this.todaySteps > STEPS_GOAL) return 'drop-shadow(0 0 12px rgba(250, 204, 21, 0.5))';
+            return 'none';
+        },
+
+        checkStepsCelebration(oldSteps, newSteps) {
+            if (oldSteps < STEPS_GOAL && newSteps >= STEPS_GOAL && !this._stepsCelebrated) {
+                this._stepsCelebrated = true;
+                this.showToast('10.000 Schritte erreicht! 🎉');
+                setTimeout(() => this.triggerConfetti(), 300);
+            }
         },
 
         // --- COMPUTED / HELPERS ---
@@ -888,6 +929,7 @@ function app() {
             this.animateTo('displayBmi', safeBmi, 600);
             this.animateTo('displayProgress', parseFloat(this.globalProgress), 1000);
             this.animateTo('displayLost', this.startWeight - this.currentWeight, 700);
+            this.animateTo('displaySteps', this.todaySteps, 800);
         },
 
         // --- CHARTING ---

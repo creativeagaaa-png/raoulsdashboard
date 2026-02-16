@@ -392,3 +392,23 @@ export async function clearAllPersonalRecords() {
         .gte('id', 0);
     if (error) throw error;
 }
+
+// ── Step Entries ────────────────────────────────────────
+
+export async function getTodaySteps() {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await db
+        .from('step_entries')
+        .select('steps')
+        .eq('date', today)
+        .maybeSingle();
+    if (error) throw error;
+    return data ? Number(data.steps) : 0;
+}
+
+export async function upsertStepEntry(date, steps) {
+    const { error } = await db
+        .from('step_entries')
+        .upsert({ date, steps }, { onConflict: 'date' });
+    if (error) throw error;
+}
