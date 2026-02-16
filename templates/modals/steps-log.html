@@ -106,8 +106,10 @@
                              })()"
                              @touchend="(() => {
                                  if (currentX < -80) {
-                                     deleteStepEntry(entry.date);
-                                     currentX = 0;
+                                     const dateToDelete = entry.date;
+                                     $el.querySelector('.swipe-content').classList.add('removing');
+                                     $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)';
+                                     setTimeout(() => deleteStepEntry(dateToDelete), 300);
                                  }
                                  else { currentX = 0; swiping = false; }
                              })()">
@@ -140,6 +142,11 @@
                                               'text-emerald-400': entry.steps >= 10000
                                           }"
                                           x-text="entry.steps.toLocaleString('en-US')"></span>
+                                    <button @click.stop="deleteStepEntry(entry.date)"
+                                            class="hidden md:flex w-7 h-7 rounded-full items-center justify-center bg-white/5 hover:bg-rose-500/20 text-muted hover:text-rose-400 transition-all active:scale-90 opacity-0 group-hover:opacity-100"
+                                            aria-label="Delete entry">
+                                        <i class="ph ph-trash text-xs"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
