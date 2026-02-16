@@ -19,18 +19,11 @@ export const galleryMixin = () => ({
     progressPicsPhotos: [],
     progressPicsLoading: false,
     progressPicsLoaded: false,
-    progressPicsPreview: [],
 
-    // Comparison slider
-    progressPics: {
-        beforeDate: null,
-        afterDate: null,
-        beforePhoto: null,
-        afterPhoto: null,
-        sliderPosition: 50,
-        isDragging: false,
-        _selectMode: 'before'
-    },
+    // Lightbox
+    lightboxPhoto: null,
+    lightboxDate: null,
+    lightboxWeight: null,
 
     async handlePhotoUpload(event) {
         const file = event.target.files?.[0];
@@ -53,22 +46,6 @@ export const galleryMixin = () => ({
         if (input) input.value = '';
     },
 
-    async loadPreviewThumbnails() {
-        if (this.photoDates.length === 0) return;
-        const recent = this.photoDates.slice(-3).reverse();
-        try {
-            const previews = await Promise.all(
-                recent.map(async (date) => {
-                    const url = await Supa.getPhotoUrl(date);
-                    return { date, photo: url };
-                })
-            );
-            this.progressPicsPreview = previews;
-        } catch (e) {
-            console.error('Failed to load preview thumbnails:', e);
-        }
-    },
-
     // Open the full-screen progress pics modal
     async openProgressPics() {
         this.progressPicsOpen = true;
@@ -79,6 +56,7 @@ export const galleryMixin = () => ({
 
     closeProgressPics() {
         this.progressPicsOpen = false;
+        this.lightboxPhoto = null;
     },
 
     async loadProgressPicsPhotos() {
@@ -94,12 +72,6 @@ export const galleryMixin = () => ({
             );
             this.progressPicsPhotos = photos.reverse();
             this.progressPicsLoaded = true;
-
-            // Auto-select first and last for comparison if we have 2+
-            if (photos.length >= 2 && !this.progressPics.beforeDate) {
-                this.selectForCompare(this.progressPicsPhotos[this.progressPicsPhotos.length - 1], 'before');
-                this.selectForCompare(this.progressPicsPhotos[0], 'after');
-            }
         } catch (e) {
             console.error('Failed to load progress pics:', e);
         } finally {
@@ -113,46 +85,20 @@ export const galleryMixin = () => ({
         await this.loadProgressPicsPhotos();
     },
 
-    selectForCompare(item, slot) {
-        if (slot === 'before') {
-            this.progressPics.beforeDate = item.date;
-            this.progressPics.beforePhoto = item.photo;
-        } else {
-            this.progressPics.afterDate = item.date;
-            this.progressPics.afterPhoto = item.photo;
-        }
-        this.progressPics.sliderPosition = 50;
+    openLightbox(item) {
+        this.lightboxPhoto = item.photo;
+        this.lightboxDate = item.date;
+        this.lightboxWeight = item.weight;
     },
 
-    isSelectedForCompare(date) {
-        return date === this.progressPics.beforeDate || date === this.progressPics.afterDate;
-    },
-
-    getCompareLabel(date) {
-        if (date === this.progressPics.beforeDate) return 'Vorher';
-        if (date === this.progressPics.afterDate) return 'Nachher';
-        return null;
+    closeLightbox() {
+        this.lightboxPhoto = null;
+        this.lightboxDate = null;
+        this.lightboxWeight = null;
     },
 
     formatPhotoDate(dateStr) {
         if (!dateStr) return '';
         return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: '2-digit' });
-    },
-
-    startSliderDrag(event) {
-        this.progressPics.isDragging = true;
-        this.handleSliderDrag(event, event.currentTarget);
-    },
-
-    handleSliderDrag(event, containerEl) {
-        if (!this.progressPics.isDragging) return;
-        const rect = containerEl.getBoundingClientRect();
-        const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-        const pct = ((clientX - rect.left) / rect.width) * 100;
-        this.progressPics.sliderPosition = Math.max(2, Math.min(98, pct));
-    },
-
-    stopSliderDrag() {
-        this.progressPics.isDragging = false;
     }
 });

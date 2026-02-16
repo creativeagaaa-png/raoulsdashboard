@@ -58,16 +58,17 @@
                             <p class="text-[10px] font-mono text-muted mt-0.5"
                                x-text="(ex.type || 'strength') === 'strength'
                                    ? (ex.sets ? ex.sets + 'x' + ex.reps : 'Kraft')
-                                   : (ex.type === 'cardio' ? (ex.duration || 'Cardio') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : 'Distanz')))">
+                                   : (ex.type === 'cardio' ? (ex.duration || 'Cardio') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Runden' : 'Zirkel') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : 'Distanz'))))">
                             </p>
                         </div>
                         <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase shrink-0"
                               :class="{
                                   'bg-emerald-500/15 text-emerald-400': (ex.type || 'strength') === 'strength',
                                   'bg-orange-500/15 text-orange-400': ex.type === 'cardio',
-                                  'bg-blue-500/15 text-blue-400': ex.type === 'distance'
+                                  'bg-blue-500/15 text-blue-400': ex.type === 'distance',
+                                  'bg-violet-500/15 text-violet-400': ex.type === 'circuit'
                               }"
-                              x-text="(ex.type || 'strength') === 'strength' ? 'Kraft' : (ex.type === 'cardio' ? 'Cardio' : 'Distanz')"></span>
+                              x-text="(ex.type || 'strength') === 'strength' ? 'Kraft' : (ex.type === 'cardio' ? 'Cardio' : (ex.type === 'circuit' ? 'Zirkel' : 'Distanz'))"></span>
                     </button>
                 </template>
             </div>

@@ -13,8 +13,6 @@ export const WEEKDAY_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 export const WIDGET_REGISTRY = {
     'current-status': { label: 'Status' },
     'prediction': { label: 'Prediction' },
-    'training': { label: 'Training' },
-    'workouts': { label: 'Workouts' },
     'analytics': { label: 'Analytics' },
     'milestone': { label: 'Milestone' },
     'achievements': { label: 'Achievements' },
@@ -22,7 +20,18 @@ export const WIDGET_REGISTRY = {
     'logs': { label: 'Logs' }
 };
 
+export const TRAINING_WIDGET_REGISTRY = {
+    'workouts': { label: 'Workouts' },
+    'training-stats': { label: 'Statistiken' },
+    'personal-records': { label: 'Records' }
+};
+
 export const DEFAULT_LAYOUT = {
-    left: ['current-status', 'prediction', 'workouts'],
+    left: ['current-status', 'prediction'],
     right: ['analytics', 'milestone', 'achievements', 'progress-pics', 'logs']
+};
+
+export const DEFAULT_TRAINING_LAYOUT = {
+    left: ['workouts'],
+    right: ['training-stats', 'personal-records']
 };

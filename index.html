@@ -76,18 +76,6 @@
             </div>
 
             <div class="flex items-center gap-2 md:gap-3 flex-wrap w-full md:w-auto justify-end">
-                <button x-show="editMode" @click="resetLayout()"
-                        class="glass-panel px-3 md:px-4 h-11 md:h-[52px] rounded-full flex items-center gap-2 hover:bg-white/10 text-xs font-bold text-muted hover:text-white transition-all"
-                        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
-                    <i class="ph ph-arrow-counter-clockwise"></i>
-                    Reset
-                </button>
-                <button @click="toggleEditMode()"
-                        class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group"
-                        :class="editMode ? 'bg-indigo-500/20 border-indigo-500/30' : ''"
-                        aria-label="Toggle edit mode">
-                    <i class="text-xl md:text-2xl transition-all duration-400" :class="editMode ? 'ph ph-check text-indigo-400' : 'ph ph-squares-four group-hover:scale-110'"></i>
-                </button>
                 <button @click="openTraining()" class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group" aria-label="Training Plan">
                     <i class="ph-bold ph-barbell text-xl md:text-2xl group-hover:scale-110 group-hover:text-emerald-400 transition-all duration-400"></i>
                     <span x-show="!isRestDay" class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background animate-pulse" aria-hidden="true"></span>
@@ -120,698 +108,618 @@
             </div>
         </header>
 
-        <div class="md:col-span-4 flex flex-col gap-5 animate-slide-up" style="--delay: 0.1s"
-             :class="{ 'edit-mode': editMode }"
-             @dragover.prevent="editMode && onDragOver($event, 'left', widgetLayout.left.length)"
-             @drop="editMode && onDropAtEnd($event, 'left')">
+        <!-- Dashboard Tab Switcher -->
+        <div class="md:col-span-12 animate-slide-up" style="--delay: 0.05s">
+            <div class="glass-panel rounded-full p-1 inline-flex gap-1">
+                <button @click="activeTab = 'health'"
+                        class="px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300"
+                        :class="activeTab === 'health' ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-muted hover:text-white'">
+                    <i class="ph-bold ph-heartbeat mr-1.5"></i>Health
+                </button>
+                <button @click="activeTab = 'training'"
+                        class="px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300"
+                        :class="activeTab === 'training' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-muted hover:text-white'">
+                    <i class="ph-bold ph-barbell mr-1.5"></i>Training
+                </button>
+            </div>
+        </div>
 
-            <template x-for="(widgetId, wIdx) in widgetLayout.left" :key="'left-'+widgetId">
-                <div :draggable="editMode ? 'true' : 'false'"
-                     @dragstart="onDragStart($event, widgetId, 'left', wIdx)"
-                     @dragend="onDragEnd($event)"
-                     @dragover.prevent.stop="editMode && onDragOver($event, 'left', wIdx)"
-                     @drop.stop="editMode && onDrop($event, 'left', wIdx)"
-                     class="relative transition-all duration-200"
-                     :class="{ 'ring-2 ring-dashed ring-white/10 rounded-3xl': editMode, 'ring-indigo-500/40': editMode && dragState.overCol === 'left' && dragState.overIndex === wIdx && dragState.widgetId !== widgetId }">
-
-                    <div x-show="editMode" class="absolute top-3 left-3 z-30 cursor-grab active:cursor-grabbing px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm flex items-center gap-1.5 text-[10px] text-white/60 border border-white/10">
-                        <i class="ph ph-dots-six-vertical text-[10px]"></i>
-                        <span x-text="WIDGET_REGISTRY[widgetId]?.label"></span>
-                    </div>
-                    <template x-if="widgetId === 'current-status'">
-                       <div class="bento-card p-8 flex flex-col justify-between min-h-[380px] relative group overflow-hidden" role="region" aria-label="Current weight status">
-                            <div class="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 blur-[80px] rounded-full group-hover:bg-accent/20 transition-colors duration-700" aria-hidden="true"></div>
-                            <div class="relative z-10">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="flex flex-col">
-                                        <span class="text-muted text-[10px] font-bold uppercase tracking-widest">Current Status</span>
-                                        <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
-                                    </div>
-                                    <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
-                                        <i class="text-sm" :class="trend.isLoss ? 'ph ph-trend-down text-emerald-400' : 'ph ph-trend-up text-rose-400'" aria-hidden="true"></i>
-                                        <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
-                                    </div>
-                                </div>
-                                <div class="flex items-baseline gap-1 mt-6 relative">
-                                    <h2 class="text-6xl md:text-8xl font-bold text-white tracking-tighter tabular-nums" x-text="displayWeight.toFixed(1)"></h2>
-                                    <span class="text-2xl text-white/40 font-medium">kg</span>
-                                </div>
-                                <div class="mt-8 grid grid-cols-2 gap-3">
-                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-pointer hover:bg-white/10 transition-colors" @click="openBmiDetail()">
-                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">BMI</p>
-                                        <div class="flex items-end gap-2">
-                                            <span class="text-xl font-bold text-white tabular-nums" x-text="displayBmi.toFixed(1)"></span>
-                                            <div class="w-2 h-2 rounded-full mb-1.5" :class="bmi.color"></div>
+        <!-- ===== HEALTH DASHBOARD ===== -->
+        <template x-if="activeTab === 'health'">
+            <div class="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-5 animate-slide-up" style="--delay: 0.1s">
+                <div class="md:col-span-4 flex flex-col gap-5">
+                    <template x-for="(widgetId, wIdx) in widgetLayout.left" :key="'left-'+widgetId">
+                        <div class="relative">
+                            <!-- Current Status -->
+                            <template x-if="widgetId === 'current-status'">
+                               <div class="bento-card p-8 flex flex-col justify-between min-h-[380px] relative group overflow-hidden" role="region" aria-label="Current weight status">
+                                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 blur-[80px] rounded-full group-hover:bg-accent/20 transition-colors duration-700" aria-hidden="true"></div>
+                                    <div class="relative z-10">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div class="flex flex-col">
+                                                <span class="text-muted text-[10px] font-bold uppercase tracking-widest">Current Status</span>
+                                                <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
+                                            </div>
+                                            <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
+                                                <i class="text-sm" :class="trend.isLoss ? 'ph ph-trend-down text-emerald-400' : 'ph ph-trend-up text-rose-400'" aria-hidden="true"></i>
+                                                <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-baseline gap-1 mt-6 relative">
+                                            <h2 class="text-6xl md:text-8xl font-bold text-white tracking-tighter tabular-nums" x-text="displayWeight.toFixed(1)"></h2>
+                                            <span class="text-2xl text-white/40 font-medium">kg</span>
+                                        </div>
+                                        <div class="mt-8 grid grid-cols-2 gap-3">
+                                            <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-pointer hover:bg-white/10 transition-colors" @click="openBmiDetail()">
+                                                <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">BMI</p>
+                                                <div class="flex items-end gap-2">
+                                                    <span class="text-xl font-bold text-white tabular-nums" x-text="displayBmi.toFixed(1)"></span>
+                                                    <div class="w-2 h-2 rounded-full mb-1.5" :class="bmi.color"></div>
+                                                </div>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                                                <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1" x-text="displayLost >= 0 ? 'Lost' : 'Gained'"></p>
+                                                <div class="flex items-end gap-2">
+                                                    <span class="text-xl font-bold tabular-nums" :class="displayLost >= 0 ? 'text-white' : 'text-rose-400'" x-text="Math.abs(displayLost).toFixed(1)"></span>
+                                                    <span class="text-xs text-muted mb-0.5">kg</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1" x-text="displayLost >= 0 ? 'Lost' : 'Gained'"></p>
-                                        <div class="flex items-end gap-2">
-                                            <span class="text-xl font-bold tabular-nums" :class="displayLost >= 0 ? 'text-white' : 'text-rose-400'" x-text="Math.abs(displayLost).toFixed(1)"></span>
-                                            <span class="text-xs text-muted mb-0.5">kg</span>
+                                    <div class="space-y-4 z-10 mt-auto pt-6">
+                                        <div>
+                                            <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2">
+                                                <span>Goal Progress</span>
+                                                <span x-text="Math.round(displayProgress) + '%'"></span>
+                                            </div>
+                                            <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]">
+                                                <div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div>
+                                            </div>
                                         </div>
+                                        <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                                            <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
+                                            <span>Log Weight</span>
+                                        </button>
+                                        <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
+                                            <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Heute</span>
+                                            <button @click="quickLogStep(-0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Minus 0.1 kg"><span class="text-xs">&#xFF0D;</span></button>
+                                            <span class="text-sm font-mono tabular-nums w-16 text-center transition-colors" :class="quickLogWeight !== null ? 'text-white' : 'text-white/40'" x-text="quickLogDisplay.toFixed(1)"></span>
+                                            <button @click="quickLogStep(+0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Plus 0.1 kg"><span class="text-xs">&#xFF0B;</span></button>
+                                            <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
+                                                    x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
+                                                <i class="ph ph-check text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Prediction -->
+                            <template x-if="widgetId === 'prediction'">
+                                <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
+                                    <div class="flex items-center gap-3 mb-4 relative z-10">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph ph-sparkle"></i></div>
+                                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
+                                        <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
+                                    </div>
+                                    <div x-show="oracle.valid && !oracle.noProgress" class="relative z-10">
+                                        <div class="flex flex-col"><span class="text-xs text-muted mb-1">Voraussichtliches Ziel</span><span class="text-2xl font-bold text-white tabular-nums tracking-tight" x-text="oracle.date"></span></div>
+                                        <div class="mt-3 flex items-center gap-2 flex-wrap">
+                                            <span class="bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20 text-xs font-mono text-indigo-300" x-text="oracle.rate + ' kg/Woche'"></span>
+                                            <span x-show="weeklyTrend.change !== null" class="px-2 py-1 rounded border text-xs font-mono" :class="weeklyTrend.change < 0 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'" x-text="'Woche: ' + (weeklyTrend.change > 0 ? '+' : '') + (weeklyTrend.change ? weeklyTrend.change.toFixed(2) : '0.00') + ' kg'"></span>
+                                        </div>
+                                    </div>
+                                    <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
+                                        <div class="flex items-center gap-2 mb-1"><i class="ph ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
+                                        <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
+                                    </div>
+                                    <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
+                                    <div x-show="!oracle.valid" class="relative z-10 opacity-60"><p class="text-xs text-muted leading-relaxed">Nicht gen&uuml;gend Daten.</p></div>
+                                </div>
+                            </template>
+
+                            <!-- Milestone -->
+                            <template x-if="widgetId === 'milestone'">
+                                <div class="bento-card p-6 relative overflow-hidden group" role="region" aria-label="Next milestone">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <div class="relative z-10 h-full flex flex-col">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
+                                            <i class="ph ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
+                                        </div>
+                                        <template x-if="nextReward">
+                                            <div class="mt-auto">
+                                                <h4 class="text-xl font-bold text-white mb-2" x-text="nextReward.title"></h4>
+                                                <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-1000" :style="`width: ${Math.min(Math.max(((startWeight - currentWeight) / (startWeight - nextReward.target)) * 100, 0), 100)}%`"></div></div>
+                                                <div class="flex justify-between items-center text-xs font-mono text-muted"><span x-text="nextReward.target + ' kg'"></span><span class="text-emerald-400" x-text="(currentWeight - nextReward.target).toFixed(1) + ' kg left'"></span></div>
+                                            </div>
+                                        </template>
+                                        <template x-if="!nextReward"><div class="mt-auto"><p class="text-white font-medium">All goals crushed! Set new ones.</p></div></template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Achievements -->
+                            <template x-if="widgetId === 'achievements'">
+                                <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
+                                    <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph ph-trophy text-2xl"></i></div>
+                                    <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
+                                    <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
+                                </div>
+                            </template>
+
+                            <!-- Progress Pics (no preview images, just tap to open) -->
+                            <template x-if="widgetId === 'progress-pics'">
+                                <div class="bento-card p-6 relative overflow-hidden cursor-pointer hover:border-white/15 transition-all"
+                                     x-show="photoDates.length >= 1"
+                                     @click="openProgressPics()"
+                                     role="button" aria-label="Progress Pics oeffnen">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+                                    <div class="flex items-center gap-3 relative z-10">
+                                        <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph ph-images-square text-lg"></i></div>
+                                        <div class="flex-1">
+                                            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
+                                            <p class="text-[10px] text-muted mt-0.5">Fortschritt in Bildern festhalten</p>
+                                        </div>
+                                        <span class="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
+                                    </div>
+                                    <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60 py-2">
+                                        <i class="ph ph-eye text-sm"></i>
+                                        <span>Antippen zum Ansehen</span>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Analytics -->
+                            <template x-if="widgetId === 'analytics'">
+                                <div class="bento-card p-5 md:p-8 h-[300px] md:h-[400px] flex flex-col relative overflow-hidden" role="region" aria-label="Weight analytics chart"
+                                     x-init="$nextTick(() => { renderChart(); })">
+                                    <div class="flex justify-between items-start mb-6 z-10">
+                                        <div><h3 class="font-bold text-white text-lg">Analytics</h3><p class="text-xs text-muted mt-1">Weight Trajectory & Moving Average</p></div>
+                                        <div class="flex gap-2" role="group">
+                                            <template x-for="f in ['1M', '3M', 'ALL']" :key="f">
+                                                <button @click="setChartFilter(f)" class="px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200" :class="chartFilter === f ? 'bg-white/10 text-white border-white/5' : 'bg-transparent text-muted border-transparent hover:text-white'"><span x-text="f"></span></button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow w-full h-full relative z-10"><canvas id="mainChart" role="img" aria-label="Weight trajectory chart"></canvas></div>
+                                </div>
+                            </template>
+
+                            <!-- Logs -->
+                            <template x-if="widgetId === 'logs'">
+                                <div class="bento-card p-6" role="region" aria-label="Recent weight logs">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Logs</h3>
+                                        <span class="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold text-muted font-mono" x-text="history.length + ' Entries'"></span>
+                                    </div>
+                                    <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
+                                        <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
+                                            <div class="swipe-container" role="listitem"
+                                                 x-data="{ startX: 0, currentX: 0, swiping: false }"
+                                                 @touchstart.passive="startX = $event.touches[0].clientX; currentX = 0; swiping = false"
+                                                 @touchmove="(() => {
+                                                     const dx = $event.touches[0].clientX - startX;
+                                                     if (dx < -10) { swiping = true; currentX = Math.max(dx, -120); $event.preventDefault(); }
+                                                 })()"
+                                                 @touchend="(() => {
+                                                     if (currentX < -80) { $el.querySelector('.swipe-content').classList.add('removing'); $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)'; setTimeout(() => deleteEntry(index), 300); }
+                                                     else { currentX = 0; swiping = false; }
+                                                 })()">
+                                                <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
+                                                    <i class="ph ph-trash text-rose-400 text-lg"></i>
+                                                </div>
+                                                <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
+                                                     :class="{ 'swiping': swiping }"
+                                                     :style="currentX < 0 ? 'transform: translateX(' + currentX + 'px)' : ''">
+                                                    <div class="flex items-center gap-4">
+                                                        <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
+                                                        <div>
+                                                            <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors">
+                                                                <span x-text="entry.weight.toFixed(1)"></span> kg
+                                                                <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1"><i class="ph ph-camera"></i></span>
+                                                            </p>
+                                                            <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        <template x-if="getLogDelta(index) !== null">
+                                                            <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
+                                                                  :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
+                                                                  x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="md:col-span-8 flex flex-col gap-5">
+                    <template x-for="(widgetId, wIdx) in widgetLayout.right" :key="'right-'+widgetId">
+                        <div class="relative">
+                            <template x-if="widgetId === 'current-status'">
+                                <div class="bento-card p-8 flex flex-col justify-between min-h-[380px] relative group overflow-hidden" role="region" aria-label="Current weight status">
+                                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 blur-[80px] rounded-full group-hover:bg-accent/20 transition-colors duration-700" aria-hidden="true"></div>
+                                    <div class="relative z-10">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div class="flex flex-col">
+                                                <span class="text-muted text-[10px] font-bold uppercase tracking-widest">Current Status</span>
+                                                <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
+                                            </div>
+                                            <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
+                                                <i class="text-sm" :class="trend.isLoss ? 'ph ph-trend-down text-emerald-400' : 'ph ph-trend-up text-rose-400'" aria-hidden="true"></i>
+                                                <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-baseline gap-1 mt-6 relative">
+                                            <h2 class="text-6xl md:text-8xl font-bold text-white tracking-tighter tabular-nums" x-text="displayWeight.toFixed(1)"></h2>
+                                            <span class="text-2xl text-white/40 font-medium">kg</span>
+                                        </div>
+                                        <div class="mt-8 grid grid-cols-2 gap-3">
+                                            <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-pointer hover:bg-white/10 transition-colors" @click="openBmiDetail()">
+                                                <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">BMI</p>
+                                                <div class="flex items-end gap-2"><span class="text-xl font-bold text-white tabular-nums" x-text="displayBmi.toFixed(1)"></span><div class="w-2 h-2 rounded-full mb-1.5" :class="bmi.color"></div></div>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                                                <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1" x-text="displayLost >= 0 ? 'Lost' : 'Gained'"></p>
+                                                <div class="flex items-end gap-2"><span class="text-xl font-bold tabular-nums" :class="displayLost >= 0 ? 'text-white' : 'text-rose-400'" x-text="Math.abs(displayLost).toFixed(1)"></span><span class="text-xs text-muted mb-0.5">kg</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4 z-10 mt-auto pt-6">
+                                        <div>
+                                            <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2"><span>Goal Progress</span><span x-text="Math.round(displayProgress) + '%'"></span></div>
+                                            <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]"><div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div></div>
+                                        </div>
+                                        <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
+                                        <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
+                                            <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Heute</span>
+                                            <button @click="quickLogStep(-0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Minus 0.1 kg"><span class="text-xs">&#xFF0D;</span></button>
+                                            <span class="text-sm font-mono tabular-nums w-16 text-center transition-colors" :class="quickLogWeight !== null ? 'text-white' : 'text-white/40'" x-text="quickLogDisplay.toFixed(1)"></span>
+                                            <button @click="quickLogStep(+0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Plus 0.1 kg"><span class="text-xs">&#xFF0B;</span></button>
+                                            <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
+                                                    x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
+                                                <i class="ph ph-check text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="widgetId === 'prediction'">
+                                <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
+                                    <div class="flex items-center gap-3 mb-4 relative z-10">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph ph-sparkle"></i></div>
+                                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
+                                        <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
+                                    </div>
+                                    <div x-show="oracle.valid && !oracle.noProgress" class="relative z-10">
+                                        <div class="flex flex-col"><span class="text-xs text-muted mb-1">Voraussichtliches Ziel</span><span class="text-2xl font-bold text-white tabular-nums tracking-tight" x-text="oracle.date"></span></div>
+                                        <div class="mt-3 flex items-center gap-2 flex-wrap">
+                                            <span class="bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20 text-xs font-mono text-indigo-300" x-text="oracle.rate + ' kg/Woche'"></span>
+                                            <span x-show="weeklyTrend.change !== null" class="px-2 py-1 rounded border text-xs font-mono" :class="weeklyTrend.change < 0 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'" x-text="'Woche: ' + (weeklyTrend.change > 0 ? '+' : '') + (weeklyTrend.change ? weeklyTrend.change.toFixed(2) : '0.00') + ' kg'"></span>
+                                        </div>
+                                    </div>
+                                    <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
+                                        <div class="flex items-center gap-2 mb-1"><i class="ph ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
+                                        <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
+                                    </div>
+                                    <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
+                                    <div x-show="!oracle.valid" class="relative z-10 opacity-60"><p class="text-xs text-muted leading-relaxed">Nicht gen&uuml;gend Daten.</p></div>
+                                </div>
+                            </template>
+                            <template x-if="widgetId === 'analytics'">
+                                <div class="bento-card p-5 md:p-8 h-[300px] md:h-[400px] flex flex-col relative overflow-hidden" role="region" aria-label="Weight analytics chart"
+                                     x-init="$nextTick(() => { renderChart(); })">
+                                    <div class="flex justify-between items-start mb-6 z-10">
+                                        <div><h3 class="font-bold text-white text-lg">Analytics</h3><p class="text-xs text-muted mt-1">Weight Trajectory & Moving Average</p></div>
+                                        <div class="flex gap-2" role="group">
+                                            <template x-for="f in ['1M', '3M', 'ALL']" :key="f">
+                                                <button @click="setChartFilter(f)" class="px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200" :class="chartFilter === f ? 'bg-white/10 text-white border-white/5' : 'bg-transparent text-muted border-transparent hover:text-white'"><span x-text="f"></span></button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow w-full h-full relative z-10"><canvas id="mainChart" role="img" aria-label="Weight trajectory chart"></canvas></div>
+                                </div>
+                            </template>
+                            <template x-if="widgetId === 'milestone'">
+                                <div class="bento-card p-6 relative overflow-hidden group" role="region" aria-label="Next milestone">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <div class="relative z-10 h-full flex flex-col">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
+                                            <i class="ph ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
+                                        </div>
+                                        <template x-if="nextReward">
+                                            <div class="mt-auto">
+                                                <h4 class="text-xl font-bold text-white mb-2" x-text="nextReward.title"></h4>
+                                                <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-1000" :style="`width: ${Math.min(Math.max(((startWeight - currentWeight) / (startWeight - nextReward.target)) * 100, 0), 100)}%`"></div></div>
+                                                <div class="flex justify-between items-center text-xs font-mono text-muted"><span x-text="nextReward.target + ' kg'"></span><span class="text-emerald-400" x-text="(currentWeight - nextReward.target).toFixed(1) + ' kg left'"></span></div>
+                                            </div>
+                                        </template>
+                                        <template x-if="!nextReward"><div class="mt-auto"><p class="text-white font-medium">All goals crushed! Set new ones.</p></div></template>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="widgetId === 'achievements'">
+                                <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
+                                    <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph ph-trophy text-2xl"></i></div>
+                                    <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
+                                    <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
+                                </div>
+                            </template>
+                            <template x-if="widgetId === 'progress-pics'">
+                                <div class="bento-card p-6 relative overflow-hidden cursor-pointer hover:border-white/15 transition-all"
+                                     x-show="photoDates.length >= 1"
+                                     @click="openProgressPics()"
+                                     role="button" aria-label="Progress Pics oeffnen">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
+                                    <div class="flex items-center gap-3 relative z-10">
+                                        <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph ph-images-square text-lg"></i></div>
+                                        <div class="flex-1">
+                                            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
+                                            <p class="text-[10px] text-muted mt-0.5">Fortschritt in Bildern festhalten</p>
+                                        </div>
+                                        <span class="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
+                                    </div>
+                                    <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60 py-2">
+                                        <i class="ph ph-eye text-sm"></i>
+                                        <span>Antippen zum Ansehen</span>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="widgetId === 'logs'">
+                                <div class="bento-card p-6" role="region" aria-label="Recent weight logs">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Logs</h3>
+                                        <span class="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] text-muted font-mono" x-text="history.length + ' Entries'"></span>
+                                    </div>
+                                    <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
+                                        <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
+                                            <div class="swipe-container" role="listitem"
+                                                 x-data="{ startX: 0, currentX: 0, swiping: false }"
+                                                 @touchstart.passive="startX = $event.touches[0].clientX; currentX = 0; swiping = false"
+                                                 @touchmove="(() => {
+                                                     const dx = $event.touches[0].clientX - startX;
+                                                     if (dx < -10) { swiping = true; currentX = Math.max(dx, -120); $event.preventDefault(); }
+                                                 })()"
+                                                 @touchend="(() => {
+                                                     if (currentX < -80) { $el.querySelector('.swipe-content').classList.add('removing'); $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)'; setTimeout(() => deleteEntry(index), 300); }
+                                                     else { currentX = 0; swiping = false; }
+                                                 })()">
+                                                <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
+                                                    <i class="ph ph-trash text-rose-400 text-lg"></i>
+                                                </div>
+                                                <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
+                                                     :class="{ 'swiping': swiping }"
+                                                     :style="currentX < 0 ? 'transform: translateX(' + currentX + 'px)' : ''">
+                                                    <div class="flex items-center gap-4">
+                                                        <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
+                                                        <div>
+                                                            <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors"><span x-text="entry.weight.toFixed(1)"></span> kg <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1"><i class="ph ph-camera"></i></span></p>
+                                                            <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        <template x-if="getLogDelta(index) !== null">
+                                                            <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
+                                                                  :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
+                                                                  x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- ===== TRAINING DASHBOARD ===== -->
+        <template x-if="activeTab === 'training'">
+            <div class="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-5 animate-slide-up" style="--delay: 0.1s">
+
+                <!-- Left Column: Today's Training + Quick Start -->
+                <div class="md:col-span-4 flex flex-col gap-5">
+
+                    <!-- Today's Training Widget -->
+                    <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Today's training">
+                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5"></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'">
+                                        <i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3>
+                                        <p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button @click.stop="openTraining()" class="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 transition-all" title="Trainingsplan bearbeiten">
+                                        <i class="ph ph-note-pencil text-sm"></i>
+                                    </button>
+                                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
+                                        <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
+                                        <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Uebungen'"></span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="space-y-4 z-10 mt-auto pt-6">
+                            <template x-if="!isRestDay">
                                 <div>
-                                    <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2">
-                                        <span>Goal Progress</span>
-                                        <span x-text="Math.round(displayProgress) + '%'"></span>
+                                    <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
+                                        <template x-for="(ex, i) in todayTraining" :key="i">
+                                            <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
+                                                <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
+                                                <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
+                                                <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Runden' : '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : ''))))"></span>
+                                            </div>
+                                        </template>
                                     </div>
-                                    <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]">
-                                        <div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div>
-                                    </div>
+                                    <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
+                                        <i class="ph-bold ph-play"></i> Workout starten
+                                    </button>
+                                    <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
+                                        <i class="ph-bold ph-play"></i> Workout fortsetzen
+                                    </button>
                                 </div>
-                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                                    <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
-                                    <span>Log Weight</span>
+                            </template>
+                            <template x-if="isRestDay">
+                                <div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Personal Records Widget -->
+                    <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Personal Records">
+                        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5"></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 border border-yellow-500/20">
+                                    <i class="ph-bold ph-crown"></i>
+                                </div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Personal Records</h3>
+                                <span class="ml-auto px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 text-[9px] font-bold" x-text="personalRecords.length + ' PRs'"></span>
+                            </div>
+                            <div class="space-y-1.5" x-show="personalRecords.length > 0">
+                                <template x-for="(pr, prIdx) in getRecentPRs(5)" :key="'pr-'+prIdx">
+                                    <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03]">
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-medium text-white truncate" x-text="pr.exercise_name"></p>
+                                            <p class="text-[10px] text-muted font-mono" x-text="new Date(pr.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'})"></p>
+                                        </div>
+                                        <span class="text-xs font-bold text-yellow-400 tabular-nums" x-text="pr.weight + ' kg x ' + pr.reps"></span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div x-show="personalRecords.length === 0" class="py-4 text-center">
+                                <p class="text-[10px] text-muted">Noch keine Records. Starte dein erstes Workout!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Workout History + Stats -->
+                <div class="md:col-span-8 flex flex-col gap-5">
+
+                    <!-- Letzte Workouts Widget (only shows when history exists) -->
+                    <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Letzte Workouts">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-emerald-500/5"></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                                        <i class="ph ph-clipboard-text"></i>
+                                    </div>
+                                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Letzte Workouts</h3>
+                                </div>
+                                <button x-show="workoutHistory.length > 0" @click.stop="openWorkoutHistory()" class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors px-2 py-1 rounded-lg hover:bg-indigo-500/10">
+                                    Alle anzeigen
                                 </button>
-                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
-                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Heute</span>
-                                    <button @click="quickLogStep(-0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Minus 0.1 kg">
-                                        <span class="text-xs">－</span>
-                                    </button>
-                                    <span class="text-sm font-mono tabular-nums w-16 text-center transition-colors" :class="quickLogWeight !== null ? 'text-white' : 'text-white/40'" x-text="quickLogDisplay.toFixed(1)"></span>
-                                    <button @click="quickLogStep(+0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Plus 0.1 kg">
-                                        <span class="text-xs">＋</span>
-                                    </button>
-                                    <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
-                                            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
-                                        <i class="ph ph-check text-sm"></i>
-                                    </button>
-                                </div>
                             </div>
-                        </div>
-                    </template>
-                    <template x-if="widgetId === 'prediction'">
-                        <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
-                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
-                            <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph ph-sparkle"></i></div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
-                                <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
-                            </div>
-                            <div x-show="oracle.valid && !oracle.noProgress" class="relative z-10">
-                                <div class="flex flex-col"><span class="text-xs text-muted mb-1">Voraussichtliches Ziel</span><span class="text-2xl font-bold text-white tabular-nums tracking-tight" x-text="oracle.date"></span></div>
-                                <div class="mt-3 flex items-center gap-2 flex-wrap">
-                                    <span class="bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20 text-xs font-mono text-indigo-300" x-text="oracle.rate + ' kg/Woche'"></span>
-                                    <span x-show="weeklyTrend.change !== null" class="px-2 py-1 rounded border text-xs font-mono" :class="weeklyTrend.change < 0 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'" x-text="'Woche: ' + (weeklyTrend.change > 0 ? '+' : '') + (weeklyTrend.change ? weeklyTrend.change.toFixed(2) : '0.00') + ' kg'"></span>
-                                </div>
-                            </div>
-                            <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
-                                <div class="flex items-center gap-2 mb-1"><i class="ph ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
-                                <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
-                            </div>
-                            <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
-                            <div x-show="!oracle.valid" class="relative z-10 opacity-60"><p class="text-xs text-muted leading-relaxed">Nicht gen&uuml;gend Daten.</p></div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'training'">
-                        <div class="bento-card p-6 relative overflow-hidden group cursor-pointer" @click="!editMode && openTraining()" role="region" aria-label="Today's training">
-                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i></div>
-                                        <div><h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3><p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p></div>
-                                    </div>
-                                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
-                                        <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
-                                        <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Exercises'"></span>
-                                    </div>
-                                </div>
-                                <template x-if="!isRestDay">
-                                    <div>
-                                        <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
-                                            <template x-for="(ex, i) in todayTraining" :key="i">
-                                                <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
-                                                    <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
-                                                    <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                    <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                            <i class="ph-bold ph-play"></i> Workout starten
-                                        </button>
-                                        <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
-                                            <i class="ph-bold ph-play"></i> Workout fortsetzen
-                                        </button>
-                                    </div>
-                                </template>
-                                <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'workouts'">
-                        <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Workouts">
-                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5"></div>
-                            <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'">
-                                            <i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Workouts</h3>
-                                            <p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <button @click.stop="!editMode && openTraining()" class="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 transition-all" title="Trainingsplan bearbeiten">
-                                            <i class="ph ph-note-pencil text-sm"></i>
-                                        </button>
-                                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
-                                            <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
-                                            <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Übungen'"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <template x-if="!isRestDay">
-                                    <div>
-                                        <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
-                                            <template x-for="(ex, i) in todayTraining" :key="i">
-                                                <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
-                                                    <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
-                                                    <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                    <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                            <i class="ph-bold ph-play"></i> Workout starten
-                                        </button>
-                                        <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
-                                            <i class="ph-bold ph-play"></i> Workout fortsetzen
-                                        </button>
-                                    </div>
-                                </template>
-                                <template x-if="isRestDay">
-                                    <div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div>
-                                </template>
-                                <div class="mt-4 pt-4 border-t border-white/5">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Letzte Workouts</p>
-                                        <button @click.stop="openWorkoutHistory()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-500/10">
-                                            Alle anzeigen
-                                        </button>
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        <template x-for="(w, wIdx) in workoutHistory.slice(0, 3)" :key="'recent-'+wIdx">
-                                            <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all cursor-pointer"
-                                                 @click.stop="openWorkoutComparison(w)">
-                                                <div class="flex items-center gap-3 min-w-0">
-                                                    <span class="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-[10px] text-muted font-mono shrink-0"
-                                                          x-text="new Date(w.date).getDate()"></span>
-                                                    <div class="min-w-0">
-                                                        <p class="text-xs font-medium text-white truncate" x-text="new Date(w.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'})"></p>
-                                                        <p class="text-[10px] text-muted font-mono" x-text="getWorkoutExerciseCount(w) + ' Üb. · ' + formatWorkoutDuration(w.durationSeconds)"></p>
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-center gap-2 shrink-0">
-                                                    <span x-show="w.tracked !== false" class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
-                                                        <i class="ph ph-chart-line-up text-[9px]"></i>
-                                                    </span>
-                                                    <i class="ph ph-caret-right text-[10px] text-muted"></i>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <div x-show="workoutHistory.length === 0" class="py-3 text-center">
-                                            <p class="text-[10px] text-muted">Noch keine Workouts absolviert.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'analytics'">
-                        <div class="bento-card p-5 md:p-8 h-[300px] md:h-[400px] flex flex-col relative overflow-hidden" role="region" aria-label="Weight analytics chart"
-                             x-init="$nextTick(() => { renderChart(); })">
-                            <div class="flex justify-between items-start mb-6 z-10">
-                                <div><h3 class="font-bold text-white text-lg">Analytics</h3><p class="text-xs text-muted mt-1">Weight Trajectory & Moving Average</p></div>
-                                <div class="flex gap-2" role="group">
-                                    <template x-for="f in ['1M', '3M', 'ALL']" :key="f">
-                                        <button @click="setChartFilter(f)" class="px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200" :class="chartFilter === f ? 'bg-white/10 text-white border-white/5' : 'bg-transparent text-muted border-transparent hover:text-white'"><span x-text="f"></span></button>
-                                    </template>
-                                </div>
-                            </div>
-                            <div class="flex-grow w-full h-full relative z-10"><canvas id="mainChart" role="img" aria-label="Weight trajectory chart"></canvas></div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'milestone'">
-                        <div class="bento-card p-6 relative overflow-hidden group" role="region" aria-label="Next milestone">
-                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div class="relative z-10 h-full flex flex-col">
-                                <div class="flex justify-between items-start mb-4">
-                                    <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
-                                    <i class="ph ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
-                                </div>
-                                <template x-if="nextReward">
-                                    <div class="mt-auto">
-                                        <h4 class="text-xl font-bold text-white mb-2" x-text="nextReward.title"></h4>
-                                        <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-1000" :style="`width: ${Math.min(Math.max(((startWeight - currentWeight) / (startWeight - nextReward.target)) * 100, 0), 100)}%`"></div></div>
-                                        <div class="flex justify-between items-center text-xs font-mono text-muted"><span x-text="nextReward.target + ' kg'"></span><span class="text-emerald-400" x-text="(currentWeight - nextReward.target).toFixed(1) + ' kg left'"></span></div>
-                                    </div>
-                                </template>
-                                <template x-if="!nextReward"><div class="mt-auto"><p class="text-white font-medium">All goals crushed! Set new ones.</p></div></template>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'achievements'">
-                        <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
-                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph ph-trophy text-2xl"></i></div>
-                            <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
-                            <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'progress-pics'">
-                        <div class="bento-card p-6 relative overflow-hidden cursor-pointer hover:border-white/15 transition-all"
-                             x-show="photoDates.length >= 1"
-                             @click="if (!editMode) openProgressPics()"
-                             role="button" aria-label="Progress Pics oeffnen">
-                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
-                            <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph ph-images-square"></i></div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
-                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
-                            </div>
-                            <div class="relative z-10 grid grid-cols-3 gap-2">
-                                <template x-for="item in progressPicsPreview" :key="'preview-'+item.date">
-                                    <div class="aspect-square rounded-xl bg-white/5 border border-white/5 overflow-hidden">
-                                        <img :src="item.photo" class="w-full h-full object-cover" loading="lazy" :alt="'Foto vom ' + item.date">
-                                    </div>
-                                </template>
-                            </div>
-                            <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60">
-                                <span>Antippen zum Ansehen</span>
-                                <i class="ph ph-arrow-right text-[10px]"></i>
-                            </div>
-                        </div>
-                    </template>
-
-                   <template x-if="widgetId === 'logs'">
-                        <div class="bento-card p-6" role="region" aria-label="Recent weight logs">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Logs</h3>
-                                <span class="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold text-muted font-mono" x-text="history.length + ' Entries'"></span>
-                            </div>
-                            <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
-                                <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
-                                    <div class="swipe-container" role="listitem"
-                                         x-data="{ startX: 0, currentX: 0, swiping: false }"
-                                         @touchstart.passive="startX = $event.touches[0].clientX; currentX = 0; swiping = false"
-                                         @touchmove="(() => {
-                                             const dx = $event.touches[0].clientX - startX;
-                                             if (dx < -10) { swiping = true; currentX = Math.max(dx, -120); $event.preventDefault(); }
-                                         })()"
-                                         @touchend="(() => {
-                                             if (currentX < -80) { $el.querySelector('.swipe-content').classList.add('removing'); $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)'; setTimeout(() => deleteEntry(index), 300); }
-                                             else { currentX = 0; swiping = false; }
-                                         })()">
-                                        <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
-                                            <i class="ph ph-trash text-rose-400 text-lg"></i>
-                                        </div>
-                                        <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
-                                             :class="{ 'swiping': swiping }"
-                                             :style="currentX < 0 ? 'transform: translateX(' + currentX + 'px)' : ''">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
-                                                <div>
-                                                    <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors">
-                                                        <span x-text="entry.weight.toFixed(1)"></span> kg
-                                                        <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1"><i class="ph ph-camera"></i></span>
-                                                    </p>
-                                                    <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-3">
-                                                <template x-if="getLogDelta(index) !== null">
-                                                    <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
-                                                          :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
-                                                          x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
-                                                </template>
+                            <div class="space-y-1.5" x-show="workoutHistory.length > 0">
+                                <template x-for="(w, wIdx) in workoutHistory.slice(0, 5)" :key="'recent-'+wIdx">
+                                    <div class="flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all cursor-pointer"
+                                         @click.stop="openWorkoutComparison(w)">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <span class="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-[10px] text-muted font-mono shrink-0"
+                                                  x-text="new Date(w.date).getDate()"></span>
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-medium text-white truncate" x-text="new Date(w.date).toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit', month: 'short'})"></p>
+                                                <p class="text-[10px] text-muted font-mono" x-text="getWorkoutExerciseCount(w) + ' Ueb. · ' + formatWorkoutDuration(w.durationSeconds)"></p>
                                             </div>
                                         </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <span x-show="w.tracked !== false" class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                                                <i class="ph ph-chart-line-up text-[9px]"></i>
+                                            </span>
+                                            <i class="ph ph-caret-right text-[10px] text-muted"></i>
+                                        </div>
                                     </div>
                                 </template>
                             </div>
+                            <div x-show="workoutHistory.length === 0" class="py-8 text-center">
+                                <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
+                                    <i class="ph-bold ph-barbell text-2xl text-white/20"></i>
+                                </div>
+                                <p class="text-sm text-muted mb-1">Noch keine Workouts</p>
+                                <p class="text-[10px] text-white/20">Starte dein erstes Workout oben!</p>
+                            </div>
                         </div>
-                    </template>
-                </div>
-            </template>
-        </div>
-        
-        <div class="md:col-span-8 flex flex-col gap-5 animate-slide-up" style="--delay: 0.2s"
-             :class="{ 'edit-mode': editMode }"
-             @dragover.prevent="editMode && onDragOver($event, 'right', widgetLayout.right.length)"
-             @drop="editMode && onDropAtEnd($event, 'right')">
-
-             <template x-for="(widgetId, wIdx) in widgetLayout.right" :key="'right-'+widgetId">
-                <div :draggable="editMode ? 'true' : 'false'"
-                     @dragstart="onDragStart($event, widgetId, 'right', wIdx)"
-                     @dragend="onDragEnd($event)"
-                     @dragover.prevent.stop="editMode && onDragOver($event, 'right', wIdx)"
-                     @drop.stop="editMode && onDrop($event, 'right', wIdx)"
-                     class="relative transition-all duration-200"
-                     :class="{ 'ring-2 ring-dashed ring-white/10 rounded-3xl': editMode, 'ring-indigo-500/40': editMode && dragState.overCol === 'right' && dragState.overIndex === wIdx && dragState.widgetId !== widgetId }">
-
-                    <div x-show="editMode" class="absolute top-3 left-3 z-30 cursor-grab active:cursor-grabbing px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm flex items-center gap-1.5 text-[10px] text-white/60 border border-white/10">
-                        <i class="ph ph-dots-six-vertical text-[10px]"></i>
-                        <span x-text="WIDGET_REGISTRY[widgetId]?.label"></span>
                     </div>
 
-                    <template x-if="widgetId === 'current-status'">
-                         <div class="bento-card p-8 flex flex-col justify-between min-h-[380px] relative group overflow-hidden" role="region" aria-label="Current weight status">
-                            <div class="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 blur-[80px] rounded-full group-hover:bg-accent/20 transition-colors duration-700" aria-hidden="true"></div>
-                            <div class="relative z-10">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="flex flex-col">
-                                        <span class="text-muted text-[10px] font-bold uppercase tracking-widest">Current Status</span>
-                                        <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
-                                    </div>
-                                    <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
-                                        <i class="text-sm" :class="trend.isLoss ? 'ph ph-trend-down text-emerald-400' : 'ph ph-trend-up text-rose-400'" aria-hidden="true"></i>
-                                        <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
-                                    </div>
+                    <!-- Training Stats Widget -->
+                    <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Training Statistiken">
+                        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5"></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
+                                    <i class="ph-bold ph-chart-bar"></i>
                                 </div>
-                                <div class="flex items-baseline gap-1 mt-6 relative">
-                                    <h2 class="text-6xl md:text-8xl font-bold text-white tracking-tighter tabular-nums" x-text="displayWeight.toFixed(1)"></h2>
-                                    <span class="text-2xl text-white/40 font-medium">kg</span>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Statistiken</h3>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
+                                    <p class="text-2xl font-bold text-white tabular-nums" x-text="workoutHistory.length"></p>
+                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Workouts</p>
                                 </div>
-                                <div class="mt-8 grid grid-cols-2 gap-3">
-                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-pointer hover:bg-white/10 transition-colors" @click="openBmiDetail()">
-                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">BMI</p>
-                                        <div class="flex items-end gap-2"><span class="text-xl font-bold text-white tabular-nums" x-text="displayBmi.toFixed(1)"></span><div class="w-2 h-2 rounded-full mb-1.5" :class="bmi.color"></div></div>
-                                    </div>
-                                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                                        <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1" x-text="displayLost >= 0 ? 'Lost' : 'Gained'"></p>
-                                        <div class="flex items-end gap-2"><span class="text-xl font-bold tabular-nums" :class="displayLost >= 0 ? 'text-white' : 'text-rose-400'" x-text="Math.abs(displayLost).toFixed(1)"></span><span class="text-xs text-muted mb-0.5">kg</span></div>
-                                    </div>
+                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
+                                    <p class="text-2xl font-bold text-white tabular-nums" x-text="workoutHistory.reduce((sum, w) => sum + (w.exercises || []).length, 0)"></p>
+                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Uebungen</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
+                                    <p class="text-2xl font-bold text-white tabular-nums" x-text="Math.round(workoutHistory.reduce((sum, w) => sum + (w.durationSeconds || 0), 0) / 60)"></p>
+                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Minuten</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
+                                    <p class="text-2xl font-bold text-yellow-400 tabular-nums" x-text="personalRecords.length"></p>
+                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Records</p>
                                 </div>
                             </div>
-                            <div class="space-y-4 z-10 mt-auto pt-6">
-                                <div>
-                                    <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2"><span>Goal Progress</span><span x-text="Math.round(displayProgress) + '%'"></span></div>
-                                    <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]"><div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div></div>
-                                </div>
-                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
-                                <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
-                                    <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Heute</span>
-                                    <button @click="quickLogStep(-0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Minus 0.1 kg">
-                                        <span class="text-xs">－</span>
-                                    </button>
-                                    <span class="text-sm font-mono tabular-nums w-16 text-center transition-colors" :class="quickLogWeight !== null ? 'text-white' : 'text-white/40'" x-text="quickLogDisplay.toFixed(1)"></span>
-                                    <button @click="quickLogStep(+0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Plus 0.1 kg">
-                                        <span class="text-xs">＋</span>
-                                    </button>
-                                    <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
-                                            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
-                                        <i class="ph ph-check text-sm"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'prediction'">
-                        <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
-                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
-                            <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph ph-sparkle"></i></div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
-                                <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
-                            </div>
-                            <div x-show="oracle.valid && !oracle.noProgress" class="relative z-10">
-                                <div class="flex flex-col"><span class="text-xs text-muted mb-1">Voraussichtliches Ziel</span><span class="text-2xl font-bold text-white tabular-nums tracking-tight" x-text="oracle.date"></span></div>
-                                <div class="mt-3 flex items-center gap-2 flex-wrap">
-                                    <span class="bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20 text-xs font-mono text-indigo-300" x-text="oracle.rate + ' kg/Woche'"></span>
-                                    <span x-show="weeklyTrend.change !== null" class="px-2 py-1 rounded border text-xs font-mono" :class="weeklyTrend.change < 0 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'" x-text="'Woche: ' + (weeklyTrend.change > 0 ? '+' : '') + (weeklyTrend.change ? weeklyTrend.change.toFixed(2) : '0.00') + ' kg'"></span>
-                                </div>
-                            </div>
-                            <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
-                                <div class="flex items-center gap-2 mb-1"><i class="ph ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
-                                <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
-                            </div>
-                            <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
-                            <div x-show="!oracle.valid" class="relative z-10 opacity-60"><p class="text-xs text-muted leading-relaxed">Nicht gen&uuml;gend Daten.</p></div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'training'">
-                        <div class="bento-card p-6 relative overflow-hidden group cursor-pointer" @click="!editMode && openTraining()" role="region" aria-label="Today's training">
-                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i></div>
-                                        <div><h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3><p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p></div>
-                                    </div>
-                                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
-                                        <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
-                                        <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Exercises'"></span>
-                                    </div>
-                                </div>
-                                <template x-if="!isRestDay">
-                                    <div>
-                                        <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
-                                            <template x-for="(ex, i) in todayTraining" :key="i">
-                                                <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
-                                                    <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
-                                                    <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                    <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
-                                                </div>
-                                            </template>
+                            <!-- Weekly training overview -->
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <p class="text-[10px] text-muted uppercase tracking-widest font-bold mb-3">Wochenplan</p>
+                                <div class="flex gap-1.5">
+                                    <template x-for="(day, idx) in WEEKDAY_SHORT" :key="'wk-'+idx">
+                                        <div class="flex-1 text-center">
+                                            <div class="w-full py-2 rounded-lg text-[10px] font-bold transition-all"
+                                                 :class="trainingPlan[idx] && trainingPlan[idx].length > 0
+                                                     ? (idx === getTodayWeekdayIndex() ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/5 text-white border border-white/5')
+                                                     : 'bg-transparent text-white/20 border border-transparent'"
+                                                 x-text="day"></div>
+                                            <p class="text-[8px] text-muted mt-1 tabular-nums" x-text="trainingPlan[idx] ? trainingPlan[idx].length : 0"></p>
                                         </div>
-                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                            <i class="ph-bold ph-play"></i> Workout starten
-                                        </button>
-                                        <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
-                                            <i class="ph-bold ph-play"></i> Workout fortsetzen
-                                        </button>
-                                    </div>
-                                </template>
-                                <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'workouts'">
-                        <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Workouts">
-                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5"></div>
-                            <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'">
-                                            <i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Workouts</h3>
-                                            <p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <button @click.stop="!editMode && openTraining()" class="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 transition-all" title="Trainingsplan bearbeiten">
-                                            <i class="ph ph-note-pencil text-sm"></i>
-                                        </button>
-                                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
-                                            <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
-                                            <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Übungen'"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <template x-if="!isRestDay">
-                                    <div>
-                                        <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
-                                            <template x-for="(ex, i) in todayTraining" :key="i">
-                                                <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
-                                                    <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
-                                                    <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                    <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                            <i class="ph-bold ph-play"></i> Workout starten
-                                        </button>
-                                        <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
-                                            <i class="ph-bold ph-play"></i> Workout fortsetzen
-                                        </button>
-                                    </div>
-                                </template>
-                                <template x-if="isRestDay">
-                                    <div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div>
-                                </template>
-                                <div class="mt-4 pt-4 border-t border-white/5">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Letzte Workouts</p>
-                                        <button @click.stop="openWorkoutHistory()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-500/10">
-                                            Alle anzeigen
-                                        </button>
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        <template x-for="(w, wIdx) in workoutHistory.slice(0, 3)" :key="'recent-'+wIdx">
-                                            <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all cursor-pointer"
-                                                 @click.stop="openWorkoutComparison(w)">
-                                                <div class="flex items-center gap-3 min-w-0">
-                                                    <span class="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-[10px] text-muted font-mono shrink-0"
-                                                          x-text="new Date(w.date).getDate()"></span>
-                                                    <div class="min-w-0">
-                                                        <p class="text-xs font-medium text-white truncate" x-text="new Date(w.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'})"></p>
-                                                        <p class="text-[10px] text-muted font-mono" x-text="getWorkoutExerciseCount(w) + ' Üb. · ' + formatWorkoutDuration(w.durationSeconds)"></p>
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-center gap-2 shrink-0">
-                                                    <span x-show="w.tracked !== false" class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
-                                                        <i class="ph ph-chart-line-up text-[9px]"></i>
-                                                    </span>
-                                                    <i class="ph ph-caret-right text-[10px] text-muted"></i>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <div x-show="workoutHistory.length === 0" class="py-3 text-center">
-                                            <p class="text-[10px] text-muted">Noch keine Workouts absolviert.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'analytics'">
-                        <div class="bento-card p-5 md:p-8 h-[300px] md:h-[400px] flex flex-col relative overflow-hidden" role="region" aria-label="Weight analytics chart"
-                             x-init="$nextTick(() => { renderChart(); })">
-                            <div class="flex justify-between items-start mb-6 z-10">
-                                <div><h3 class="font-bold text-white text-lg">Analytics</h3><p class="text-xs text-muted mt-1">Weight Trajectory & Moving Average</p></div>
-                                <div class="flex gap-2" role="group">
-                                    <template x-for="f in ['1M', '3M', 'ALL']" :key="f">
-                                        <button @click="setChartFilter(f)" class="px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200" :class="chartFilter === f ? 'bg-white/10 text-white border-white/5' : 'bg-transparent text-muted border-transparent hover:text-white'"><span x-text="f"></span></button>
                                     </template>
                                 </div>
                             </div>
-                            <div class="flex-grow w-full h-full relative z-10"><canvas id="mainChart" role="img" aria-label="Weight trajectory chart"></canvas></div>
                         </div>
-                    </template>
-
-                    <template x-if="widgetId === 'milestone'">
-                        <div class="bento-card p-6 relative overflow-hidden group" role="region" aria-label="Next milestone">
-                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div class="relative z-10 h-full flex flex-col">
-                                <div class="flex justify-between items-start mb-4">
-                                    <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
-                                    <i class="ph ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
-                                </div>
-                                <template x-if="nextReward">
-                                    <div class="mt-auto">
-                                        <h4 class="text-xl font-bold text-white mb-2" x-text="nextReward.title"></h4>
-                                        <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-2"><div class="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-1000" :style="`width: ${Math.min(Math.max(((startWeight - currentWeight) / (startWeight - nextReward.target)) * 100, 0), 100)}%`"></div></div>
-                                        <div class="flex justify-between items-center text-xs font-mono text-muted"><span x-text="nextReward.target + ' kg'"></span><span class="text-emerald-400" x-text="(currentWeight - nextReward.target).toFixed(1) + ' kg left'"></span></div>
-                                    </div>
-                                </template>
-                                <template x-if="!nextReward"><div class="mt-auto"><p class="text-white font-medium">All goals crushed! Set new ones.</p></div></template>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'achievements'">
-                        <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
-                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph ph-trophy text-2xl"></i></div>
-                            <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
-                            <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'progress-pics'">
-                        <div class="bento-card p-6 relative overflow-hidden cursor-pointer hover:border-white/15 transition-all"
-                             x-show="photoDates.length >= 1"
-                             @click="if (!editMode) openProgressPics()"
-                             role="button" aria-label="Progress Pics oeffnen">
-                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
-                            <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph ph-images-square"></i></div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
-                                <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
-                            </div>
-                            <div class="relative z-10 grid grid-cols-3 gap-2">
-                                <template x-for="item in progressPicsPreview" :key="'preview-'+item.date">
-                                    <div class="aspect-square rounded-xl bg-white/5 border border-white/5 overflow-hidden">
-                                        <img :src="item.photo" class="w-full h-full object-cover" loading="lazy" :alt="'Foto vom ' + item.date">
-                                    </div>
-                                </template>
-                            </div>
-                            <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60">
-                                <span>Antippen zum Ansehen</span>
-                                <i class="ph ph-arrow-right text-[10px]"></i>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="widgetId === 'logs'">
-                        <div class="bento-card p-6" role="region" aria-label="Recent weight logs">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Logs</h3>
-                                <span class="px-2 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] text-muted font-mono" x-text="history.length + ' Entries'"></span>
-                            </div>
-                            <div class="space-y-1 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar" role="list">
-                                <template x-for="(entry, index) in logs" :key="entry.date + '-' + index">
-                                    <div class="swipe-container" role="listitem"
-                                         x-data="{ startX: 0, currentX: 0, swiping: false }"
-                                         @touchstart.passive="startX = $event.touches[0].clientX; currentX = 0; swiping = false"
-                                         @touchmove="(() => {
-                                             const dx = $event.touches[0].clientX - startX;
-                                             if (dx < -10) { swiping = true; currentX = Math.max(dx, -120); $event.preventDefault(); }
-                                         })()"
-                                         @touchend="(() => {
-                                             if (currentX < -80) { $el.querySelector('.swipe-content').classList.add('removing'); $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)'; setTimeout(() => deleteEntry(index), 300); }
-                                             else { currentX = 0; swiping = false; }
-                                         })()">
-                                        <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
-                                            <i class="ph ph-trash text-rose-400 text-lg"></i>
-                                        </div>
-                                        <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
-                                             :class="{ 'swiping': swiping }"
-                                             :style="currentX < 0 ? 'transform: translateX(' + currentX + 'px)' : ''">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
-                                                <div>
-                                                    <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors"><span x-text="entry.weight.toFixed(1)"></span> kg <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1"><i class="ph ph-camera"></i></span></p>
-                                                    <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-3">
-                                                <template x-if="getLogDelta(index) !== null">
-                                                    <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-black/20"
-                                                          :class="(getLogDelta(index) ?? 0) < 0 ? 'text-emerald-400' : 'text-rose-400'"
-                                                          x-text="((getLogDelta(index) ?? 0) > 0 ? '+' : '') + (getLogDelta(index) ?? 0).toFixed(1)"></span>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </template>
+                    </div>
                 </div>
-            </template>
-        </div>
+            </div>
+        </template>
 
     </main>
 
-    <!-- Mobile FAB: Log Weight (visible only on mobile) -->
-    <button @click="openModal()"
+    <!-- Mobile FAB: Log Weight (visible only on mobile, only on health tab) -->
+    <button @click="activeTab === 'health' ? openModal() : openWorkoutPicker()"
             class="mobile-fab md:hidden transition-transform duration-150"
-            aria-label="Log Weight"
-            x-show="appLoaded && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !milestonesOpen && !bmiDetailOpen && !lootboxOpen && !workoutOpen && !workoutHistoryOpen && !prCelebrationOpen && !workoutPickerOpen && !workoutComparisonOpen"
+            :aria-label="activeTab === 'health' ? 'Log Weight' : 'Workout starten'"
+            x-show="appLoaded && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !milestonesOpen && !bmiDetailOpen && !lootboxOpen && !workoutOpen && !workoutHistoryOpen && !prCelebrationOpen && !workoutPickerOpen && !workoutComparisonOpen && !progressPicsOpen"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-75"
             x-transition:enter-end="opacity-100 scale-100">
-        <i class="ph-bold ph-plus text-2xl"></i>
+        <i class="text-2xl" :class="activeTab === 'health' ? 'ph-bold ph-plus' : 'ph-bold ph-play'"></i>
     </button>
 
     <!-- Modals Container (injected by JS) -->

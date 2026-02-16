@@ -94,6 +94,23 @@ export const workoutMixin = () => ({
                     done: false,
                     tracked: tracking
                 };
+            } else if (type === 'circuit') {
+                return {
+                    name: ex.name,
+                    type,
+                    planned_rounds: parseInt(ex.rounds) || 3,
+                    circuitExercises: (ex.circuitExercises || []).map(ce => ({
+                        name: ce.name || '',
+                        reps: ce.reps || '',
+                        duration: ce.duration || ''
+                    })),
+                    note: ex.note || '',
+                    rounds: tracking ? Array.from({ length: parseInt(ex.rounds) || 3 }, () => ({
+                        done: false
+                    })) : [],
+                    done: false,
+                    tracked: tracking
+                };
             } else {
                 return {
                     name: ex.name,
@@ -137,6 +154,13 @@ export const workoutMixin = () => ({
         if (set.done && typeof this.startRestTimer === 'function') {
             this.startRestTimer();
         }
+    },
+
+    // --- Toggle Circuit Round Done ---
+    toggleCircuitRound(exIdx, roundIdx) {
+        if (!this.workoutSession) return;
+        const round = this.workoutSession.exercises[exIdx].rounds[roundIdx];
+        round.done = !round.done;
     },
 
     // --- Toggle Cardio/Distance Exercise Done ---

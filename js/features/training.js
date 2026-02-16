@@ -11,7 +11,7 @@ export const trainingMixin = () => ({
     trainingForm: WEEKDAYS.map(() => []),
     trainingDirty: false,
     trainingShowAddForm: false,
-    trainingNewExercise: { name: '', sets: '', reps: '', note: '', type: 'strength' },
+    trainingNewExercise: { name: '', sets: '', reps: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '' }] },
 
     async saveTrainingPlan() {
         try {
@@ -31,7 +31,7 @@ export const trainingMixin = () => ({
         this.trainingSelectedDay = getTodayWeekdayIndex();
         this.trainingForm = JSON.parse(JSON.stringify(this.trainingPlan));
         this.trainingDirty = false;
-        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength' };
+        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '' }] };
         this.trainingShowAddForm = false;
         this.trainingOpen = true;
     },
@@ -69,10 +69,29 @@ export const trainingMixin = () => ({
         } else if (type === 'distance') {
             entry.distance = String(ex.sets).trim() || '';
             entry.duration = String(ex.reps).trim() || '';
+        } else if (type === 'circuit') {
+            entry.rounds = parseInt(ex.rounds) || 3;
+            entry.circuitExercises = (ex.circuitExercises || [])
+                .filter(ce => ce.name && String(ce.name).trim() !== '')
+                .map(ce => ({
+                    name: String(ce.name).trim(),
+                    reps: String(ce.reps || '').trim(),
+                    duration: String(ce.duration || '').trim()
+                }));
         }
         this.trainingForm[this.trainingSelectedDay].push(entry);
-        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength' };
+        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '' }] };
         this.trainingDirty = true;
+    },
+
+    addCircuitExerciseField() {
+        this.trainingNewExercise.circuitExercises.push({ name: '', reps: '', duration: '' });
+    },
+
+    removeCircuitExerciseField(idx) {
+        if (this.trainingNewExercise.circuitExercises.length > 1) {
+            this.trainingNewExercise.circuitExercises.splice(idx, 1);
+        }
     },
 
     removeExercise(dayIndex, exIndex) {

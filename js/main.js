@@ -2,7 +2,7 @@ import Alpine from 'alpinejs';
 import { Chart, registerables } from 'chart.js';
 import confetti from 'canvas-confetti';
 
-import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT, WEEKDAYS } from './utils/constants.js';
+import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT, WEEKDAYS, WEEKDAY_SHORT } from './utils/constants.js';
 import { getTodayWeekdayIndex } from './utils/formatting.js';
 import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './utils/analytics.js';
 import * as Supa from './store/supabase.js';
@@ -77,6 +77,7 @@ function app() {
         chartFilter: '1M',
 
         // UI State
+        activeTab: 'health',
         appLoaded: false,
         modalOpen: false,
         lootboxOpen: false,
@@ -111,6 +112,16 @@ function app() {
 
         // --- MIXIN GETTERS (must be defined here, not in mixins, because spread destroys getters) ---
 
+        // Expose constants to template
+        WEEKDAY_SHORT,
+
+        // Helper: get N most recent personal records
+        getRecentPRs(n = 5) {
+            return [...this.personalRecords]
+                .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+                .slice(0, n);
+        },
+
         // Training getters
         get todayTraining() {
             const idx = getTodayWeekdayIndex();
@@ -138,10 +149,18 @@ function app() {
                 if (ex.tracked === false || ex.type === 'cardio' || ex.type === 'distance') {
                     total++;
                     if (ex.done) done++;
+                } else if (ex.type === 'circuit') {
+                    const rounds = ex.rounds || [];
+                    if (rounds.length === 0) {
+                        total++;
+                        if (ex.done) done++;
+                    } else {
+                        total += rounds.length;
+                        done += rounds.filter(r => r.done).length;
+                    }
                 } else {
                     const sets = ex.sets || [];
                     if (sets.length === 0) {
-                        // Untracked strength exercise
                         total++;
                         if (ex.done) done++;
                     } else {
@@ -244,7 +263,6 @@ function app() {
                 this.refreshAnimations();
                 this.appLoaded = true;
                 this.initPullToRefresh();
-                if (this.photoDates.length > 0) this.loadPreviewThumbnails();
             });
 
             if ('serviceWorker' in navigator) {
@@ -705,6 +723,7 @@ function app() {
             if (this.workoutPickerOpen) { this.closeWorkoutPicker(); return; }
             if (this.workoutOpen) { this.closeWorkout(); return; }
             if (this.lootboxOpen) { this.closeLootbox(); return; }
+            if (this.lightboxPhoto) { this.closeLightbox(); return; }
             if (this.progressPicsOpen) { this.closeProgressPics(); return; }
             if (this.bmiDetailOpen) { this.closeBmiDetail(); return; }
             if (this.modalOpen) { this.closeModal(); return; }

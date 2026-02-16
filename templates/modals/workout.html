@@ -57,11 +57,15 @@
                                     <h3 class="text-sm font-bold text-foreground" x-text="exercise.name"></h3>
                                     <span x-show="exercise.type && exercise.type !== 'strength'"
                                           class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase"
-                                          :class="exercise.type === 'cardio' ? 'bg-orange-500/15 text-orange-400' : 'bg-blue-500/15 text-blue-400'"
-                                          x-text="exercise.type === 'cardio' ? 'Cardio' : 'Distanz'"></span>
+                                          :class="{
+                                              'bg-orange-500/15 text-orange-400': exercise.type === 'cardio',
+                                              'bg-blue-500/15 text-blue-400': exercise.type === 'distance',
+                                              'bg-violet-500/15 text-violet-400': exercise.type === 'circuit'
+                                          }"
+                                          x-text="exercise.type === 'cardio' ? 'Cardio' : (exercise.type === 'circuit' ? 'Zirkel' : 'Distanz')"></span>
                                 </div>
                                 <span class="text-[10px] font-mono text-muted"
-                                      x-text="(exercise.type || 'strength') === 'strength' ? exercise.planned_sets + 'x' + exercise.planned_reps : (exercise.type === 'cardio' ? (exercise.planned_duration || '') : ((exercise.planned_distance || '') + ' km'))"></span>
+                                      x-text="(exercise.type || 'strength') === 'strength' ? exercise.planned_sets + 'x' + exercise.planned_reps : (exercise.type === 'cardio' ? (exercise.planned_duration || '') : (exercise.type === 'circuit' ? (exercise.planned_rounds + ' Runden') : ((exercise.planned_distance || '') + ' km')))"></span>
                             </div>
                             <p x-show="exercise.note" class="text-[10px] text-muted mt-0.5" x-text="exercise.note"></p>
                         </div>
@@ -171,6 +175,49 @@
                         <div x-show="exercise.type === 'distance' && exercise.tracked === false" class="px-4 py-3">
                             <div class="flex items-center justify-between">
                                 <p class="text-xs text-muted" x-text="(exercise.planned_distance || '') + ' km · ' + (exercise.planned_duration || '')"></p>
+                                <button @click="toggleExerciseDone(exIdx)"
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90"
+                                        :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
+                                    <span class="text-sm" x-text="exercise.done ? '✓' : ''"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TRACKED: Circuit: Exercises list + round checkmarks -->
+                        <div x-show="exercise.type === 'circuit' && exercise.tracked !== false" class="px-4 py-2">
+                            <!-- Circuit exercises overview -->
+                            <div x-show="exercise.circuitExercises && exercise.circuitExercises.length > 0" class="mb-2 pb-2 border-b border-[var(--glass-border)]">
+                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Uebungen pro Runde:</p>
+                                <div class="space-y-0.5">
+                                    <template x-for="(ce, ceIdx) in exercise.circuitExercises" :key="'ce-'+ceIdx">
+                                        <div class="flex items-center gap-2 text-[10px]">
+                                            <span class="text-muted w-3 text-center" x-text="ceIdx + 1"></span>
+                                            <span class="text-foreground" x-text="ce.name"></span>
+                                            <span x-show="ce.reps" class="text-muted font-mono" x-text="ce.reps + 'x'"></span>
+                                            <span x-show="ce.duration" class="text-muted font-mono" x-text="ce.duration"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            <!-- Round checkmarks -->
+                            <div class="space-y-1.5">
+                                <template x-for="(round, roundIdx) in exercise.rounds" :key="'round-'+roundIdx">
+                                    <div class="flex items-center justify-between py-1.5 px-2 rounded-lg" :class="round.done ? 'bg-emerald-500/5' : ''">
+                                        <span class="text-xs font-bold text-muted" x-text="'Runde ' + (roundIdx + 1)"></span>
+                                        <button @click="toggleCircuitRound(exIdx, roundIdx)"
+                                                class="w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-90"
+                                                :class="round.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
+                                            <span class="text-sm" x-text="round.done ? '✓' : ''"></span>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- UNTRACKED: Circuit (just a done toggle) -->
+                        <div x-show="exercise.type === 'circuit' && exercise.tracked === false" class="px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs text-muted" x-text="exercise.planned_rounds + ' Runden'"></p>
                                 <button @click="toggleExerciseDone(exIdx)"
                                         class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90"
                                         :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
