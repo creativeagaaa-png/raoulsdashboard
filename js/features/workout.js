@@ -208,7 +208,8 @@ export const workoutMixin = () => ({
         };
 
         try {
-            await Supa.saveWorkoutLog(session);
+            const savedId = await Supa.saveWorkoutLog(session);
+            if (savedId) session.id = savedId;
             this.workoutHistory.unshift(session);
             this.workoutHistoryLoaded = true;
         } catch (e) {
@@ -292,23 +293,8 @@ export const workoutMixin = () => ({
         this.workoutHistoryFilter = '';
     },
 
-    get filteredWorkoutHistory() {
-        if (!this.workoutHistoryFilter) return this.workoutHistory;
-        const q = this.workoutHistoryFilter.toLowerCase();
-        return this.workoutHistory.filter(w =>
-            (w.exercises || []).some(e => e.name.toLowerCase().includes(q))
-        );
-    },
-
-    get workoutHistoryExerciseNames() {
-        const names = new Set();
-        for (const w of this.workoutHistory) {
-            for (const e of (w.exercises || [])) {
-                names.add(e.name);
-            }
-        }
-        return [...names].sort();
-    },
+    // NOTE: filteredWorkoutHistory, workoutHistoryExerciseNames are defined as getters
+    // in main.js to preserve reactivity (spread destroys getters).
 
     deleteWorkout(wIdx) {
         const workout = this.workoutHistory[wIdx];

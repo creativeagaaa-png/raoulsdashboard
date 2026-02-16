@@ -166,6 +166,24 @@ function app() {
             return Math.round((done / total) * 100);
         },
 
+        // Workout history getters
+        get filteredWorkoutHistory() {
+            if (!this.workoutHistoryFilter) return this.workoutHistory;
+            const q = this.workoutHistoryFilter.toLowerCase();
+            return this.workoutHistory.filter(w =>
+                (w.exercises || []).some(e => e.name.toLowerCase().includes(q))
+            );
+        },
+        get workoutHistoryExerciseNames() {
+            const names = new Set();
+            for (const w of this.workoutHistory) {
+                for (const e of (w.exercises || [])) {
+                    names.add(e.name);
+                }
+            }
+            return [...names].sort();
+        },
+
         // Rest timer getters
         get restTimerProgress() {
             if (!this.restTimer.active || this.restTimer.total === 0) return 0;
@@ -363,13 +381,15 @@ function app() {
 
         async refreshDashboard() {
             try {
-                const [settings, rewards, trainingPlan, weightEntries, photoDates] =
+                const [settings, rewards, trainingPlan, weightEntries, photoDates, workoutLogs, personalRecords] =
                     await Promise.all([
                         Supa.getSettings().catch(() => null),
                         Supa.getRewards().catch(() => []),
                         Supa.getTrainingPlan().catch(() => null),
                         Supa.getWeightEntries().catch(() => []),
-                        Supa.getAllPhotoDates().catch(() => [])
+                        Supa.getAllPhotoDates().catch(() => []),
+                        Supa.getWorkoutLogs().catch(() => []),
+                        Supa.getPersonalRecords().catch(() => [])
                     ]);
 
                 if (settings) {
@@ -384,6 +404,9 @@ function app() {
                 this.history = (weightEntries && weightEntries.length > 0) ? weightEntries : [];
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
                 this.photoDates = (photoDates || []).sort();
+                this.workoutHistory = workoutLogs || [];
+                this.workoutHistoryLoaded = true;
+                this.personalRecords = personalRecords || [];
 
                 this.$nextTick(() => {
                     this.updateChart();
@@ -448,7 +471,6 @@ function app() {
                         this.photoDates.sort();
                     }
                     if (this.progressPicsLoaded) this.refreshProgressPicsPhotos();
-                    this.loadPreviewThumbnails();
                 } catch (e) {
                     console.error('Failed to save photo:', e);
                     this.showToast('Foto konnte nicht gespeichert werden');

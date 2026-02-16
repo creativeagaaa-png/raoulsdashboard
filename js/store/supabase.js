@@ -331,10 +331,13 @@ export async function saveWorkoutLog(session) {
         duration_seconds: session.durationSeconds,
         exercises: session.exercises
     };
-    const { error } = await db
+    const { data, error } = await db
         .from('workout_logs')
-        .insert(row);
+        .insert(row)
+        .select('id')
+        .single();
     if (error) throw error;
+    return data ? data.id : null;
 }
 
 export async function deleteWorkoutLog(id) {
