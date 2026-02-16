@@ -102,9 +102,14 @@ export const stepsMixin = () => ({
 
         const today = getLocalDateString();
 
-        // Use splice to mutate in-place so Alpine can track the removal cleanly
+        // Remove from array — use splice for in-place mutation,
+        // then wait a frame so Alpine's x-for can reconcile the DOM
+        // before we trigger further reactive updates (todaySteps, etc).
         const idx = this.stepsHistory.indexOf(removed);
         if (idx !== -1) this.stepsHistory.splice(idx, 1);
+
+        // Wait for Alpine to finish DOM reconciliation
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
         if (date === today) {
             this.todaySteps = 0;
@@ -116,7 +121,6 @@ export const stepsMixin = () => ({
             await Supa.deleteStepEntry(date);
         } catch (e) {
             console.error('Failed to delete step entry:', e);
-            // Rollback UI on failure
             this.stepsHistory.push(removed);
             this.stepsHistory.sort((a, b) => b.date.localeCompare(a.date));
             if (date === today) {

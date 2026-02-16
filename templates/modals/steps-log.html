@@ -90,12 +90,10 @@
             <!-- Daily View -->
             <template x-if="stepsLogView === 'days'">
                 <div class="flex flex-col gap-2">
-                    <template x-if="stepsHistory.length === 0">
-                        <div class="text-center py-8">
-                            <i class="ph ph-footprints text-3xl text-muted mb-2"></i>
-                            <p class="text-xs text-muted">No steps recorded yet</p>
-                        </div>
-                    </template>
+                    <div x-show="stepsHistory.length === 0" class="text-center py-8">
+                        <i class="ph ph-footprints text-3xl text-muted mb-2"></i>
+                        <p class="text-xs text-muted">No steps recorded yet</p>
+                    </div>
                     <template x-for="entry in stepsHistory" :key="entry.date">
                         <div class="swipe-container" role="listitem"
                              x-data="{ startX: 0, currentX: 0, swiping: false }"
@@ -157,12 +155,10 @@
             <!-- Monthly View -->
             <template x-if="stepsLogView === 'months'">
                 <div class="flex flex-col gap-2">
-                    <template x-if="stepsMonthly.length === 0">
-                        <div class="text-center py-8">
-                            <i class="ph ph-footprints text-3xl text-muted mb-2"></i>
-                            <p class="text-xs text-muted">No steps recorded yet</p>
-                        </div>
-                    </template>
+                    <div x-show="stepsMonthly.length === 0" class="text-center py-8">
+                        <i class="ph ph-footprints text-3xl text-muted mb-2"></i>
+                        <p class="text-xs text-muted">No steps recorded yet</p>
+                    </div>
                     <template x-for="month in stepsMonthly" :key="month.key">
                         <div class="py-3 px-4 rounded-2xl bg-white/[0.02] border border-white/5">
                             <div class="flex items-center justify-between mb-2">
