@@ -21,6 +21,10 @@ export const workoutMixin = () => ({
     // --- Comparison State ---
     workoutComparisonOpen: false,
     workoutComparisonData: null,
+    _lastFinishedWorkout: null,
+
+    // --- History Filter State ---
+    workoutHistoryFilter: '',
 
     // --- Open Exercise Picker (replaces direct startWorkout) ---
     openWorkoutPicker() {
@@ -217,12 +221,19 @@ export const workoutMixin = () => ({
             await this.checkPersonalRecords(session);
         }
 
+        this._lastFinishedWorkout = session;
         this.workoutSession = null;
         this.workoutActive = false;
         this.workoutOpen = false;
         this._workoutElapsed = 0;
         if (typeof this.clearRestTimer === 'function') this.clearRestTimer();
         this.showToast('Workout gespeichert! 💪');
+    },
+
+    showPostWorkoutComparison() {
+        if (!this._lastFinishedWorkout) return;
+        this.openWorkoutComparison(this._lastFinishedWorkout);
+        this._lastFinishedWorkout = null;
     },
 
     // --- Cancel Workout ---
@@ -278,6 +289,25 @@ export const workoutMixin = () => ({
 
     closeWorkoutHistory() {
         this.workoutHistoryOpen = false;
+        this.workoutHistoryFilter = '';
+    },
+
+    get filteredWorkoutHistory() {
+        if (!this.workoutHistoryFilter) return this.workoutHistory;
+        const q = this.workoutHistoryFilter.toLowerCase();
+        return this.workoutHistory.filter(w =>
+            (w.exercises || []).some(e => e.name.toLowerCase().includes(q))
+        );
+    },
+
+    get workoutHistoryExerciseNames() {
+        const names = new Set();
+        for (const w of this.workoutHistory) {
+            for (const e of (w.exercises || [])) {
+                names.add(e.name);
+            }
+        }
+        return [...names].sort();
     },
 
     deleteWorkout(wIdx) {
@@ -354,6 +384,16 @@ export const workoutMixin = () => ({
 
     openWorkoutComparison(workout) {
         if (!workout || !workout.exercises) return;
+
+        // Find the previous workout on the same day-type for duration comparison
+        let previousWorkout = null;
+        for (const w of this.workoutHistory) {
+            if (w.date === workout.date && w.startedAt === workout.startedAt) continue;
+            if (w.tracked === false) continue;
+            previousWorkout = w;
+            break;
+        }
+
         const comparisons = workout.exercises
             .filter(ex => ex.tracked !== false)
             .map(ex => {
@@ -382,7 +422,9 @@ export const workoutMixin = () => ({
 
         this.workoutComparisonData = {
             workout,
-            comparisons
+            comparisons,
+            previousWorkoutDuration: previousWorkout ? previousWorkout.durationSeconds : null,
+            previousWorkoutDate: previousWorkout ? previousWorkout.date : null
         };
         this.workoutComparisonOpen = true;
     },
@@ -411,5 +453,46 @@ export const workoutMixin = () => ({
         const diff = current - previous;
         if (diff === 0) return '±0';
         return (diff > 0 ? '+' : '') + diff.toFixed(1);
+    },
+
+    // Helper: parse duration string (e.g. "25 min", "1:30:00", "45") to minutes
+    parseDurationMinutes(str) {
+        if (!str) return 0;
+        str = String(str).trim();
+        // "HH:MM:SS" or "MM:SS"
+        if (str.includes(':')) {
+            const parts = str.split(':').map(Number);
+            if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
+            if (parts.length === 2) return parts[0] + parts[1] / 60;
+        }
+        // "25 min" or just "25"
+        const num = parseFloat(str);
+        return isNaN(num) ? 0 : num;
+    },
+
+    // Helper: parse distance string to number
+    parseDistance(str) {
+        if (!str) return 0;
+        const num = parseFloat(String(str).replace(',', '.'));
+        return isNaN(num) ? 0 : num;
+    },
+
+    // Helper: get completed rounds count for circuit
+    getCircuitRoundsCompleted(ex) {
+        if (!ex || !ex.rounds) return 0;
+        return ex.rounds.filter(r => r.done).length;
+    },
+
+    // Helper: get total rounds for circuit
+    getCircuitRoundsTotal(ex) {
+        if (!ex || !ex.rounds) return 0;
+        return ex.rounds.length;
+    },
+
+    // Helper: format duration seconds to "X Min"
+    formatDurationCompare(seconds) {
+        if (!seconds) return '–';
+        const mins = Math.floor(seconds / 60);
+        return mins + ' Min';
     }
 });

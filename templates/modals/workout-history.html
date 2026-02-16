@@ -14,91 +14,131 @@
          x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-12 opacity-0 scale-90">
 
-        <div class="p-6 border-b border-[var(--glass-border)] flex justify-between items-center bg-surface z-20 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                    <i class="ph ph-clipboard-text text-lg"></i>
+        <div class="p-6 border-b border-[var(--glass-border)] bg-surface z-20 shrink-0">
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                        <i class="ph ph-clipboard-text text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-foreground">Workout Log</h2>
+                        <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="filteredWorkoutHistory.length + ' / ' + workoutHistory.length + ' Workouts'"></p>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-lg font-bold text-foreground">Workout Log</h2>
-                    <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="workoutHistory.length + ' Workouts'"></p>
-                </div>
+                <button type="button" @click="closeWorkoutHistory()" class="text-muted hover:text-foreground transition-colors p-2 -mr-2 hover:bg-[var(--glass)] rounded-xl">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
             </div>
-            <button type="button" @click="closeWorkoutHistory()" class="text-muted hover:text-foreground transition-colors p-2 -mr-2 hover:bg-[var(--glass)] rounded-xl">
-                <i class="ph ph-x text-lg"></i>
-            </button>
+            <!-- Filter -->
+            <div class="relative" x-show="workoutHistory.length > 0">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm"></i>
+                <input type="text"
+                       x-model="workoutHistoryFilter"
+                       placeholder="Nach Uebung filtern..."
+                       class="w-full pl-9 pr-8 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)] text-xs text-foreground placeholder:text-muted/50 focus:outline-none focus:border-indigo-500/40 transition-colors">
+                <button x-show="workoutHistoryFilter"
+                        @click="workoutHistoryFilter = ''"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors">
+                    <i class="ph ph-x text-sm"></i>
+                </button>
+            </div>
         </div>
 
         <div class="overflow-y-auto flex-1 p-6 custom-scrollbar">
             <div class="space-y-3">
-                <template x-for="(workout, wIdx) in workoutHistory" :key="wIdx">
-                    <div class="p-4 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] hover:border-[var(--glass-hover)] transition-all"
-                         x-data="{ expanded: false }">
-                        <div class="flex items-center justify-between cursor-pointer" @click="expanded = !expanded">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2">
-                                    <p class="text-sm font-bold text-foreground" x-text="new Date(workout.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short', year: 'numeric'})"></p>
-                                    <span x-show="workout.tracked === false"
-                                          class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-yellow-500/15 text-yellow-400">Ohne Tracking</span>
-                                </div>
-                                <p class="text-[10px] text-muted font-mono mt-0.5">
-                                    <span x-text="formatWorkoutDuration(workout.durationSeconds)"></span> &middot;
-                                    <span x-text="getWorkoutExerciseCount(workout) + ' Uebungen'"></span> &middot;
-                                    <span x-text="getWorkoutSetsCompleted(workout) + ' Sets'"></span>
-                                </p>
-                            </div>
-                            <div class="flex items-center gap-1.5 shrink-0">
-                                <button x-show="workout.tracked !== false"
-                                        @click.stop="openWorkoutComparison(workout)"
-                                        class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 hover:bg-indigo-500/20 transition-all active:scale-90"
-                                        title="Vergleich anzeigen">
-                                    <i class="ph ph-chart-line-up text-sm"></i>
-                                </button>
-                                <button @click.stop="deleteWorkout(wIdx)"
-                                        class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 hover:bg-rose-500/20 transition-all active:scale-90"
-                                        title="Workout loeschen">
-                                    <i class="ph ph-trash text-sm"></i>
-                                </button>
-                                <span class="text-muted transition-transform duration-200" :class="expanded && 'rotate-180'">&#9660;</span>
+                <template x-for="(workout, wIdx) in filteredWorkoutHistory" :key="'wh-'+workout.date+'-'+(workout.startedAt || wIdx)">
+                    <div class="rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] hover:border-[var(--glass-hover)] transition-all overflow-hidden"
+                         x-data="{ expanded: false, swipeX: 0, swipeStart: 0, swiping: false }">
+                        <!-- Swipe action background -->
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none transition-opacity"
+                             :class="swipeX < -30 ? 'opacity-100' : 'opacity-0'">
+                            <div class="flex items-center gap-2 text-indigo-400">
+                                <i class="ph ph-chart-line-up text-lg"></i>
+                                <span class="text-[10px] font-bold">Vergleich</span>
                             </div>
                         </div>
-                        <div x-show="expanded" x-collapse class="mt-3 space-y-2">
-                            <template x-for="(ex, eIdx) in workout.exercises" :key="eIdx">
-                                <div class="p-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <p class="text-xs font-bold text-foreground" x-text="ex.name"></p>
-                                        <span x-show="ex.tracked === false" class="text-[8px] text-yellow-400 font-bold uppercase">Nicht getrackt</span>
+                        <div class="relative bg-[var(--glass)] p-4 transition-transform"
+                             :style="swipeX < 0 ? 'transform: translateX(' + swipeX + 'px)' : ''"
+                             @touchstart.passive="swipeStart = $event.touches[0].clientX; swipeX = 0; swiping = false"
+                             @touchmove="(() => {
+                                 const dx = $event.touches[0].clientX - swipeStart;
+                                 if (dx < -10 && workout.tracked !== false) { swiping = true; swipeX = Math.max(dx, -100); $event.preventDefault(); }
+                             })()"
+                             @touchend="(() => {
+                                 if (swipeX < -60 && workout.tracked !== false) { openWorkoutComparison(workout); }
+                                 swipeX = 0; swiping = false;
+                             })()">
+                            <div class="flex items-center justify-between cursor-pointer" @click="expanded = !expanded">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-sm font-bold text-foreground" x-text="new Date(workout.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short', year: 'numeric'})"></p>
+                                        <span x-show="workout.tracked === false"
+                                              class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-yellow-500/15 text-yellow-400">Ohne Tracking</span>
                                     </div>
-                                    <div x-show="ex.tracked !== false" class="space-y-0.5">
-                                        <template x-for="(set, sIdx) in (ex.sets || []).filter(s => s.done)" :key="sIdx">
-                                            <p class="text-[10px] font-mono text-muted">
-                                                <span x-text="set.weight"></span> kg x <span x-text="set.reps"></span>
-                                            </p>
-                                        </template>
-                                        <p x-show="ex.type === 'cardio' && ex.done" class="text-[10px] font-mono text-muted" x-text="'Dauer: ' + (ex.duration || '–')"></p>
-                                        <p x-show="ex.type === 'distance' && ex.done" class="text-[10px] font-mono text-muted" x-text="(ex.distance || '–') + ' km · ' + (ex.duration || '–')"></p>
-                                        <!-- Circuit history -->
-                                        <template x-if="ex.type === 'circuit'">
-                                            <div>
-                                                <template x-for="(ce, ceIdx) in (ex.circuitExercises || [])" :key="'hist-ce-'+ceIdx">
-                                                    <p class="text-[10px] font-mono text-muted">
-                                                        <span x-text="ce.name"></span>
-                                                        <span x-show="ce.reps" x-text="' · ' + ce.reps + 'x'"></span>
-                                                        <span x-show="ce.weight" class="text-emerald-400/70" x-text="' · ' + ce.weight + 'kg'"></span>
-                                                    </p>
-                                                </template>
-                                                <p class="text-[10px] font-mono text-muted mt-0.5"
-                                                   x-text="(ex.rounds || []).filter(r => r.done).length + '/' + (ex.rounds || []).length + ' Runden'"></p>
-                                            </div>
-                                        </template>
-                                    </div>
-                                    <p x-show="ex.tracked === false && ex.done" class="text-[10px] text-emerald-400 font-mono">Erledigt ✓</p>
-                                    <p x-show="ex.tracked === false && !ex.done && !(ex.sets || []).some(s => s.done)" class="text-[10px] text-muted/50 font-mono">Nicht erledigt</p>
+                                    <p class="text-[10px] text-muted font-mono mt-0.5">
+                                        <span x-text="formatWorkoutDuration(workout.durationSeconds)"></span> &middot;
+                                        <span x-text="getWorkoutExerciseCount(workout) + ' Uebungen'"></span> &middot;
+                                        <span x-text="getWorkoutSetsCompleted(workout) + ' Sets'"></span>
+                                    </p>
                                 </div>
-                            </template>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <button x-show="workout.tracked !== false"
+                                            @click.stop="openWorkoutComparison(workout)"
+                                            class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 hover:bg-indigo-500/20 transition-all active:scale-90"
+                                            title="Vergleich anzeigen">
+                                        <i class="ph ph-chart-line-up text-sm"></i>
+                                    </button>
+                                    <button @click.stop="deleteWorkout(workoutHistory.indexOf(workout))"
+                                            class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 hover:bg-rose-500/20 transition-all active:scale-90"
+                                            title="Workout loeschen">
+                                        <i class="ph ph-trash text-sm"></i>
+                                    </button>
+                                    <span class="text-muted transition-transform duration-200" :class="expanded && 'rotate-180'">&#9660;</span>
+                                </div>
+                            </div>
+                            <div x-show="expanded" x-collapse class="mt-3 space-y-2">
+                                <template x-for="(ex, eIdx) in workout.exercises" :key="eIdx">
+                                    <div class="p-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <p class="text-xs font-bold text-foreground" x-text="ex.name"></p>
+                                            <span x-show="ex.tracked === false" class="text-[8px] text-yellow-400 font-bold uppercase">Nicht getrackt</span>
+                                        </div>
+                                        <div x-show="ex.tracked !== false" class="space-y-0.5">
+                                            <template x-for="(set, sIdx) in (ex.sets || []).filter(s => s.done)" :key="sIdx">
+                                                <p class="text-[10px] font-mono text-muted">
+                                                    <span x-text="set.weight"></span> kg x <span x-text="set.reps"></span>
+                                                </p>
+                                            </template>
+                                            <p x-show="ex.type === 'cardio' && ex.done" class="text-[10px] font-mono text-muted" x-text="'Dauer: ' + (ex.duration || '–')"></p>
+                                            <p x-show="ex.type === 'distance' && ex.done" class="text-[10px] font-mono text-muted" x-text="(ex.distance || '–') + ' km · ' + (ex.duration || '–')"></p>
+                                            <!-- Circuit history -->
+                                            <template x-if="ex.type === 'circuit'">
+                                                <div>
+                                                    <template x-for="(ce, ceIdx) in (ex.circuitExercises || [])" :key="'hist-ce-'+ceIdx">
+                                                        <p class="text-[10px] font-mono text-muted">
+                                                            <span x-text="ce.name"></span>
+                                                            <span x-show="ce.reps" x-text="' · ' + ce.reps + 'x'"></span>
+                                                            <span x-show="ce.weight" class="text-emerald-400/70" x-text="' · ' + ce.weight + 'kg'"></span>
+                                                        </p>
+                                                    </template>
+                                                    <p class="text-[10px] font-mono text-muted mt-0.5"
+                                                       x-text="(ex.rounds || []).filter(r => r.done).length + '/' + (ex.rounds || []).length + ' Runden'"></p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <p x-show="ex.tracked === false && ex.done" class="text-[10px] text-emerald-400 font-mono">Erledigt</p>
+                                        <p x-show="ex.tracked === false && !ex.done && !(ex.sets || []).some(s => s.done)" class="text-[10px] text-muted/50 font-mono">Nicht erledigt</p>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </template>
+            </div>
+            <div x-show="workoutHistory.length > 0 && filteredWorkoutHistory.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+                <i class="ph ph-magnifying-glass text-3xl text-muted/30 mb-3"></i>
+                <p class="text-sm text-muted">Keine Workouts gefunden</p>
+                <p class="text-[10px] text-muted/50 mt-1">Versuche einen anderen Suchbegriff</p>
             </div>
             <div x-show="workoutHistory.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
                 <i class="ph-bold ph-barbell text-4xl mb-4"></i>

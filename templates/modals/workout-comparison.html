@@ -37,11 +37,39 @@
         <div class="overflow-y-auto flex-1 px-5 py-4 custom-scrollbar space-y-4">
             <template x-if="workoutComparisonData">
                 <div>
+                    <!-- Workout Duration Comparison -->
+                    <div class="mb-4 p-4 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)]">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-7 h-7 rounded-lg bg-cyan-500/15 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
+                                <i class="ph ph-timer text-sm"></i>
+                            </div>
+                            <p class="text-[9px] text-muted uppercase tracking-wider font-bold">Workout-Dauer</p>
+                        </div>
+                        <div class="flex items-end gap-3">
+                            <span class="text-lg font-bold text-foreground tabular-nums" x-text="formatDurationCompare(workoutComparisonData.workout.durationSeconds)"></span>
+                            <template x-if="workoutComparisonData.previousWorkoutDuration">
+                                <span class="text-[10px] font-mono font-bold mb-0.5"
+                                      :class="workoutComparisonData.workout.durationSeconds <= workoutComparisonData.previousWorkoutDuration ? 'text-emerald-400' : 'text-rose-400'"
+                                      x-text="(() => { const diff = Math.round((workoutComparisonData.workout.durationSeconds - workoutComparisonData.previousWorkoutDuration) / 60); return (diff > 0 ? '+' : '') + diff + ' Min'; })()"></span>
+                            </template>
+                        </div>
+                        <template x-if="workoutComparisonData.previousWorkoutDuration">
+                            <p class="text-[10px] font-mono text-muted mt-1"
+                               x-text="'Vorher: ' + formatDurationCompare(workoutComparisonData.previousWorkoutDuration) + ' (' + new Date(workoutComparisonData.previousWorkoutDate).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) + ')'"></p>
+                        </template>
+                    </div>
+
                     <template x-for="(comp, cIdx) in workoutComparisonData.comparisons" :key="cIdx">
                         <div class="mb-4 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] overflow-hidden">
                             <!-- Exercise Name -->
                             <div class="px-4 py-3 border-b border-[var(--glass-border)] flex items-center justify-between">
-                                <h3 class="text-sm font-bold text-foreground" x-text="comp.name"></h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-5 h-5 rounded-md flex items-center justify-center text-[10px]"
+                                         :class="comp.type === 'strength' ? 'bg-indigo-500/15 text-indigo-400' : comp.type === 'cardio' ? 'bg-rose-500/15 text-rose-400' : comp.type === 'circuit' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400'">
+                                        <i :class="comp.type === 'strength' ? 'ph-bold ph-barbell' : comp.type === 'cardio' ? 'ph-bold ph-heart' : comp.type === 'circuit' ? 'ph-bold ph-arrows-clockwise' : 'ph-bold ph-map-pin'"></i>
+                                    </div>
+                                    <h3 class="text-sm font-bold text-foreground" x-text="comp.name"></h3>
+                                </div>
                                 <span x-show="comp.previous"
                                       class="text-[9px] font-mono text-muted"
                                       x-text="comp.previousDate ? 'vs. ' + new Date(comp.previousDate).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : ''"></span>
@@ -109,25 +137,86 @@
 
                                 <!-- Cardio/Distance comparison -->
                                 <template x-if="comp.type === 'cardio' || comp.type === 'distance'">
-                                    <div class="space-y-2">
-                                        <div class="flex items-center gap-4">
-                                            <div x-show="comp.type === 'distance'" class="flex-1">
-                                                <p class="text-[9px] text-muted uppercase font-bold mb-1">Distanz</p>
-                                                <p class="text-sm font-mono text-foreground" x-text="(comp.current.distance || '–') + ' km'"></p>
-                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted" x-text="'Vorher: ' + (comp.previous.distance || '–') + ' km'"></p>
+                                    <div class="space-y-3">
+                                        <!-- Summary cards with deltas (like strength) -->
+                                        <div class="grid gap-3" :class="comp.type === 'distance' ? 'grid-cols-2' : 'grid-cols-1'">
+                                            <div x-show="comp.type === 'distance'" class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Distanz</p>
+                                                <div class="flex items-end gap-2">
+                                                    <span class="text-lg font-bold text-foreground tabular-nums" x-text="(comp.current.distance || '–') + ' km'"></span>
+                                                    <template x-if="comp.previous && parseDistance(comp.current.distance) > 0 && parseDistance(comp.previous?.distance) > 0">
+                                                        <span class="text-[10px] font-mono font-bold mb-0.5"
+                                                              :class="parseDistance(comp.current.distance) >= parseDistance(comp.previous?.distance) ? 'text-emerald-400' : 'text-rose-400'"
+                                                              x-text="formatDelta(parseDistance(comp.current.distance), parseDistance(comp.previous?.distance))"></span>
+                                                    </template>
+                                                </div>
+                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted mt-1" x-text="'Vorher: ' + (comp.previous?.distance || '–') + ' km'"></p>
                                             </div>
-                                            <div class="flex-1">
-                                                <p class="text-[9px] text-muted uppercase font-bold mb-1">Dauer</p>
-                                                <p class="text-sm font-mono text-foreground" x-text="comp.current.duration || '–'"></p>
-                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted" x-text="'Vorher: ' + (comp.previous.duration || '–')"></p>
+                                            <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Dauer</p>
+                                                <div class="flex items-end gap-2">
+                                                    <span class="text-lg font-bold text-foreground tabular-nums" x-text="comp.current.duration || '–'"></span>
+                                                    <template x-if="comp.previous && parseDurationMinutes(comp.current.duration) > 0 && parseDurationMinutes(comp.previous?.duration) > 0">
+                                                        <span class="text-[10px] font-mono font-bold mb-0.5"
+                                                              :class="parseDurationMinutes(comp.current.duration) >= parseDurationMinutes(comp.previous?.duration) ? 'text-emerald-400' : 'text-rose-400'"
+                                                              x-text="formatDelta(parseDurationMinutes(comp.current.duration), parseDurationMinutes(comp.previous?.duration))"></span>
+                                                    </template>
+                                                </div>
+                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted mt-1" x-text="'Vorher: ' + (comp.previous?.duration || '–')"></p>
                                             </div>
                                         </div>
                                     </div>
                                 </template>
 
+                                <!-- Circuit comparison -->
+                                <template x-if="comp.type === 'circuit'">
+                                    <div class="space-y-3">
+                                        <!-- Rounds summary -->
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Runden</p>
+                                                <div class="flex items-end gap-2">
+                                                    <span class="text-lg font-bold text-foreground tabular-nums" x-text="getCircuitRoundsCompleted(comp.current) + '/' + getCircuitRoundsTotal(comp.current)"></span>
+                                                    <template x-if="comp.previous">
+                                                        <span class="text-[10px] font-mono font-bold mb-0.5"
+                                                              :class="getCircuitRoundsCompleted(comp.current) >= getCircuitRoundsCompleted(comp.previous) ? 'text-emerald-400' : 'text-rose-400'"
+                                                              x-text="formatDelta(getCircuitRoundsCompleted(comp.current), getCircuitRoundsCompleted(comp.previous))"></span>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Uebungen</p>
+                                                <span class="text-lg font-bold text-foreground tabular-nums" x-text="(comp.current.circuitExercises || []).length"></span>
+                                            </div>
+                                        </div>
+                                        <!-- Circuit exercises list -->
+                                        <div class="space-y-1">
+                                            <template x-for="(ce, ceIdx) in (comp.current.circuitExercises || [])" :key="'comp-ce-'+ceIdx">
+                                                <div class="flex items-center justify-between py-1.5 px-2 rounded-lg bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                                    <span class="text-[10px] font-medium text-foreground" x-text="ce.name"></span>
+                                                    <div class="flex items-center gap-2 text-[10px] font-mono text-muted">
+                                                        <span x-show="ce.reps" x-text="ce.reps + 'x'"></span>
+                                                        <span x-show="ce.weight" class="text-emerald-400/70" x-text="ce.weight + ' kg'"></span>
+                                                        <span x-show="ce.duration" x-text="ce.duration"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <template x-if="comp.previous">
+                                            <p class="text-[10px] font-mono text-muted" x-text="'Vorher: ' + getCircuitRoundsCompleted(comp.previous) + '/' + getCircuitRoundsTotal(comp.previous) + ' Runden'"></p>
+                                        </template>
+                                    </div>
+                                </template>
+
                                 <!-- No previous data -->
-                                <div x-show="!comp.previous" class="mt-2 text-[10px] text-muted/60 italic">
-                                    Kein vorheriges Training zum Vergleich vorhanden.
+                                <div x-show="!comp.previous" class="mt-2 flex items-center gap-3 p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                    <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center shrink-0">
+                                        <i class="ph ph-clock-counter-clockwise text-sm text-muted/50"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-muted">Kein Vergleich verfuegbar</p>
+                                        <p class="text-[9px] text-muted/50">Beim naechsten Workout wird hier der Vergleich angezeigt.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
