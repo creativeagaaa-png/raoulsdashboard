@@ -312,6 +312,22 @@ export async function saveWorkoutLog(session) {
     if (error) throw error;
 }
 
+export async function deleteWorkoutLog(id) {
+    const { error } = await db
+        .from('workout_logs')
+        .delete()
+        .eq('id', id);
+    if (error) throw error;
+}
+
+export async function clearAllWorkoutLogs() {
+    const { error } = await db
+        .from('workout_logs')
+        .delete()
+        .gte('id', 0);
+    if (error) throw error;
+}
+
 // ── Personal Records ────────────────────────────────────
 
 export async function getPersonalRecords() {
@@ -338,5 +354,13 @@ export async function savePersonalRecord(pr) {
             reps: pr.reps,
             date: pr.date
         });
+    if (error) throw error;
+}
+
+export async function clearAllPersonalRecords() {
+    const { error } = await db
+        .from('personal_records')
+        .delete()
+        .gte('id', 0);
     if (error) throw error;
 }

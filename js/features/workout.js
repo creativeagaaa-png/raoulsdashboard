@@ -277,6 +277,51 @@ export const workoutMixin = () => ({
         this.workoutHistoryOpen = false;
     },
 
+    deleteWorkout(wIdx) {
+        const workout = this.workoutHistory[wIdx];
+        if (!workout) return;
+        this.confirmModal = {
+            show: true,
+            title: 'Workout löschen',
+            message: 'Dieses Workout unwiderruflich löschen?',
+            confirmLabel: 'Löschen',
+            onConfirm: async () => {
+                const removed = this.workoutHistory.splice(wIdx, 1)[0];
+                if (removed && removed.id) {
+                    try {
+                        await Supa.deleteWorkoutLog(removed.id);
+                    } catch (e) {
+                        console.error('Failed to delete workout:', e);
+                        this.workoutHistory.splice(wIdx, 0, removed);
+                        this.showToast('Fehler beim Löschen');
+                        return;
+                    }
+                }
+                this.showToast('Workout gelöscht');
+            }
+        };
+    },
+
+    clearAllWorkouts() {
+        if (this.workoutHistory.length === 0) return;
+        this.confirmModal = {
+            show: true,
+            title: 'Alle Workouts löschen',
+            message: 'Alle ' + this.workoutHistory.length + ' Workouts unwiderruflich löschen?',
+            confirmLabel: 'Alle löschen',
+            onConfirm: async () => {
+                try {
+                    await Supa.clearAllWorkoutLogs();
+                    this.workoutHistory = [];
+                    this.showToast('Alle Workouts gelöscht');
+                } catch (e) {
+                    console.error('Failed to clear workouts:', e);
+                    this.showToast('Fehler beim Löschen');
+                }
+            }
+        };
+    },
+
     formatWorkoutDuration(seconds) {
         if (!seconds) return '0 Min';
         const mins = Math.floor(seconds / 60);

@@ -115,13 +115,6 @@ function app() {
         // Expose constants to template
         WEEKDAY_SHORT,
 
-        // Helper: get N most recent personal records
-        getRecentPRs(n = 5) {
-            return [...this.personalRecords]
-                .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-                .slice(0, n);
-        },
-
         // Training getters
         get todayTraining() {
             const idx = getTodayWeekdayIndex();
@@ -584,7 +577,9 @@ function app() {
                             Supa.saveRewards([]),
                             Supa.saveTrainingPlan(Array.from({ length: 7 }, () => [])),
                             Supa.saveLayout(DEFAULT_LAYOUT),
-                            Supa.clearAllPhotos()
+                            Supa.clearAllPhotos(),
+                            Supa.clearAllWorkoutLogs(),
+                            Supa.clearAllPersonalRecords()
                         ]);
                     } catch (e) {
                         console.error('Failed to reset data:', e);
@@ -605,6 +600,8 @@ function app() {
                     this.rewards = [];
                     this.trainingPlan = Array.from({ length: 7 }, () => []);
                     this.photoDates = [];
+                    this.workoutHistory = [];
+                    this.personalRecords = [];
                     this.widgetLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
 
                     this.settingsOpen = false;

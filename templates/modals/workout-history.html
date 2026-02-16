@@ -47,12 +47,17 @@
                                     <span x-text="getWorkoutSetsCompleted(workout) + ' Sets'"></span>
                                 </p>
                             </div>
-                            <div class="flex items-center gap-2 shrink-0">
+                            <div class="flex items-center gap-1.5 shrink-0">
                                 <button x-show="workout.tracked !== false"
                                         @click.stop="openWorkoutComparison(workout)"
                                         class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 hover:bg-indigo-500/20 transition-all active:scale-90"
                                         title="Vergleich anzeigen">
                                     <i class="ph ph-chart-line-up text-sm"></i>
+                                </button>
+                                <button @click.stop="deleteWorkout(wIdx)"
+                                        class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 hover:bg-rose-500/20 transition-all active:scale-90"
+                                        title="Workout loeschen">
+                                    <i class="ph ph-trash text-sm"></i>
                                 </button>
                                 <span class="text-muted transition-transform duration-200" :class="expanded && 'rotate-180'">&#9660;</span>
                             </div>
