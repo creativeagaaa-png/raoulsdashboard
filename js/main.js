@@ -318,7 +318,8 @@ function app() {
                 this.trainingOpen || this.milestonesOpen || this.bmiDetailOpen ||
                 this.lootboxOpen || this.progressPicsOpen || this.editMode ||
                 this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen ||
-                this.workoutPickerOpen || this.workoutComparisonOpen;
+                this.workoutPickerOpen || this.workoutComparisonOpen ||
+                this.profileDropdownOpen;
 
             document.addEventListener('touchstart', (e) => {
                 if (getScrollTop() > 5 || isAnyModalOpen() || this._ptr.refreshing) return;

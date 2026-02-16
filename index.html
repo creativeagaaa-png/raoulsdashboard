@@ -77,17 +77,16 @@
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
-                    <p class="text-muted text-[10px] font-bold tracking-[0.2em] uppercase font-mono">Health & Fitness Dashboard</p>
+                    <p class="text-muted text-[11px] font-bold tracking-[0.2em] uppercase font-mono">Health & Fitness Dashboard</p>
                 </div>
-                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">
                     Hello, <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">Raoul</span>
                 </h1>
             </div>
 
-            <div class="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end relative"
-                 @click.outside="closeProfileDropdown()">
+            <div class="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
                 <div class="glass-panel p-1.5 pr-4 md:pr-5 rounded-full flex items-center gap-3 md:gap-4 hover:border-white/20 transition-colors duration-300 cursor-pointer select-none"
-                     role="button" tabindex="0" aria-label="Menü öffnen" aria-haspopup="true" :aria-expanded="profileDropdownOpen"
+                     role="button" tabindex="0" aria-label="Menü öffnen"
                      @click="toggleProfileDropdown()" @keydown.enter="toggleProfileDropdown()">
                     <div class="h-9 w-9 md:h-10 md:w-10 rounded-full bg-surface-highlight border border-white/10 overflow-hidden relative group">
                         <img src="https://ui-avatars.com/api/?name=Raoul+Agachi&background=000&color=fff&bold=true" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Avatar">
@@ -103,65 +102,6 @@
                                      :class="i <= Math.min(streakDays, 5) ? 'bg-accent shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'bg-white/10'" aria-hidden="true"></div>
                             </template>
                         </div>
-                    </div>
-                    <i class="ph ph-caret-down text-xs text-muted transition-transform duration-300" :class="profileDropdownOpen ? 'rotate-180' : ''"></i>
-                </div>
-
-                <!-- Dropdown Menu -->
-                <div x-show="profileDropdownOpen" x-cloak
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
-                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                     x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                     class="profile-dropdown absolute right-0 top-full mt-2 w-56 z-50"
-                     role="menu" aria-label="Profilmenü">
-                    <div class="bg-surface/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden py-1.5">
-
-                        <button @click="openProfile(); closeProfileDropdown()" class="profile-dropdown-item" role="menuitem">
-                            <div class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 shrink-0">
-                                <i class="ph ph-user text-sm text-white/60"></i>
-                            </div>
-                            <div class="flex flex-col items-start">
-                                <span class="text-xs font-bold text-white">Persönliche Daten</span>
-                                <span class="text-[10px] text-muted">Gewicht, Größe, Ziele</span>
-                            </div>
-                        </button>
-
-                        <button @click="openTraining(); closeProfileDropdown()" class="profile-dropdown-item" role="menuitem">
-                            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0 relative">
-                                <i class="ph-bold ph-barbell text-sm text-emerald-400"></i>
-                                <span x-show="!isRestDay" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-[1.5px] border-surface animate-pulse" aria-hidden="true"></span>
-                            </div>
-                            <div class="flex flex-col items-start">
-                                <span class="text-xs font-bold text-white">Trainingsplan</span>
-                                <span class="text-[10px] text-muted">Wochenplan bearbeiten</span>
-                            </div>
-                        </button>
-
-                        <button @click="openMilestones(); closeProfileDropdown()" class="profile-dropdown-item" role="menuitem">
-                            <div class="w-8 h-8 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 shrink-0 relative">
-                                <i class="ph-bold ph-trophy text-sm text-yellow-400"></i>
-                                <span x-show="rewards.length > 0" class="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 bg-yellow-500 rounded-full border-[1.5px] border-surface text-[8px] font-bold flex items-center justify-center text-black" x-text="rewards.filter(r => currentWeight <= r.target).length"></span>
-                            </div>
-                            <div class="flex flex-col items-start">
-                                <span class="text-xs font-bold text-white">Milestones</span>
-                                <span class="text-[10px] text-muted">Ziele & Belohnungen</span>
-                            </div>
-                        </button>
-
-                        <div class="mx-3 my-1.5 border-t border-white/5"></div>
-
-                        <button @click="openSettings(); closeProfileDropdown()" class="profile-dropdown-item" role="menuitem">
-                            <div class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 shrink-0">
-                                <i class="ph ph-gear text-sm text-white/60"></i>
-                            </div>
-                            <div class="flex flex-col items-start">
-                                <span class="text-xs font-bold text-white">Einstellungen</span>
-                                <span class="text-[10px] text-muted">Daten & Verwaltung</span>
-                            </div>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -774,11 +714,86 @@
 
     </main>
 
+    <!-- Quick Menu Overlay -->
+    <div class="fixed inset-0 z-[55] flex items-end justify-center modal-mobile-sheet"
+         :class="profileDropdownOpen ? 'pointer-events-auto' : 'pointer-events-none'"
+         role="dialog" aria-modal="true" aria-label="Menü">
+
+        <div class="absolute inset-0 bg-[#050505]/80 backdrop-blur-md"
+             x-show="profileDropdownOpen"
+             x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             @click="closeProfileDropdown()"></div>
+
+        <div class="bg-surface border border-white/10 rounded-t-3xl w-full max-w-md relative z-10 shadow-2xl overflow-hidden"
+             x-show="profileDropdownOpen"
+             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+             style="padding-bottom: env(safe-area-inset-bottom)">
+
+            <!-- Drag Handle -->
+            <div class="flex justify-center pt-3 pb-2">
+                <div class="w-10 h-1 rounded-full bg-white/15"></div>
+            </div>
+
+            <div class="px-5 pb-5 pt-1 space-y-1.5">
+
+                <button @click="openProfile(); closeProfileDropdown()" class="quick-menu-item group">
+                    <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 shrink-0 group-active:scale-90 transition-transform">
+                        <i class="ph ph-user text-lg text-white/60"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-sm font-bold text-white block">Persönliche Daten</span>
+                        <span class="text-[11px] text-muted block mt-0.5">Gewicht, Größe, Ziele</span>
+                    </div>
+                    <i class="ph ph-caret-right text-sm text-white/20"></i>
+                </button>
+
+                <button @click="openTraining(); closeProfileDropdown()" class="quick-menu-item group">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0 relative group-active:scale-90 transition-transform">
+                        <i class="ph-bold ph-barbell text-lg text-emerald-400"></i>
+                        <span x-show="!isRestDay" class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-surface animate-pulse" aria-hidden="true"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-sm font-bold text-white block">Trainingsplan</span>
+                        <span class="text-[11px] text-muted block mt-0.5">Wochenplan bearbeiten</span>
+                    </div>
+                    <i class="ph ph-caret-right text-sm text-white/20"></i>
+                </button>
+
+                <button @click="openMilestones(); closeProfileDropdown()" class="quick-menu-item group">
+                    <div class="w-10 h-10 rounded-2xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 shrink-0 relative group-active:scale-90 transition-transform">
+                        <i class="ph-bold ph-trophy text-lg text-yellow-400"></i>
+                        <span x-show="rewards.length > 0" class="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 bg-yellow-500 rounded-full border-2 border-surface text-[9px] font-bold flex items-center justify-center text-black" x-text="rewards.filter(r => currentWeight <= r.target).length"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-sm font-bold text-white block">Milestones</span>
+                        <span class="text-[11px] text-muted block mt-0.5">Ziele & Belohnungen</span>
+                    </div>
+                    <i class="ph ph-caret-right text-sm text-white/20"></i>
+                </button>
+
+                <div class="border-t border-white/5 my-2"></div>
+
+                <button @click="openSettings(); closeProfileDropdown()" class="quick-menu-item group">
+                    <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 shrink-0 group-active:scale-90 transition-transform">
+                        <i class="ph ph-gear text-lg text-white/60"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-sm font-bold text-white block">Einstellungen</span>
+                        <span class="text-[11px] text-muted block mt-0.5">Daten & Verwaltung</span>
+                    </div>
+                    <i class="ph ph-caret-right text-sm text-white/20"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile FAB: Log Weight (visible only on mobile, only on health tab) -->
     <button @click="activeTab === 'health' ? openModal() : openWorkoutPicker()"
             class="mobile-fab md:hidden transition-transform duration-150"
             :aria-label="activeTab === 'health' ? 'Log Weight' : 'Workout starten'"
-            x-show="appLoaded && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !milestonesOpen && !bmiDetailOpen && !lootboxOpen && !workoutOpen && !workoutHistoryOpen && !prCelebrationOpen && !workoutPickerOpen && !workoutComparisonOpen && !progressPicsOpen"
+            x-show="appLoaded && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !milestonesOpen && !bmiDetailOpen && !lootboxOpen && !workoutOpen && !workoutHistoryOpen && !prCelebrationOpen && !workoutPickerOpen && !workoutComparisonOpen && !progressPicsOpen && !profileDropdownOpen"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-75"
             x-transition:enter-end="opacity-100 scale-100">
