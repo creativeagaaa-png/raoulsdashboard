@@ -412,3 +412,12 @@ export async function upsertStepEntry(date, steps) {
         .upsert({ date, steps }, { onConflict: 'date' });
     if (error) throw error;
 }
+
+export async function getStepHistory() {
+    const { data, error } = await db
+        .from('step_entries')
+        .select('date, steps')
+        .order('date', { ascending: false });
+    if (error) throw error;
+    return (data || []).map(e => ({ date: e.date, steps: Number(e.steps) }));
+}

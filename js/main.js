@@ -33,6 +33,7 @@ import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
 import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
 import workoutComparisonModal from '../templates/modals/workout-comparison.html?raw';
 import prCelebrationModal from '../templates/modals/pr-celebration.html?raw';
+import stepsLogModal from '../templates/modals/steps-log.html?raw';
 
 Chart.register(...registerables);
 window.confetti = confetti;
@@ -55,7 +56,8 @@ if (modalsContainer) {
         workoutHistoryModal,
         workoutPickerModal,
         workoutComparisonModal,
-        prCelebrationModal
+        prCelebrationModal,
+        stepsLogModal
     ].join('\n');
 }
 
@@ -139,6 +141,11 @@ function app() {
         todaySteps: 0,
         displaySteps: 0,
         _stepsCelebrated: false,
+        stepsLogOpen: false,
+        stepsHistory: [],
+        stepsInput: '',
+        stepsInputDate: new Date().toISOString().split('T')[0],
+        stepsLogView: 'days',
 
         // --- MIXINS ---
         ...settingsMixin(),
@@ -353,7 +360,7 @@ function app() {
                 this.lootboxOpen || this.progressPicsOpen || this.editMode ||
                 this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen ||
                 this.workoutPickerOpen || this.workoutComparisonOpen ||
-                this.profileDropdownOpen;
+                this.profileDropdownOpen || this.stepsLogOpen;
 
             document.addEventListener('touchstart', (e) => {
                 if (getScrollTop() > 5 || isAnyModalOpen() || this._ptr.refreshing) return;
@@ -700,6 +707,7 @@ function app() {
                     this.personalRecords = [];
                     this.todaySteps = 0;
                     this._stepsCelebrated = false;
+                    this.stepsHistory = [];
                     this.widgetLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
 
                     this.settingsOpen = false;
@@ -732,6 +740,101 @@ function app() {
                 this.showToast('10.000 Schritte erreicht! 🎉');
                 setTimeout(() => this.triggerConfetti(), 300);
             }
+        },
+
+        async openStepsLog() {
+            hapticLight();
+            this.stepsLogOpen = true;
+            this.stepsInput = '';
+            this.stepsInputDate = new Date().toISOString().split('T')[0];
+            try {
+                this.stepsHistory = await Supa.getStepHistory();
+            } catch (e) {
+                console.error('Failed to load step history:', e);
+                this.stepsHistory = [];
+            }
+        },
+        closeStepsLog() {
+            this.stepsLogOpen = false;
+        },
+
+        async saveManualSteps() {
+            const steps = parseInt(this.stepsInput);
+            if (!steps || isNaN(steps) || steps < 0) return;
+            const date = this.stepsInputDate;
+
+            hapticSuccess();
+            const oldSteps = this.todaySteps;
+
+            try {
+                await Supa.upsertStepEntry(date, steps);
+            } catch (e) {
+                console.error('Failed to save steps:', e);
+                this.showToast('Fehler beim Speichern');
+                return;
+            }
+
+            // Update today's steps if the entry is for today
+            const today = new Date().toISOString().split('T')[0];
+            if (date === today) {
+                this.todaySteps = steps;
+                this.checkStepsCelebration(oldSteps, steps);
+                this.refreshAnimations();
+            }
+
+            // Update history in modal
+            const existing = this.stepsHistory.findIndex(e => e.date === date);
+            if (existing >= 0) {
+                this.stepsHistory[existing].steps = steps;
+            } else {
+                this.stepsHistory.push({ date, steps });
+                this.stepsHistory.sort((a, b) => b.date.localeCompare(a.date));
+            }
+
+            this.stepsInput = '';
+            this.showToast(steps.toLocaleString('de-DE') + ' Schritte gespeichert');
+        },
+
+        get stepsWeekAvg() {
+            const now = new Date();
+            const weekAgo = new Date(now);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekStr = weekAgo.toISOString().split('T')[0];
+            const entries = this.stepsHistory.filter(e => e.date >= weekStr);
+            if (entries.length === 0) return 0;
+            return Math.round(entries.reduce((s, e) => s + e.steps, 0) / entries.length);
+        },
+
+        get stepsMonthAvg() {
+            const now = new Date();
+            const monthAgo = new Date(now);
+            monthAgo.setDate(monthAgo.getDate() - 30);
+            const monthStr = monthAgo.toISOString().split('T')[0];
+            const entries = this.stepsHistory.filter(e => e.date >= monthStr);
+            if (entries.length === 0) return 0;
+            return Math.round(entries.reduce((s, e) => s + e.steps, 0) / entries.length);
+        },
+
+        get stepsMonthly() {
+            const groups = {};
+            for (const entry of this.stepsHistory) {
+                const key = entry.date.substring(0, 7); // YYYY-MM
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(entry.steps);
+            }
+            return Object.keys(groups).sort().reverse().map(key => {
+                const steps = groups[key];
+                const [y, m] = key.split('-');
+                const label = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+                return {
+                    key,
+                    label,
+                    days: steps.length,
+                    total: steps.reduce((s, v) => s + v, 0),
+                    avg: Math.round(steps.reduce((s, v) => s + v, 0) / steps.length),
+                    best: Math.max(...steps)
+                };
+            });
         },
 
         // --- COMPUTED / HELPERS ---
@@ -854,6 +957,7 @@ function app() {
         handleEscape() {
             if (this.profileDropdownOpen) { this.closeProfileDropdown(); return; }
             if (this.confirmModal.show) { this.cancelConfirm(); return; }
+            if (this.stepsLogOpen) { this.closeStepsLog(); return; }
             if (this.workoutComparisonOpen) { this.closeWorkoutComparison(); return; }
             if (this.prCelebrationOpen) { this.closePRCelebration(); return; }
             if (this.workoutHistoryOpen) { this.closeWorkoutHistory(); return; }
