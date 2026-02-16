@@ -10,11 +10,8 @@ export const DEFAULT_REWARDS = [];
 export const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export const STEPS_GOAL = 10000;
-
 export const WIDGET_REGISTRY = {
     'current-status': { label: 'Status' },
-    'steps': { label: 'Steps' },
     'prediction': { label: 'Prediction' },
     'analytics': { label: 'Analytics' },
     'milestone': { label: 'Milestone' },
@@ -30,7 +27,7 @@ export const TRAINING_WIDGET_REGISTRY = {
 };
 
 export const DEFAULT_LAYOUT = {
-    left: ['current-status', 'steps', 'prediction'],
+    left: ['current-status', 'prediction'],
     right: ['analytics', 'milestone', 'achievements', 'progress-pics', 'logs']
 };
 

@@ -14,7 +14,6 @@ import { layoutMixin } from './features/layout.js';
 import { workoutMixin } from './features/workout.js';
 import { restTimerMixin } from './features/rest-timer.js';
 import { recordsMixin } from './features/records.js';
-import { stepsMixin } from './features/steps.js';
 import { hapticLight, hapticMedium, hapticSuccess, hapticWarning, hapticSelection } from './utils/haptics.js';
 import { registerSwipeDismiss } from './utils/swipe-dismiss.js';
 
@@ -34,7 +33,6 @@ import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
 import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
 import workoutComparisonModal from '../templates/modals/workout-comparison.html?raw';
 import prCelebrationModal from '../templates/modals/pr-celebration.html?raw';
-import stepsLogModal from '../templates/modals/steps-log.html?raw';
 
 Chart.register(...registerables);
 window.confetti = confetti;
@@ -57,8 +55,7 @@ if (modalsContainer) {
         workoutHistoryModal,
         workoutPickerModal,
         workoutComparisonModal,
-        prCelebrationModal,
-        stepsLogModal
+        prCelebrationModal
     ].join('\n');
 }
 
@@ -147,7 +144,6 @@ function app() {
         ...workoutMixin(),
         ...restTimerMixin(),
         ...recordsMixin(),
-        ...stepsMixin(),
 
         // --- MIXIN GETTERS (must be defined here, not in mixins, because spread destroys getters) ---
 
@@ -242,7 +238,7 @@ function app() {
         // --- INIT ---
         async initApp() {
             try {
-                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords, workoutLogs, todaySteps] =
+                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords, workoutLogs] =
                     await Promise.all([
                         Supa.getSettings().catch(() => null),
                         Supa.getRewards().catch(() => []),
@@ -251,8 +247,7 @@ function app() {
                         Supa.getWeightEntries().catch(() => []),
                         Supa.getAllPhotoDates().catch(() => []),
                         Supa.getPersonalRecords().catch(() => []),
-                        Supa.getWorkoutLogs().catch(() => []),
-                        Supa.getTodaySteps().catch(() => 0)
+                        Supa.getWorkoutLogs().catch(() => [])
                     ]);
 
                 // Apply settings
@@ -310,9 +305,6 @@ function app() {
                 this.workoutHistory = workoutLogs || [];
                 this.workoutHistoryLoaded = true;
 
-                // Apply today's steps
-                this.todaySteps = todaySteps || 0;
-
             } catch (e) {
                 console.error('Failed to initialize app:', e);
             }
@@ -360,7 +352,7 @@ function app() {
                 this.lootboxOpen || this.progressPicsOpen ||
                 this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen ||
                 this.workoutPickerOpen || this.workoutComparisonOpen ||
-                this.profileDropdownOpen || this.stepsLogOpen;
+                this.profileDropdownOpen;
 
             document.addEventListener('touchstart', (e) => {
                 if (getScrollTop() > 5 || isAnyModalOpen() || this._ptr.refreshing) return;
@@ -439,7 +431,7 @@ function app() {
 
         async refreshDashboard() {
             try {
-                const [settings, rewards, trainingPlan, weightEntries, photoDates, workoutLogs, personalRecords, todaySteps] =
+                const [settings, rewards, trainingPlan, weightEntries, photoDates, workoutLogs, personalRecords] =
                     await Promise.all([
                         Supa.getSettings().catch(() => null),
                         Supa.getRewards().catch(() => []),
@@ -447,8 +439,7 @@ function app() {
                         Supa.getWeightEntries().catch(() => []),
                         Supa.getAllPhotoDates().catch(() => []),
                         Supa.getWorkoutLogs().catch(() => []),
-                        Supa.getPersonalRecords().catch(() => []),
-                        Supa.getTodaySteps().catch(() => 0)
+                        Supa.getPersonalRecords().catch(() => [])
                     ]);
 
                 if (settings) {
@@ -466,11 +457,6 @@ function app() {
                 this.workoutHistory = workoutLogs || [];
                 this.workoutHistoryLoaded = true;
                 this.personalRecords = personalRecords || [];
-
-                // Apply steps and check celebration
-                const oldSteps = this.todaySteps;
-                this.todaySteps = todaySteps || 0;
-                this.checkStepsCelebration(oldSteps, this.todaySteps);
 
                 this.$nextTick(() => {
                     this.updateChart();
@@ -705,9 +691,6 @@ function app() {
                     this.photoDates = [];
                     this.workoutHistory = [];
                     this.personalRecords = [];
-                    this.todaySteps = 0;
-                    this._stepsCelebrated = false;
-                    this.stepsHistory = [];
                     this.widgetLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
 
                     this.settingsOpen = false;
@@ -838,7 +821,6 @@ function app() {
         handleEscape() {
             if (this.profileDropdownOpen) { this.closeProfileDropdown(); return; }
             if (this.confirmModal.show) { this.cancelConfirm(); return; }
-            if (this.stepsLogOpen) { this.closeStepsLog(); return; }
             if (this.workoutComparisonOpen) { this.closeWorkoutComparison(); return; }
             if (this.prCelebrationOpen) { this.closePRCelebration(); return; }
             if (this.workoutHistoryOpen) { this.closeWorkoutHistory(); return; }
@@ -914,7 +896,6 @@ function app() {
             this.animateTo('displayBmi', safeBmi, 600);
             this.animateTo('displayProgress', parseFloat(this.globalProgress), 1000);
             this.animateTo('displayLost', this.startWeight - this.currentWeight, 700);
-            this.animateTo('displaySteps', this.todaySteps, 800);
         },
 
         // --- CHARTING ---

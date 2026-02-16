@@ -8,7 +8,6 @@ vi.mock('../store/supabase.js', () => ({
 vi.mock('../utils/constants.js', () => ({
     WIDGET_REGISTRY: {
         'current-status': { label: 'Status' },
-        'steps': { label: 'Steps' },
         'prediction': { label: 'Prediction' },
         'analytics': { label: 'Analytics' },
         'milestone': { label: 'Milestone' },
@@ -17,7 +16,7 @@ vi.mock('../utils/constants.js', () => ({
         'logs': { label: 'Logs' }
     },
     DEFAULT_LAYOUT: {
-        left: ['current-status', 'steps', 'prediction'],
+        left: ['current-status', 'prediction'],
         right: ['analytics', 'milestone', 'achievements', 'progress-pics', 'logs']
     }
 }));
@@ -37,7 +36,7 @@ function createMixin(overrides = {}) {
 describe('initial state', () => {
     it('has correct default layout with left widgets', () => {
         const m = createMixin();
-        expect(m.widgetLayout.left).toEqual(['current-status', 'steps', 'prediction']);
+        expect(m.widgetLayout.left).toEqual(['current-status', 'prediction']);
     });
 
     it('has correct default layout with right widgets', () => {
@@ -58,7 +57,7 @@ describe('resetLayout', () => {
         await m.resetLayout();
         
         // Should be back to default
-        expect(m.widgetLayout.left).toEqual(['current-status', 'steps', 'prediction']);
+        expect(m.widgetLayout.left).toEqual(['current-status', 'prediction']);
         expect(m.widgetLayout.right).toEqual(['analytics', 'milestone', 'achievements', 'progress-pics', 'logs']);
         
         // Should show toast
