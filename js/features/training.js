@@ -10,7 +10,7 @@ export const trainingMixin = () => ({
     trainingPlan: WEEKDAYS.map(() => []),
     trainingForm: WEEKDAYS.map(() => []),
     trainingDirty: false,
-    trainingNewExercise: { name: '', sets: '', reps: '', note: '' },
+    trainingNewExercise: { name: '', sets: '', reps: '', note: '', type: 'strength' },
 
     async saveTrainingPlan() {
         try {
@@ -40,7 +40,7 @@ export const trainingMixin = () => ({
         this.trainingSelectedDay = getTodayWeekdayIndex();
         this.trainingForm = JSON.parse(JSON.stringify(this.trainingPlan));
         this.trainingDirty = false;
-        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '' };
+        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength' };
         this.trainingOpen = true;
     },
 
@@ -63,13 +63,23 @@ export const trainingMixin = () => ({
     addExercise() {
         const ex = this.trainingNewExercise;
         if (!ex.name || String(ex.name).trim() === '') return;
-        this.trainingForm[this.trainingSelectedDay].push({
+        const type = ex.type || 'strength';
+        const entry = {
             name: String(ex.name).trim(),
-            sets: parseInt(ex.sets) || 0,
-            reps: String(ex.reps).trim() || '',
+            type,
             note: String(ex.note).trim() || ''
-        });
-        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '' };
+        };
+        if (type === 'strength') {
+            entry.sets = parseInt(ex.sets) || 0;
+            entry.reps = String(ex.reps).trim() || '';
+        } else if (type === 'cardio') {
+            entry.duration = String(ex.reps).trim() || '';
+        } else if (type === 'distance') {
+            entry.distance = String(ex.sets).trim() || '';
+            entry.duration = String(ex.reps).trim() || '';
+        }
+        this.trainingForm[this.trainingSelectedDay].push(entry);
+        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength' };
         this.trainingDirty = true;
     },
 

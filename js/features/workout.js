@@ -18,17 +18,43 @@ export const workoutMixin = () => ({
         const todayPlan = this.trainingPlan[dayIdx] || [];
         if (todayPlan.length === 0) return;
 
-        const exercises = todayPlan.map(ex => ({
-            name: ex.name,
-            planned_sets: parseInt(ex.sets) || 3,
-            planned_reps: ex.reps || '',
-            note: ex.note || '',
-            sets: Array.from({ length: parseInt(ex.sets) || 3 }, () => ({
-                weight: 0,
-                reps: 0,
-                done: false
-            }))
-        }));
+        const exercises = todayPlan.map(ex => {
+            const type = ex.type || 'strength';
+            if (type === 'strength') {
+                return {
+                    name: ex.name,
+                    type,
+                    planned_sets: parseInt(ex.sets) || 3,
+                    planned_reps: ex.reps || '',
+                    note: ex.note || '',
+                    sets: Array.from({ length: parseInt(ex.sets) || 3 }, () => ({
+                        weight: 0,
+                        reps: 0,
+                        done: false
+                    }))
+                };
+            } else if (type === 'cardio') {
+                return {
+                    name: ex.name,
+                    type,
+                    planned_duration: ex.duration || '',
+                    note: ex.note || '',
+                    duration: '',
+                    done: false
+                };
+            } else {
+                return {
+                    name: ex.name,
+                    type,
+                    planned_distance: ex.distance || '',
+                    planned_duration: ex.duration || '',
+                    note: ex.note || '',
+                    distance: '',
+                    duration: '',
+                    done: false
+                };
+            }
+        });
 
         this.workoutSession = {
             date: new Date().toISOString().split('T')[0],
@@ -59,6 +85,13 @@ export const workoutMixin = () => ({
         }
     },
 
+    // --- Toggle Cardio/Distance Exercise Done ---
+    toggleExerciseDone(exIdx) {
+        if (!this.workoutSession) return;
+        const ex = this.workoutSession.exercises[exIdx];
+        ex.done = !ex.done;
+    },
+
     // --- Add Extra Set ---
     addWorkoutSet(exIdx) {
         if (!this.workoutSession) return;
@@ -82,10 +115,20 @@ export const workoutMixin = () => ({
     // --- Workout Completion ---
     get workoutCompletionPercent() {
         if (!this.workoutSession) return 0;
-        const allSets = this.workoutSession.exercises.flatMap(e => e.sets);
-        if (allSets.length === 0) return 0;
-        const done = allSets.filter(s => s.done).length;
-        return Math.round((done / allSets.length) * 100);
+        let total = 0;
+        let done = 0;
+        for (const ex of this.workoutSession.exercises) {
+            if (ex.type === 'cardio' || ex.type === 'distance') {
+                total++;
+                if (ex.done) done++;
+            } else {
+                const sets = ex.sets || [];
+                total += sets.length;
+                done += sets.filter(s => s.done).length;
+            }
+        }
+        if (total === 0) return 0;
+        return Math.round((done / total) * 100);
     },
 
     // --- Complete Workout ---

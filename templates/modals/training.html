@@ -17,7 +17,7 @@
         <div class="p-6 border-b border-white/5 flex justify-between items-center bg-surface z-20 shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
-                    <span class="text-lg">🏋️</span>
+                    <i class="ph-bold ph-barbell text-lg"></i>
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-white">Training Plan</h2>
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <button type="button" @click="closeTraining()" class="text-muted hover:text-white transition-colors p-2 -mr-2 hover:bg-white/5 rounded-xl">
-                <span class="text-lg">✕</span>
+                <i class="ph ph-x text-lg"></i>
             </button>
         </div>
 
@@ -56,9 +56,18 @@
                             <div class="flex items-center gap-3 flex-1 min-w-0">
                                 <span class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs font-bold tabular-nums shrink-0" x-text="exIdx + 1"></span>
                                 <div class="flex-1 min-w-0">
-                                    <input type="text" x-model="ex.name" @input="markTrainingDirty()"
-                                           class="w-full bg-transparent border-none p-0 text-sm font-bold text-white focus:outline-none placeholder-white/20" placeholder="Exercise name">
-                                    <div class="flex items-center gap-3 mt-1.5">
+                                    <div class="flex items-center gap-2">
+                                        <input type="text" x-model="ex.name" @input="markTrainingDirty()"
+                                               class="flex-1 bg-transparent border-none p-0 text-sm font-bold text-white focus:outline-none placeholder-white/20" placeholder="Exercise name">
+                                        <select x-model="ex.type" @change="markTrainingDirty()"
+                                                class="bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[10px] text-muted font-bold uppercase focus:outline-none focus:border-white/20 appearance-none cursor-pointer">
+                                            <option value="strength">Kraft</option>
+                                            <option value="cardio">Cardio</option>
+                                            <option value="distance">Distanz</option>
+                                        </select>
+                                    </div>
+                                    <!-- Strength: Sets x Reps -->
+                                    <div x-show="(ex.type || 'strength') === 'strength'" class="flex items-center gap-3 mt-1.5">
                                         <div class="flex items-center gap-1">
                                             <input type="number" x-model="ex.sets" @input="markTrainingDirty()"
                                                    class="w-10 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="0">
@@ -71,17 +80,38 @@
                                             <span class="text-[10px] text-muted">Reps</span>
                                         </div>
                                     </div>
+                                    <!-- Cardio: Duration -->
+                                    <div x-show="ex.type === 'cardio'" class="flex items-center gap-3 mt-1.5">
+                                        <div class="flex items-center gap-1">
+                                            <input type="text" x-model="ex.duration" @input="markTrainingDirty()"
+                                                   class="w-20 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="30 min">
+                                            <span class="text-[10px] text-muted">Dauer</span>
+                                        </div>
+                                    </div>
+                                    <!-- Distance: Distance + Duration -->
+                                    <div x-show="ex.type === 'distance'" class="flex items-center gap-3 mt-1.5">
+                                        <div class="flex items-center gap-1">
+                                            <input type="text" x-model="ex.distance" @input="markTrainingDirty()"
+                                                   class="w-14 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="5">
+                                            <span class="text-[10px] text-muted">km</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <input type="text" x-model="ex.duration" @input="markTrainingDirty()"
+                                                   class="w-20 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="30 min">
+                                            <span class="text-[10px] text-muted">Dauer</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-1 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
                                 <button @click="moveExercise(trainingSelectedDay, exIdx, -1)" class="p-1 text-muted hover:text-white transition-colors" :class="exIdx === 0 && 'opacity-30 pointer-events-none'">
-                                    <span class="text-xs">▲</span>
+                                    <i class="ph ph-caret-up text-xs"></i>
                                 </button>
                                 <button @click="removeExercise(trainingSelectedDay, exIdx)" class="p-1 text-muted hover:text-rose-400 transition-colors">
-                                    <span class="text-xs">🗑️</span>
+                                    <i class="ph ph-trash text-xs"></i>
                                 </button>
                                 <button @click="moveExercise(trainingSelectedDay, exIdx, 1)" class="p-1 text-muted hover:text-white transition-colors" :class="exIdx === trainingForm[trainingSelectedDay].length - 1 && 'opacity-30 pointer-events-none'">
-                                    <span class="text-xs">▼</span>
+                                    <i class="ph ph-caret-down text-xs"></i>
                                 </button>
                             </div>
                         </div>
@@ -96,7 +126,7 @@
             <div x-show="trainingForm[trainingSelectedDay].length === 0"
                  class="flex flex-col items-center justify-center py-10 text-center">
                 <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mb-4">
-                    <span class="text-3xl text-white/20">🌙</span>
+                    <i class="ph ph-moon-stars text-3xl text-white/20"></i>
                 </div>
                 <p class="text-sm font-medium text-white/40 mb-1">Rest Day</p>
                 <p class="text-[11px] text-muted">Keine Übungen geplant. Füge welche hinzu!</p>
@@ -107,18 +137,43 @@
                 <div class="space-y-3">
                     <input type="text" x-model="trainingNewExercise.name" @keydown.enter="addExercise()"
                            class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-sm text-white font-medium focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Name der Übung">
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="relative">
-                            <input type="number" x-model="trainingNewExercise.sets" @keydown.enter="addExercise()"
-                                   class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Sets">
-                        </div>
-                        <div class="relative">
-                            <input type="text" x-model="trainingNewExercise.reps" @keydown.enter="addExercise()"
-                                   class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Reps">
-                        </div>
+                    <div class="flex gap-1.5">
+                        <template x-for="t in [{id:'strength',label:'Kraft'},{id:'cardio',label:'Cardio'},{id:'distance',label:'Distanz'}]" :key="t.id">
+                            <button type="button" @click="trainingNewExercise.type = t.id"
+                                    class="flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border"
+                                    :class="trainingNewExercise.type === t.id ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-muted border-white/5 hover:bg-white/10'"
+                                    x-text="t.label"></button>
+                        </template>
+                    </div>
+                    <!-- Strength fields -->
+                    <div x-show="trainingNewExercise.type === 'strength'" class="grid grid-cols-3 gap-2">
+                        <input type="number" x-model="trainingNewExercise.sets" @keydown.enter="addExercise()"
+                               class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Sets">
+                        <input type="text" x-model="trainingNewExercise.reps" @keydown.enter="addExercise()"
+                               class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Reps">
                         <button @click="addExercise()"
                                 class="py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
-                            <span>＋</span> Add
+                            <i class="ph ph-plus"></i> Add
+                        </button>
+                    </div>
+                    <!-- Cardio fields -->
+                    <div x-show="trainingNewExercise.type === 'cardio'" class="grid grid-cols-2 gap-2">
+                        <input type="text" x-model="trainingNewExercise.reps" @keydown.enter="addExercise()"
+                               class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Dauer (z.B. 30 min)">
+                        <button @click="addExercise()"
+                                class="py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
+                            <i class="ph ph-plus"></i> Add
+                        </button>
+                    </div>
+                    <!-- Distance fields -->
+                    <div x-show="trainingNewExercise.type === 'distance'" class="grid grid-cols-3 gap-2">
+                        <input type="text" x-model="trainingNewExercise.sets" @keydown.enter="addExercise()"
+                               class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Distanz (km)">
+                        <input type="text" x-model="trainingNewExercise.reps" @keydown.enter="addExercise()"
+                               class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Dauer">
+                        <button @click="addExercise()"
+                                class="py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
+                            <i class="ph ph-plus"></i> Add
                         </button>
                     </div>
                     <input type="text" x-model="trainingNewExercise.note" @keydown.enter="addExercise()"

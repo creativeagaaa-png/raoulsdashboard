@@ -19,7 +19,7 @@
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
-                        <span class="text-lg">🏋️</span>
+                        <i class="ph-bold ph-barbell text-lg"></i>
                     </div>
                     <div>
                         <h2 class="text-lg font-bold text-foreground">Workout</h2>
@@ -28,7 +28,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" @click="closeWorkout()" class="text-muted hover:text-foreground transition-colors p-2 hover:bg-[var(--glass)] rounded-xl">
-                        <span class="text-lg">✕</span>
+                        <i class="ph ph-x text-lg"></i>
                     </button>
                 </div>
             </div>
@@ -49,15 +49,21 @@
                         <!-- Exercise Header -->
                         <div class="px-4 py-3 border-b border-[var(--glass-border)]">
                             <div class="flex items-center justify-between">
-                                <h3 class="text-sm font-bold text-foreground" x-text="exercise.name"></h3>
-                                <span class="text-[10px] font-mono text-muted" x-text="exercise.planned_sets + 'x' + exercise.planned_reps"></span>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-sm font-bold text-foreground" x-text="exercise.name"></h3>
+                                    <span x-show="exercise.type && exercise.type !== 'strength'"
+                                          class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase"
+                                          :class="exercise.type === 'cardio' ? 'bg-orange-500/15 text-orange-400' : 'bg-blue-500/15 text-blue-400'"
+                                          x-text="exercise.type === 'cardio' ? 'Cardio' : 'Distanz'"></span>
+                                </div>
+                                <span class="text-[10px] font-mono text-muted"
+                                      x-text="(exercise.type || 'strength') === 'strength' ? exercise.planned_sets + 'x' + exercise.planned_reps : (exercise.type === 'cardio' ? (exercise.planned_duration || '') : ((exercise.planned_distance || '') + ' km'))"></span>
                             </div>
                             <p x-show="exercise.note" class="text-[10px] text-muted mt-0.5" x-text="exercise.note"></p>
                         </div>
 
-                        <!-- Sets -->
-                        <div class="px-4 py-2 space-y-1.5">
-                            <!-- Header row -->
+                        <!-- Strength: Sets with weight/reps -->
+                        <div x-show="(exercise.type || 'strength') === 'strength'" class="px-4 py-2 space-y-1.5">
                             <div class="grid grid-cols-[2rem,1fr,1fr,2.5rem] gap-2 text-[9px] text-muted uppercase tracking-wider font-bold px-1">
                                 <span>Set</span>
                                 <span>Kg</span>
@@ -65,7 +71,7 @@
                                 <span></span>
                             </div>
                             <template x-for="(set, setIdx) in exercise.sets" :key="setIdx">
-                                <div class="grid grid-cols-[2rem,1fr,1fr,2.5rem] gap-2 items-center">
+                                <div class="grid grid-cols-[2rem,1fr,1fr,2.5rem] gap-2 items-center relative">
                                     <span class="text-xs font-bold text-muted tabular-nums text-center" x-text="setIdx + 1"></span>
                                     <input type="number" inputmode="decimal" step="0.5"
                                            x-model.number="set.weight"
@@ -82,16 +88,55 @@
                                             :class="set.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
                                         <span class="text-sm" x-text="set.done ? '✓' : ''"></span>
                                     </button>
-                                    <!-- PR indicator -->
-                                    <template x-if="set.weight > 0 && isPR(exercise.name, set.weight)">
-                                        <span class="absolute -right-1 -top-1 text-[10px]">🏅</span>
-                                    </template>
                                 </div>
                             </template>
                             <button @click="addWorkoutSet(exIdx)"
                                     class="w-full py-2 rounded-lg border border-dashed border-[var(--glass-border)] text-[11px] text-muted hover:text-foreground hover:border-[var(--glass-hover)] transition-all">
                                 ＋ Set hinzufuegen
                             </button>
+                        </div>
+
+                        <!-- Cardio: Duration input + done -->
+                        <div x-show="exercise.type === 'cardio'" class="px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1">
+                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Dauer</label>
+                                    <input type="text" x-model="exercise.duration"
+                                           class="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:border-emerald-500/40 transition-colors"
+                                           :class="exercise.done && 'opacity-50'"
+                                           :placeholder="exercise.planned_duration || '30 min'">
+                                </div>
+                                <button @click="toggleExerciseDone(exIdx)"
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90 mt-4"
+                                        :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
+                                    <span class="text-sm" x-text="exercise.done ? '✓' : ''"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Distance: Distance + Duration + done -->
+                        <div x-show="exercise.type === 'distance'" class="px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1">
+                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Distanz</label>
+                                    <input type="text" x-model="exercise.distance"
+                                           class="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:border-emerald-500/40 transition-colors"
+                                           :class="exercise.done && 'opacity-50'"
+                                           :placeholder="(exercise.planned_distance || '5') + ' km'">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Dauer</label>
+                                    <input type="text" x-model="exercise.duration"
+                                           class="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:border-emerald-500/40 transition-colors"
+                                           :class="exercise.done && 'opacity-50'"
+                                           :placeholder="exercise.planned_duration || '30 min'">
+                                </div>
+                                <button @click="toggleExerciseDone(exIdx)"
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90 mt-4"
+                                        :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
+                                    <span class="text-sm" x-text="exercise.done ? '✓' : ''"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -129,7 +174,7 @@
                     </div>
                 </div>
                 <button @click="skipRestTimer()" class="w-10 h-10 rounded-full bg-[var(--glass)] border border-[var(--glass-border)] flex items-center justify-center text-muted hover:text-foreground transition-all">
-                    <span>⏭️</span>
+                    <i class="ph ph-skip-forward"></i>
                 </button>
             </div>
         </div>

@@ -17,7 +17,7 @@
         <div class="p-6 border-b border-[var(--glass-border)] flex justify-between items-center bg-surface z-20 shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                    <span class="text-lg">📋</span>
+                    <i class="ph ph-clipboard-text text-lg"></i>
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-foreground">Workout Log</h2>
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <button type="button" @click="closeWorkoutHistory()" class="text-muted hover:text-foreground transition-colors p-2 -mr-2 hover:bg-[var(--glass)] rounded-xl">
-                <span class="text-lg">✕</span>
+                <i class="ph ph-x text-lg"></i>
             </button>
         </div>
 
@@ -63,7 +63,7 @@
                 </template>
             </div>
             <div x-show="workoutHistory.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
-                <span class="text-4xl mb-4">🏋️</span>
+                <i class="ph-bold ph-barbell text-4xl mb-4"></i>
                 <p class="text-sm text-muted">Noch keine Workouts absolviert</p>
             </div>
         </div>

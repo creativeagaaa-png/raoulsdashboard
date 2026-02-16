@@ -17,7 +17,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <link rel="stylesheet" href="css/styles.css">
 
 
@@ -34,7 +35,7 @@
         <div class="loading-content">
             <div class="loading-logo">
                 <div class="loading-ring"></div>
-                <span class="loading-icon">💓</span>
+                <span class="loading-icon"><i class="ph-bold ph-heartbeat"></i></span>
             </div>
             <h1 class="loading-title">Health OS</h1>
             <div class="loading-bar-track">
@@ -53,7 +54,7 @@
     <div id="ptr-indicator" class="ptr-container" aria-hidden="true">
         <div class="ptr-content">
             <div class="ptr-icon">
-                <span>🔄</span>
+                <i class="ph ph-arrow-clockwise"></i>
             </div>
         </div>
     </div>
@@ -78,25 +79,25 @@
                 <button x-show="editMode" @click="resetLayout()"
                         class="glass-panel px-3 md:px-4 h-11 md:h-[52px] rounded-full flex items-center gap-2 hover:bg-white/10 text-xs font-bold text-muted hover:text-white transition-all"
                         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
-                    <span>↩️</span>
+                    <i class="ph ph-arrow-counter-clockwise"></i>
                     Reset
                 </button>
                 <button @click="toggleEditMode()"
                         class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group"
                         :class="editMode ? 'bg-indigo-500/20 border-indigo-500/30' : ''"
                         aria-label="Toggle edit mode">
-                    <span class="text-xl md:text-2xl transition-all duration-400" :class="editMode ? 'text-indigo-400' : 'group-hover:scale-110'" x-text="editMode ? '✓' : '📐'"></span>
+                    <i class="text-xl md:text-2xl transition-all duration-400" :class="editMode ? 'ph ph-check text-indigo-400' : 'ph ph-squares-four group-hover:scale-110'"></i>
                 </button>
                 <button @click="openTraining()" class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group" aria-label="Training Plan">
-                    <span class="text-xl md:text-2xl group-hover:scale-110 group-hover:text-emerald-400 transition-all duration-400">🏋️</span>
+                    <i class="ph-bold ph-barbell text-xl md:text-2xl group-hover:scale-110 group-hover:text-emerald-400 transition-all duration-400"></i>
                     <span x-show="!isRestDay" class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background animate-pulse" aria-hidden="true"></span>
                 </button>
                 <button @click="openSettings()" class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group" aria-label="Settings">
-                    <span class="text-xl md:text-2xl group-hover:rotate-90 transition-transform duration-500">⚙️</span>
+                    <i class="ph ph-gear text-xl md:text-2xl group-hover:rotate-90 transition-transform duration-500"></i>
                 </button>
 
                 <button @click="openMilestones()" class="glass-panel w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all text-white relative group" aria-label="Milestones">
-                    <span class="text-xl md:text-2xl group-hover:scale-110 group-hover:text-yellow-400 transition-all duration-400">🏆</span>
+                    <i class="ph-bold ph-trophy text-xl md:text-2xl group-hover:scale-110 group-hover:text-yellow-400 transition-all duration-400"></i>
                     <span x-show="rewards.length > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-background text-[9px] font-bold flex items-center justify-center text-black" x-text="rewards.filter(r => currentWeight <= r.target).length"></span>
                 </button>
                 <div class="glass-panel p-1.5 pr-4 md:pr-5 rounded-full flex items-center gap-3 md:gap-4 hover:border-white/20 transition-colors duration-300">
@@ -134,7 +135,7 @@
                      :class="{ 'ring-2 ring-dashed ring-white/10 rounded-3xl': editMode, 'ring-indigo-500/40': editMode && dragState.overCol === 'left' && dragState.overIndex === wIdx && dragState.widgetId !== widgetId }">
 
                     <div x-show="editMode" class="absolute top-3 left-3 z-30 cursor-grab active:cursor-grabbing px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm flex items-center gap-1.5 text-[10px] text-white/60 border border-white/10">
-                        <span class="text-[10px]">⋮⋮</span>
+                        <i class="ph ph-dots-six-vertical text-[10px]"></i>
                         <span x-text="WIDGET_REGISTRY[widgetId]?.label"></span>
                     </div>
                     <template x-if="widgetId === 'current-status'">
@@ -147,7 +148,7 @@
                                         <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
                                     </div>
                                     <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
-                                        <span class="text-sm" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="trend.isLoss ? '📉' : '📈'" aria-hidden="true"></span>
+                                        <i class="text-sm" :class="trend.isLoss ? 'ph ph-trend-down text-emerald-400' : 'ph ph-trend-up text-rose-400'" aria-hidden="true"></i>
                                         <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
                                     </div>
                                 </div>
@@ -183,7 +184,7 @@
                                     </div>
                                 </div>
                                 <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                                    <span class="text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true">＋</span>
+                                    <i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90" aria-hidden="true"></i>
                                     <span>Log Weight</span>
                                 </button>
                                 <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
@@ -197,7 +198,7 @@
                                     </button>
                                     <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
                                             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
-                                        <span class="text-sm">✓</span>
+                                        <i class="ph ph-check text-sm"></i>
                                     </button>
                                 </div>
                             </div>
@@ -207,7 +208,7 @@
                         <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
                             <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><span>✨</span></div>
+                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph ph-sparkle"></i></div>
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
                                 <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
                             </div>
@@ -219,7 +220,7 @@
                                 </div>
                             </div>
                             <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
-                                <div class="flex items-center gap-2 mb-1"><span class="text-yellow-400 text-sm">⚠️</span><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
+                                <div class="flex items-center gap-2 mb-1"><i class="ph ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
                                 <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
                             </div>
                             <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
@@ -233,11 +234,11 @@
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><span x-text="isRestDay ? '🌙' : '🏋️'"></span></div>
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i></div>
                                         <div><h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3><p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p></div>
                                     </div>
                                     <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
-                                        <span class="text-xs" x-text="isRestDay ? '⏸️' : '⚡'"></span>
+                                        <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
                                         <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Exercises'"></span>
                                     </div>
                                 </div>
@@ -247,17 +248,17 @@
                                             <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
                                                 <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
                                                 <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                <span x-show="ex.sets" class="text-[10px] font-mono text-muted" x-text="ex.sets + 'x' + ex.reps"></span>
+                                                <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
                                             </div>
                                         </template>
                                     </div>
                                 </template>
                                 <template x-if="!isRestDay">
                                     <button x-show="!workoutActive" @click="startWorkout()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                        <span>🏋️</span> Workout starten
+                                        <i class="ph-bold ph-barbell"></i> Workout starten
                                     </button>
                                     <button x-show="workoutActive" @click="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
-                                        <span>▶️</span> Workout fortsetzen
+                                        <i class="ph-bold ph-play"></i> Workout fortsetzen
                                     </button>
                                 </template>
                                 <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
@@ -286,7 +287,7 @@
                             <div class="relative z-10 h-full flex flex-col">
                                 <div class="flex justify-between items-start mb-4">
                                     <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
-                                    <span class="text-xl text-white/20 group-hover:text-emerald-400 transition-colors">🏁</span>
+                                    <i class="ph ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
                                 </div>
                                 <template x-if="nextReward">
                                     <div class="mt-auto">
@@ -302,7 +303,7 @@
 
                     <template x-if="widgetId === 'achievements'">
                         <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
-                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><span class="text-2xl">🏆</span></div>
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph ph-trophy text-2xl"></i></div>
                             <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
                             <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
                         </div>
@@ -315,7 +316,7 @@
                              role="button" aria-label="Progress Pics oeffnen">
                             <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><span>📸</span></div>
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph ph-images-square"></i></div>
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
                                 <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
                             </div>
@@ -328,7 +329,7 @@
                             </div>
                             <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60">
                                 <span>Antippen zum Ansehen</span>
-                                <span class="text-[10px]">→</span>
+                                <i class="ph ph-arrow-right text-[10px]"></i>
                             </div>
                         </div>
                     </template>
@@ -353,7 +354,7 @@
                                              else { currentX = 0; swiping = false; }
                                          })()">
                                         <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
-                                            <span class="text-rose-400 text-lg">🗑️</span>
+                                            <i class="ph ph-trash text-rose-400 text-lg"></i>
                                         </div>
                                         <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
                                              :class="{ 'swiping': swiping }"
@@ -363,7 +364,7 @@
                                                 <div>
                                                     <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors">
                                                         <span x-text="entry.weight.toFixed(1)"></span> kg
-                                                        <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1">📷</span>
+                                                        <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1"><i class="ph ph-camera"></i></span>
                                                     </p>
                                                     <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
                                                 </div>
@@ -400,7 +401,7 @@
                      :class="{ 'ring-2 ring-dashed ring-white/10 rounded-3xl': editMode, 'ring-indigo-500/40': editMode && dragState.overCol === 'right' && dragState.overIndex === wIdx && dragState.widgetId !== widgetId }">
 
                     <div x-show="editMode" class="absolute top-3 left-3 z-30 cursor-grab active:cursor-grabbing px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm flex items-center gap-1.5 text-[10px] text-white/60 border border-white/10">
-                        <span class="text-[10px]">⋮⋮</span>
+                        <i class="ph ph-dots-six-vertical text-[10px]"></i>
                         <span x-text="WIDGET_REGISTRY[widgetId]?.label"></span>
                     </div>
 
@@ -414,7 +415,7 @@
                                         <span class="text-xs text-white/50 font-mono mt-0.5" x-text="history.length ? 'Updated ' + new Date(history[history.length-1].date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : 'No data yet'"></span>
                                     </div>
                                     <div x-show="trend.value !== 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md">
-                                        <span class="text-sm" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="trend.isLoss ? '📉' : '📈'" aria-hidden="true"></span>
+                                        <i class="text-sm" :class="trend.isLoss ? 'ph ph-trend-down text-emerald-400' : 'ph ph-trend-up text-rose-400'" aria-hidden="true"></i>
                                         <span class="text-xs font-mono font-bold" :class="trend.isLoss ? 'text-emerald-400' : 'text-rose-400'" x-text="Math.abs(trend.value).toFixed(1)"></span>
                                     </div>
                                 </div>
@@ -438,7 +439,7 @@
                                     <div class="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-2"><span>Goal Progress</span><span x-text="Math.round(displayProgress) + '%'"></span></div>
                                     <div class="h-2 w-full bg-surface-highlight rounded-full overflow-hidden p-[2px]"><div class="h-full rounded-full bg-gradient-to-r from-white/80 to-white shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out" :style="`width: ${displayProgress}%`"></div></div>
                                 </div>
-                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><span class="text-lg transition-transform duration-300 group-hover:rotate-90">＋</span><span>Log Weight</span></button>
+                                <button @click="openModal()" class="group w-full py-4 rounded-xl bg-white text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.96] transition-all duration-200 flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"><i class="ph-bold ph-plus text-lg transition-transform duration-300 group-hover:rotate-90"></i><span>Log Weight</span></button>
                                 <div x-show="currentWeight > 0" class="flex items-center justify-center gap-2 mt-1">
                                     <span class="text-[10px] text-muted uppercase tracking-widest font-bold">Heute</span>
                                     <button @click="quickLogStep(-0.1)" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/15 text-muted hover:text-white transition-all active:scale-90 flex items-center justify-center" aria-label="Minus 0.1 kg">
@@ -450,7 +451,7 @@
                                     </button>
                                     <button x-show="quickLogWeight !== null" @click="quickLogSave()" class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all active:scale-90 flex items-center justify-center" aria-label="Speichern"
                                             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100">
-                                        <span class="text-sm">✓</span>
+                                        <i class="ph ph-check text-sm"></i>
                                     </button>
                                 </div>
                             </div>
@@ -461,7 +462,7 @@
                         <div class="bento-card p-6 relative overflow-hidden flex flex-col justify-center min-h-[180px]" role="region" aria-label="Smart prediction">
                             <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><span>✨</span></div>
+                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20"><i class="ph ph-sparkle"></i></div>
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Smart Prediction</h3>
                                 <span x-show="oracle.valid && oracle.confidence" class="ml-auto px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" :class="{'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': oracle.confidence==='high','bg-yellow-500/10 text-yellow-400 border border-yellow-500/20': oracle.confidence==='medium','bg-white/5 text-muted border border-white/5': oracle.confidence==='low'}" x-text="oracle.confidence"></span>
                             </div>
@@ -473,7 +474,7 @@
                                 </div>
                             </div>
                             <div x-show="oracle.valid && oracle.isPlateau" class="mt-3 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/10 relative z-10">
-                                <div class="flex items-center gap-2 mb-1"><span class="text-yellow-400 text-sm">⚠️</span><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
+                                <div class="flex items-center gap-2 mb-1"><i class="ph ph-warning text-yellow-400 text-sm"></i><span class="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Plateau erkannt</span></div>
                                 <p class="text-[11px] text-yellow-200/70 leading-relaxed" x-text="oracle.plateauTip"></p>
                             </div>
                             <div x-show="oracle.valid && oracle.noProgress && !oracle.isPlateau" class="relative z-10"><p class="text-xs text-muted leading-relaxed">Aktuell kein Abw&auml;rtstrend erkennbar. Bleib dran!</p></div>
@@ -487,11 +488,11 @@
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><span x-text="isRestDay ? '🌙' : '🏋️'"></span></div>
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'"><i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i></div>
                                         <div><h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3><p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p></div>
                                     </div>
                                     <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
-                                        <span class="text-xs" x-text="isRestDay ? '⏸️' : '⚡'"></span>
+                                        <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
                                         <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Exercises'"></span>
                                     </div>
                                 </div>
@@ -501,17 +502,17 @@
                                             <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
                                                 <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
                                                 <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                <span x-show="ex.sets" class="text-[10px] font-mono text-muted" x-text="ex.sets + 'x' + ex.reps"></span>
+                                                <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
                                             </div>
                                         </template>
                                     </div>
                                 </template>
                                 <template x-if="!isRestDay">
                                     <button x-show="!workoutActive" @click="startWorkout()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                        <span>🏋️</span> Workout starten
+                                        <i class="ph-bold ph-barbell"></i> Workout starten
                                     </button>
                                     <button x-show="workoutActive" @click="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
-                                        <span>▶️</span> Workout fortsetzen
+                                        <i class="ph-bold ph-play"></i> Workout fortsetzen
                                     </button>
                                 </template>
                                 <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
@@ -540,7 +541,7 @@
                             <div class="relative z-10 h-full flex flex-col">
                                 <div class="flex justify-between items-start mb-4">
                                     <span class="px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-white">Next Milestone</span>
-                                    <span class="text-xl text-white/20 group-hover:text-emerald-400 transition-colors">🏁</span>
+                                    <i class="ph ph-flag-checkered text-xl text-white/20 group-hover:text-emerald-400 transition-colors"></i>
                                 </div>
                                 <template x-if="nextReward">
                                     <div class="mt-auto">
@@ -556,7 +557,7 @@
 
                     <template x-if="widgetId === 'achievements'">
                         <div class="bento-card p-6 flex flex-col justify-center items-center text-center group cursor-default" role="region" aria-label="Achievements">
-                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><span class="text-2xl">🏆</span></div>
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"><i class="ph ph-trophy text-2xl"></i></div>
                             <div class="mb-1"><span class="text-3xl font-bold text-white tabular-nums" x-text="rewards.filter(r => currentWeight <= r.target).length"></span><span class="text-muted text-xl mx-1">/</span><span class="text-xl text-muted tabular-nums" x-text="rewards.length"></span></div>
                             <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Achievements</p>
                         </div>
@@ -569,7 +570,7 @@
                              role="button" aria-label="Progress Pics oeffnen">
                             <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
                             <div class="flex items-center gap-3 mb-4 relative z-10">
-                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><span>📸</span></div>
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20"><i class="ph ph-images-square"></i></div>
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h3>
                                 <span class="ml-auto px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold" x-text="photoDates.length + ' Fotos'"></span>
                             </div>
@@ -582,7 +583,7 @@
                             </div>
                             <div class="relative z-10 mt-3 flex items-center justify-center gap-1.5 text-[10px] text-purple-400/60">
                                 <span>Antippen zum Ansehen</span>
-                                <span class="text-[10px]">→</span>
+                                <i class="ph ph-arrow-right text-[10px]"></i>
                             </div>
                         </div>
                     </template>
@@ -607,7 +608,7 @@
                                              else { currentX = 0; swiping = false; }
                                          })()">
                                         <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
-                                            <span class="text-rose-400 text-lg">🗑️</span>
+                                            <i class="ph ph-trash text-rose-400 text-lg"></i>
                                         </div>
                                         <div class="swipe-content group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/5"
                                              :class="{ 'swiping': swiping }"
@@ -615,7 +616,7 @@
                                             <div class="flex items-center gap-4">
                                                 <div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-xs text-muted font-mono border border-white/5 group-hover:border-white/20 transition-colors"><span x-text="new Date(entry.date).getDate()"></span></div>
                                                 <div>
-                                                    <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors"><span x-text="entry.weight.toFixed(1)"></span> kg <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1">📷</span></p>
+                                                    <p class="text-white font-bold tabular-nums text-sm group-hover:text-accent transition-colors"><span x-text="entry.weight.toFixed(1)"></span> kg <span x-show="photoDates.includes(entry.date)" class="text-[10px] text-purple-400 ml-1"><i class="ph ph-camera"></i></span></p>
                                                     <p class="text-muted text-[10px] uppercase tracking-wider" x-text="new Date(entry.date).toLocaleDateString('de-DE', { month: 'short', year: 'numeric' })"></p>
                                                 </div>
                                             </div>
@@ -646,7 +647,7 @@
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-75"
             x-transition:enter-end="opacity-100 scale-100">
-        <span class="text-2xl">＋</span>
+        <i class="ph-bold ph-plus text-2xl"></i>
     </button>
 
     <!-- Modals Container (injected by JS) -->

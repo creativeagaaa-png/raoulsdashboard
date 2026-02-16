@@ -19,7 +19,7 @@
         <div class="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
-                    <span>📸</span>
+                    <i class="ph ph-images-square"></i>
                 </div>
                 <h2 class="text-sm font-bold text-white uppercase tracking-wider">Progress Pics</h2>
                 <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-bold"
@@ -28,7 +28,7 @@
             <button @click="closeProgressPics()"
                     class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-muted hover:text-white transition-colors"
                     aria-label="Schließen">
-                <span class="text-sm">✕</span>
+                <i class="ph ph-x text-sm"></i>
             </button>
         </div>
 
@@ -49,7 +49,7 @@
                 </div>
                 <div class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] pointer-events-none" :style="`left: ${progressPics.sliderPosition}%`">
                     <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg pointer-events-none">
-                        <span class="text-black text-sm">↔️</span>
+                        <i class="ph-bold ph-arrows-horizontal text-black text-sm"></i>
                     </div>
                 </div>
                 <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm pointer-events-none">
@@ -70,7 +70,7 @@
         <!-- No comparison selected hint -->
         <div class="px-5 pb-4 flex-shrink-0" x-show="!(progressPics.beforePhoto && progressPics.afterPhoto) && progressPicsPhotos.length >= 2">
             <div class="h-[200px] rounded-2xl bg-white/[0.02] border border-dashed border-white/10 flex flex-col items-center justify-center gap-2">
-                <span class="text-2xl text-white/20">↔️</span>
+                <i class="ph ph-arrows-horizontal text-2xl text-white/20"></i>
                 <p class="text-xs text-muted">Tippe auf 2 Fotos zum Vergleichen</p>
             </div>
         </div>
@@ -102,7 +102,7 @@
         <div x-show="!progressPicsLoading && progressPicsLoaded && progressPicsPhotos.length === 0" class="flex-1 flex items-center justify-center">
             <div class="text-center">
                 <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-4">
-                    <span class="text-3xl text-white/20">🖼️</span>
+                    <i class="ph ph-image text-3xl text-white/20"></i>
                 </div>
                 <p class="text-sm text-muted mb-1">Noch keine Fotos</p>
                 <p class="text-xs text-white/20">Fotos beim Gewicht-Loggen hinzufuegen</p>

@@ -122,12 +122,18 @@ export async function getTrainingPlan() {
 
     const plan = Array.from({ length: 7 }, () => []);
     for (const row of (data || [])) {
-        plan[row.day_index].push({
-            name: row.name,
-            sets: row.sets,
-            reps: row.reps,
-            note: row.note
-        });
+        const type = row.type || 'strength';
+        const ex = { name: row.name, type, note: row.note };
+        if (type === 'strength') {
+            ex.sets = row.sets;
+            ex.reps = row.reps;
+        } else if (type === 'cardio') {
+            ex.duration = row.reps || '';
+        } else if (type === 'distance') {
+            ex.distance = row.sets ? String(row.sets) : '';
+            ex.duration = row.reps || '';
+        }
+        plan[row.day_index].push(ex);
     }
     return plan;
 }
@@ -143,14 +149,26 @@ export async function saveTrainingPlan(plan) {
     for (let day = 0; day < 7; day++) {
         const exercises = plan[day] || [];
         for (let i = 0; i < exercises.length; i++) {
-            rows.push({
+            const ex = exercises[i];
+            const type = ex.type || 'strength';
+            const row = {
                 day_index: day,
                 exercise_order: i,
-                name: exercises[i].name,
-                sets: exercises[i].sets || 0,
-                reps: exercises[i].reps || '',
-                note: exercises[i].note || ''
-            });
+                name: ex.name,
+                type,
+                note: ex.note || ''
+            };
+            if (type === 'strength') {
+                row.sets = ex.sets || 0;
+                row.reps = ex.reps || '';
+            } else if (type === 'cardio') {
+                row.sets = 0;
+                row.reps = ex.duration || '';
+            } else if (type === 'distance') {
+                row.sets = parseInt(ex.distance) || 0;
+                row.reps = ex.duration || '';
+            }
+            rows.push(row);
         }
     }
 
