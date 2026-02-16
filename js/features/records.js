@@ -31,6 +31,7 @@ export const recordsMixin = () => ({
         const newPRs = [];
 
         for (const exercise of session.exercises) {
+            if (!Array.isArray(exercise.sets)) continue;
             const completedSets = exercise.sets.filter(s => s.done && s.weight > 0);
             if (completedSets.length === 0) continue;
 
