@@ -106,11 +106,8 @@
                              })()"
                              @touchend="(() => {
                                  if (currentX < -80) {
-                                     const d = entry.date;
-                                     const comp = $data;
-                                     $el.querySelector('.swipe-content').classList.add('removing');
-                                     $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)';
-                                     setTimeout(() => comp.deleteStepEntry(d), 300);
+                                     deleteStepEntry(entry.date);
+                                     currentX = 0;
                                  }
                                  else { currentX = 0; swiping = false; }
                              })()">
