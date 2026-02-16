@@ -74,14 +74,6 @@ export const restTimerMixin = () => ({
         }
     },
 
-    get restTimerProgress() {
-        if (!this.restTimer.active || this.restTimer.total === 0) return 0;
-        return ((this.restTimer.total - this.restTimer.remaining) / this.restTimer.total) * 100;
-    },
-
-    get restTimerDisplay() {
-        const mins = Math.floor(this.restTimer.remaining / 60);
-        const secs = this.restTimer.remaining % 60;
-        return `${mins}:${String(secs).padStart(2, '0')}`;
-    }
+    // NOTE: restTimerProgress, restTimerDisplay are defined as getters
+    // in main.js to preserve reactivity (spread destroys getters).
 });

@@ -104,32 +104,8 @@ export const workoutMixin = () => ({
         });
     },
 
-    // --- Workout Timer Display ---
-    get workoutDuration() {
-        const s = this._workoutElapsed;
-        const mins = Math.floor(s / 60);
-        const secs = s % 60;
-        return `${mins}:${String(secs).padStart(2, '0')}`;
-    },
-
-    // --- Workout Completion ---
-    get workoutCompletionPercent() {
-        if (!this.workoutSession) return 0;
-        let total = 0;
-        let done = 0;
-        for (const ex of this.workoutSession.exercises) {
-            if (ex.type === 'cardio' || ex.type === 'distance') {
-                total++;
-                if (ex.done) done++;
-            } else {
-                const sets = ex.sets || [];
-                total += sets.length;
-                done += sets.filter(s => s.done).length;
-            }
-        }
-        if (total === 0) return 0;
-        return Math.round((done / total) * 100);
-    },
+    // NOTE: workoutDuration, workoutCompletionPercent are defined as getters
+    // in main.js to preserve reactivity (spread destroys getters).
 
     // --- Complete Workout ---
     async finishWorkout() {

@@ -2,7 +2,8 @@ import Alpine from 'alpinejs';
 import { Chart, registerables } from 'chart.js';
 import confetti from 'canvas-confetti';
 
-import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT } from './utils/constants.js';
+import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT, WEEKDAYS } from './utils/constants.js';
+import { getTodayWeekdayIndex } from './utils/formatting.js';
 import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './utils/analytics.js';
 import * as Supa from './store/supabase.js';
 import { settingsMixin } from './store/settings.js';
@@ -103,6 +104,56 @@ function app() {
         ...workoutMixin(),
         ...restTimerMixin(),
         ...recordsMixin(),
+
+        // --- MIXIN GETTERS (must be defined here, not in mixins, because spread destroys getters) ---
+
+        // Training getters
+        get todayTraining() {
+            const idx = getTodayWeekdayIndex();
+            return this.trainingPlan[idx] || [];
+        },
+        get todayWeekday() {
+            return WEEKDAYS[getTodayWeekdayIndex()];
+        },
+        get isRestDay() {
+            return this.todayTraining.length === 0;
+        },
+
+        // Workout getters
+        get workoutDuration() {
+            const s = this._workoutElapsed;
+            const mins = Math.floor(s / 60);
+            const secs = s % 60;
+            return `${mins}:${String(secs).padStart(2, '0')}`;
+        },
+        get workoutCompletionPercent() {
+            if (!this.workoutSession) return 0;
+            let total = 0;
+            let done = 0;
+            for (const ex of this.workoutSession.exercises) {
+                if (ex.type === 'cardio' || ex.type === 'distance') {
+                    total++;
+                    if (ex.done) done++;
+                } else {
+                    const sets = ex.sets || [];
+                    total += sets.length;
+                    done += sets.filter(s => s.done).length;
+                }
+            }
+            if (total === 0) return 0;
+            return Math.round((done / total) * 100);
+        },
+
+        // Rest timer getters
+        get restTimerProgress() {
+            if (!this.restTimer.active || this.restTimer.total === 0) return 0;
+            return ((this.restTimer.total - this.restTimer.remaining) / this.restTimer.total) * 100;
+        },
+        get restTimerDisplay() {
+            const mins = Math.floor(this.restTimer.remaining / 60);
+            const secs = this.restTimer.remaining % 60;
+            return `${mins}:${String(secs).padStart(2, '0')}`;
+        },
 
         // --- INIT ---
         async initApp() {

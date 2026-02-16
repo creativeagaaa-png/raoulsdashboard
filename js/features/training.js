@@ -22,18 +22,8 @@ export const trainingMixin = () => ({
         }
     },
 
-    get todayTraining() {
-        const idx = getTodayWeekdayIndex();
-        return this.trainingPlan[idx] || [];
-    },
-
-    get todayWeekday() {
-        return WEEKDAYS[getTodayWeekdayIndex()];
-    },
-
-    get isRestDay() {
-        return this.todayTraining.length === 0;
-    },
+    // NOTE: todayTraining, todayWeekday, isRestDay are defined as getters
+    // in main.js to preserve reactivity (spread destroys getters).
 
     getTodayWeekdayIndex,
 
