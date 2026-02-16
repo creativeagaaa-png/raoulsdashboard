@@ -100,9 +100,12 @@ export const stepsMixin = () => ({
         const removed = this.stepsHistory.find(e => e.date === date);
         if (!removed) return;
 
-        this.stepsHistory = this.stepsHistory.filter(e => e.date !== date);
-
         const today = getLocalDateString();
+
+        // Use splice to mutate in-place so Alpine can track the removal cleanly
+        const idx = this.stepsHistory.indexOf(removed);
+        if (idx !== -1) this.stepsHistory.splice(idx, 1);
+
         if (date === today) {
             this.todaySteps = 0;
             this._stepsCelebrated = false;
