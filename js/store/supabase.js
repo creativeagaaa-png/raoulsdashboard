@@ -123,15 +123,33 @@ export async function getTrainingPlan() {
     const plan = Array.from({ length: 7 }, () => []);
     for (const row of (data || [])) {
         const type = row.type || 'strength';
-        const ex = { name: row.name, type, note: row.note };
+        const ex = { name: row.name, type, note: row.note || '' };
         if (type === 'strength') {
             ex.sets = row.sets;
-            ex.reps = row.reps;
+            // reps field may contain weight: "10|22.5"
+            const repsStr = row.reps || '';
+            if (repsStr.includes('|')) {
+                const [r, w] = repsStr.split('|');
+                ex.reps = r;
+                ex.weight = parseFloat(w) || 0;
+            } else {
+                ex.reps = repsStr;
+                ex.weight = 0;
+            }
         } else if (type === 'cardio') {
             ex.duration = row.reps || '';
         } else if (type === 'distance') {
             ex.distance = row.sets ? String(row.sets) : '';
             ex.duration = row.reps || '';
+        } else if (type === 'circuit') {
+            ex.rounds = row.sets || 3;
+            try {
+                ex.circuitExercises = JSON.parse(row.reps || '[]');
+            } catch { ex.circuitExercises = []; }
+            // Circuit note is stored separately after a delimiter
+            if (ex.note && ex.note.startsWith('__cn__:')) {
+                ex.note = ex.note.slice(7);
+            }
         }
         plan[row.day_index].push(ex);
     }
@@ -160,13 +178,20 @@ export async function saveTrainingPlan(plan) {
             };
             if (type === 'strength') {
                 row.sets = ex.sets || 0;
-                row.reps = ex.reps || '';
+                // Encode weight into reps field: "10|22.5"
+                const reps = ex.reps || '';
+                const weight = parseFloat(ex.weight) || 0;
+                row.reps = weight > 0 ? reps + '|' + weight : reps;
             } else if (type === 'cardio') {
                 row.sets = 0;
                 row.reps = ex.duration || '';
             } else if (type === 'distance') {
                 row.sets = parseInt(ex.distance) || 0;
                 row.reps = ex.duration || '';
+            } else if (type === 'circuit') {
+                row.sets = parseInt(ex.rounds) || 3;
+                row.reps = JSON.stringify(ex.circuitExercises || []);
+                row.note = '__cn__:' + (ex.note || '');
             }
             rows.push(row);
         }

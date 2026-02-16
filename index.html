@@ -563,7 +563,7 @@
                                             <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
                                                 <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
                                                 <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Runden' : '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : ''))))"></span>
+                                                <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps + (ex.weight ? ' · ' + ex.weight + 'kg' : '') : '') : (ex.type === 'cardio' ? (ex.duration || '') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Runden' : '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : ''))))"></span>
                                             </div>
                                         </template>
                                     </div>

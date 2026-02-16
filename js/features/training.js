@@ -11,7 +11,7 @@ export const trainingMixin = () => ({
     trainingForm: WEEKDAYS.map(() => []),
     trainingDirty: false,
     trainingShowAddForm: false,
-    trainingNewExercise: { name: '', sets: '', reps: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '' }] },
+    trainingNewExercise: { name: '', sets: '', reps: '', weight: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '', weight: '' }] },
 
     async saveTrainingPlan() {
         try {
@@ -31,7 +31,7 @@ export const trainingMixin = () => ({
         this.trainingSelectedDay = getTodayWeekdayIndex();
         this.trainingForm = JSON.parse(JSON.stringify(this.trainingPlan));
         this.trainingDirty = false;
-        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '' }] };
+        this.trainingNewExercise = { name: '', sets: '', reps: '', weight: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '', weight: '' }] };
         this.trainingShowAddForm = false;
         this.trainingOpen = true;
     },
@@ -64,6 +64,7 @@ export const trainingMixin = () => ({
         if (type === 'strength') {
             entry.sets = parseInt(ex.sets) || 0;
             entry.reps = String(ex.reps).trim() || '';
+            entry.weight = parseFloat(ex.weight) || 0;
         } else if (type === 'cardio') {
             entry.duration = String(ex.reps).trim() || '';
         } else if (type === 'distance') {
@@ -76,16 +77,17 @@ export const trainingMixin = () => ({
                 .map(ce => ({
                     name: String(ce.name).trim(),
                     reps: String(ce.reps || '').trim(),
-                    duration: String(ce.duration || '').trim()
+                    duration: String(ce.duration || '').trim(),
+                    weight: parseFloat(ce.weight) || 0
                 }));
         }
         this.trainingForm[this.trainingSelectedDay].push(entry);
-        this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '' }] };
+        this.trainingNewExercise = { name: '', sets: '', reps: '', weight: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '', weight: '' }] };
         this.trainingDirty = true;
     },
 
     addCircuitExerciseField() {
-        this.trainingNewExercise.circuitExercises.push({ name: '', reps: '', duration: '' });
+        this.trainingNewExercise.circuitExercises.push({ name: '', reps: '', duration: '', weight: '' });
     },
 
     removeCircuitExerciseField(idx) {

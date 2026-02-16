@@ -57,7 +57,7 @@
                             <p class="text-sm font-bold text-foreground truncate" x-text="ex.name"></p>
                             <p class="text-[10px] font-mono text-muted mt-0.5"
                                x-text="(ex.type || 'strength') === 'strength'
-                                   ? (ex.sets ? ex.sets + 'x' + ex.reps : 'Kraft')
+                                   ? (ex.sets ? ex.sets + 'x' + ex.reps + (ex.weight ? ' · ' + ex.weight + 'kg' : '') : 'Kraft')
                                    : (ex.type === 'cardio' ? (ex.duration || 'Cardio') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Runden' : 'Zirkel') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : 'Distanz'))))">
                             </p>
                         </div>

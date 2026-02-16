@@ -77,6 +77,20 @@
                                         </template>
                                         <p x-show="ex.type === 'cardio' && ex.done" class="text-[10px] font-mono text-muted" x-text="'Dauer: ' + (ex.duration || '–')"></p>
                                         <p x-show="ex.type === 'distance' && ex.done" class="text-[10px] font-mono text-muted" x-text="(ex.distance || '–') + ' km · ' + (ex.duration || '–')"></p>
+                                        <!-- Circuit history -->
+                                        <template x-if="ex.type === 'circuit'">
+                                            <div>
+                                                <template x-for="(ce, ceIdx) in (ex.circuitExercises || [])" :key="'hist-ce-'+ceIdx">
+                                                    <p class="text-[10px] font-mono text-muted">
+                                                        <span x-text="ce.name"></span>
+                                                        <span x-show="ce.reps" x-text="' · ' + ce.reps + 'x'"></span>
+                                                        <span x-show="ce.weight" class="text-emerald-400/70" x-text="' · ' + ce.weight + 'kg'"></span>
+                                                    </p>
+                                                </template>
+                                                <p class="text-[10px] font-mono text-muted mt-0.5"
+                                                   x-text="(ex.rounds || []).filter(r => r.done).length + '/' + (ex.rounds || []).length + ' Runden'"></p>
+                                            </div>
+                                        </template>
                                     </div>
                                     <p x-show="ex.tracked === false && ex.done" class="text-[10px] text-emerald-400 font-mono">Erledigt ✓</p>
                                     <p x-show="ex.tracked === false && !ex.done && !(ex.sets || []).some(s => s.done)" class="text-[10px] text-muted/50 font-mono">Nicht erledigt</p>

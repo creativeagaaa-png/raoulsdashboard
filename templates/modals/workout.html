@@ -65,7 +65,7 @@
                                           x-text="exercise.type === 'cardio' ? 'Cardio' : (exercise.type === 'circuit' ? 'Zirkel' : 'Distanz')"></span>
                                 </div>
                                 <span class="text-[10px] font-mono text-muted"
-                                      x-text="(exercise.type || 'strength') === 'strength' ? exercise.planned_sets + 'x' + exercise.planned_reps : (exercise.type === 'cardio' ? (exercise.planned_duration || '') : (exercise.type === 'circuit' ? (exercise.planned_rounds + ' Runden') : ((exercise.planned_distance || '') + ' km')))"></span>
+                                      x-text="(exercise.type || 'strength') === 'strength' ? exercise.planned_sets + 'x' + exercise.planned_reps + (exercise.planned_weight ? ' · ' + exercise.planned_weight + 'kg' : '') : (exercise.type === 'cardio' ? (exercise.planned_duration || '') : (exercise.type === 'circuit' ? (exercise.planned_rounds + ' Runden') : ((exercise.planned_distance || '') + ' km')))"></span>
                             </div>
                             <p x-show="exercise.note" class="text-[10px] text-muted mt-0.5" x-text="exercise.note"></p>
                         </div>
@@ -194,6 +194,7 @@
                                             <span class="text-muted w-3 text-center" x-text="ceIdx + 1"></span>
                                             <span class="text-foreground" x-text="ce.name"></span>
                                             <span x-show="ce.reps" class="text-muted font-mono" x-text="ce.reps + 'x'"></span>
+                                            <span x-show="ce.weight" class="text-emerald-400 font-mono" x-text="ce.weight + 'kg'"></span>
                                             <span x-show="ce.duration" class="text-muted font-mono" x-text="ce.duration"></span>
                                         </div>
                                     </template>

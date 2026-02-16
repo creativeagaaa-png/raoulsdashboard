@@ -71,14 +71,16 @@ export const workoutMixin = () => ({
         const exercises = selectedPlan.map(ex => {
             const type = ex.type || 'strength';
             if (type === 'strength') {
+                const defaultWeight = parseFloat(ex.weight) || 0;
                 return {
                     name: ex.name,
                     type,
                     planned_sets: parseInt(ex.sets) || 3,
                     planned_reps: ex.reps || '',
+                    planned_weight: defaultWeight,
                     note: ex.note || '',
                     sets: tracking ? Array.from({ length: parseInt(ex.sets) || 3 }, () => ({
-                        weight: 0,
+                        weight: defaultWeight,
                         reps: 0,
                         done: false
                     })) : [],
@@ -102,7 +104,8 @@ export const workoutMixin = () => ({
                     circuitExercises: (ex.circuitExercises || []).map(ce => ({
                         name: ce.name || '',
                         reps: ce.reps || '',
-                        duration: ce.duration || ''
+                        duration: ce.duration || '',
+                        weight: parseFloat(ce.weight) || 0
                     })),
                     note: ex.note || '',
                     rounds: tracking ? Array.from({ length: parseInt(ex.rounds) || 3 }, () => ({
