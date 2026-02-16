@@ -10,6 +10,7 @@ export const trainingMixin = () => ({
     trainingPlan: WEEKDAYS.map(() => []),
     trainingForm: WEEKDAYS.map(() => []),
     trainingDirty: false,
+    trainingShowAddForm: false,
     trainingNewExercise: { name: '', sets: '', reps: '', note: '', type: 'strength' },
 
     async saveTrainingPlan() {
@@ -41,6 +42,7 @@ export const trainingMixin = () => ({
         this.trainingForm = JSON.parse(JSON.stringify(this.trainingPlan));
         this.trainingDirty = false;
         this.trainingNewExercise = { name: '', sets: '', reps: '', note: '', type: 'strength' };
+        this.trainingShowAddForm = false;
         this.trainingOpen = true;
     },
 
