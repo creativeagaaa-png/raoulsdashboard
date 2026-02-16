@@ -89,6 +89,18 @@ function app() {
         // Pull-to-refresh
         _ptr: { active: false, startY: 0, currentY: 0, pulling: false, refreshing: false },
 
+        // Offline indicator
+        isOffline: !navigator.onLine,
+
+        // Profile dropdown
+        profileDropdownOpen: false,
+        toggleProfileDropdown() {
+            this.profileDropdownOpen = !this.profileDropdownOpen;
+        },
+        closeProfileDropdown() {
+            this.profileDropdownOpen = false;
+        },
+
         // Inputs & Display
         inputWeight: null,
         inputDate: new Date().toISOString().split('T')[0],
@@ -279,6 +291,10 @@ function app() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
             }
+
+            // Offline detection
+            window.addEventListener('online', () => { this.isOffline = false; });
+            window.addEventListener('offline', () => { this.isOffline = true; });
 
             // Re-render chart when OS theme changes
             window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
@@ -735,6 +751,7 @@ function app() {
 
         // --- ESCAPE KEY HANDLER (centralized) ---
         handleEscape() {
+            if (this.profileDropdownOpen) { this.closeProfileDropdown(); return; }
             if (this.confirmModal.show) { this.cancelConfirm(); return; }
             if (this.workoutComparisonOpen) { this.closeWorkoutComparison(); return; }
             if (this.prCelebrationOpen) { this.closePRCelebration(); return; }
@@ -920,8 +937,27 @@ function app() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: { legend: { display: false } },
+                    interaction: { mode: 'index', intersect: false, axis: 'x' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            caretSize: 6,
+                            cornerRadius: 10,
+                            padding: 10,
+                            titleFont: { size: 11, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            displayColors: false,
+                            callbacks: {
+                                label: (ctx) => {
+                                    if (ctx.dataset.label === 'Ziel-Linie') return null;
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + ' kg';
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         x: { grid: { display: false }, ticks: { maxTicksLimit: 6 } },
                         y: { grid: { color: getCSSVar('--glass') || 'rgba(255,255,255,0.03)' }, border: { display: false } }
