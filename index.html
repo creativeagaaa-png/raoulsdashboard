@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Health OS">
-    <title>Raoul Agachi | Health OS</title>
+    <meta name="apple-mobile-web-app-title" content="Health & Fitness Dashboard">
+    <title>Raoul Agachi | Health & Fitness Dashboard</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -37,7 +37,7 @@
                 <div class="loading-ring"></div>
                 <span class="loading-icon"><i class="ph-bold ph-heartbeat"></i></span>
             </div>
-            <h1 class="loading-title">Health OS</h1>
+            <h1 class="loading-title">Health & Fitness Dashboard</h1>
             <div class="loading-bar-track">
                 <div class="loading-bar-fill"></div>
             </div>
@@ -253,8 +253,8 @@
                                                 </div>
                                             </template>
                                         </div>
-                                        <button x-show="!workoutActive" @click.stop="startWorkout()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                            <i class="ph-bold ph-barbell"></i> Workout starten
+                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
+                                            <i class="ph-bold ph-play"></i> Workout starten
                                         </button>
                                         <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
                                             <i class="ph-bold ph-play"></i> Workout fortsetzen
@@ -262,6 +262,88 @@
                                     </div>
                                 </template>
                                 <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'workouts'">
+                        <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Workouts">
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'">
+                                            <i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Workouts</h3>
+                                            <p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button @click.stop="!editMode && openTraining()" class="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 transition-all" title="Trainingsplan bearbeiten">
+                                            <i class="ph ph-note-pencil text-sm"></i>
+                                        </button>
+                                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
+                                            <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
+                                            <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Übungen'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <template x-if="!isRestDay">
+                                    <div>
+                                        <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
+                                            <template x-for="(ex, i) in todayTraining" :key="i">
+                                                <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
+                                                    <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
+                                                    <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
+                                                    <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
+                                            <i class="ph-bold ph-play"></i> Workout starten
+                                        </button>
+                                        <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
+                                            <i class="ph-bold ph-play"></i> Workout fortsetzen
+                                        </button>
+                                    </div>
+                                </template>
+                                <template x-if="isRestDay">
+                                    <div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div>
+                                </template>
+                                <div class="mt-4 pt-4 border-t border-white/5">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Letzte Workouts</p>
+                                        <button @click.stop="openWorkoutHistory()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-500/10">
+                                            Alle anzeigen
+                                        </button>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <template x-for="(w, wIdx) in workoutHistory.slice(0, 3)" :key="'recent-'+wIdx">
+                                            <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all cursor-pointer"
+                                                 @click.stop="openWorkoutComparison(w)">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <span class="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-[10px] text-muted font-mono shrink-0"
+                                                          x-text="new Date(w.date).getDate()"></span>
+                                                    <div class="min-w-0">
+                                                        <p class="text-xs font-medium text-white truncate" x-text="new Date(w.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'})"></p>
+                                                        <p class="text-[10px] text-muted font-mono" x-text="getWorkoutExerciseCount(w) + ' Üb. · ' + formatWorkoutDuration(w.durationSeconds)"></p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    <span x-show="w.tracked !== false" class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                                                        <i class="ph ph-chart-line-up text-[9px]"></i>
+                                                    </span>
+                                                    <i class="ph ph-caret-right text-[10px] text-muted"></i>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <div x-show="workoutHistory.length === 0" class="py-3 text-center">
+                                            <p class="text-[10px] text-muted">Noch keine Workouts absolviert.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -507,8 +589,8 @@
                                                 </div>
                                             </template>
                                         </div>
-                                        <button x-show="!workoutActive" @click.stop="startWorkout()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                            <i class="ph-bold ph-barbell"></i> Workout starten
+                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
+                                            <i class="ph-bold ph-play"></i> Workout starten
                                         </button>
                                         <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
                                             <i class="ph-bold ph-play"></i> Workout fortsetzen
@@ -516,6 +598,88 @@
                                     </div>
                                 </template>
                                 <template x-if="isRestDay"><div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div></template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="widgetId === 'workouts'">
+                        <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Workouts">
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'">
+                                            <i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Workouts</h3>
+                                            <p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button @click.stop="!editMode && openTraining()" class="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 transition-all" title="Trainingsplan bearbeiten">
+                                            <i class="ph ph-note-pencil text-sm"></i>
+                                        </button>
+                                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
+                                            <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
+                                            <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Übungen'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <template x-if="!isRestDay">
+                                    <div>
+                                        <div class="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
+                                            <template x-for="(ex, i) in todayTraining" :key="i">
+                                                <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
+                                                    <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
+                                                    <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
+                                                    <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps : '') : (ex.type === 'cardio' ? (ex.duration || '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')))"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <button x-show="!workoutActive" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
+                                            <i class="ph-bold ph-play"></i> Workout starten
+                                        </button>
+                                        <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
+                                            <i class="ph-bold ph-play"></i> Workout fortsetzen
+                                        </button>
+                                    </div>
+                                </template>
+                                <template x-if="isRestDay">
+                                    <div class="py-4 text-center"><p class="text-xs text-muted">Kein Training geplant.</p></div>
+                                </template>
+                                <div class="mt-4 pt-4 border-t border-white/5">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Letzte Workouts</p>
+                                        <button @click.stop="openWorkoutHistory()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-500/10">
+                                            Alle anzeigen
+                                        </button>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <template x-for="(w, wIdx) in workoutHistory.slice(0, 3)" :key="'recent-'+wIdx">
+                                            <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.03] hover:bg-white/5 transition-all cursor-pointer"
+                                                 @click.stop="openWorkoutComparison(w)">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <span class="w-7 h-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-[10px] text-muted font-mono shrink-0"
+                                                          x-text="new Date(w.date).getDate()"></span>
+                                                    <div class="min-w-0">
+                                                        <p class="text-xs font-medium text-white truncate" x-text="new Date(w.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'})"></p>
+                                                        <p class="text-[10px] text-muted font-mono" x-text="getWorkoutExerciseCount(w) + ' Üb. · ' + formatWorkoutDuration(w.durationSeconds)"></p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    <span x-show="w.tracked !== false" class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                                                        <i class="ph ph-chart-line-up text-[9px]"></i>
+                                                    </span>
+                                                    <i class="ph ph-caret-right text-[10px] text-muted"></i>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <div x-show="workoutHistory.length === 0" class="py-3 text-center">
+                                            <p class="text-[10px] text-muted">Noch keine Workouts absolviert.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -643,7 +807,7 @@
     <button @click="openModal()"
             class="mobile-fab md:hidden transition-transform duration-150"
             aria-label="Log Weight"
-            x-show="appLoaded && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !milestonesOpen && !bmiDetailOpen && !lootboxOpen && !workoutOpen && !workoutHistoryOpen && !prCelebrationOpen"
+            x-show="appLoaded && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !milestonesOpen && !bmiDetailOpen && !lootboxOpen && !workoutOpen && !workoutHistoryOpen && !prCelebrationOpen && !workoutPickerOpen && !workoutComparisonOpen"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-75"
             x-transition:enter-end="opacity-100 scale-100">

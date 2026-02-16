@@ -28,6 +28,8 @@ import confirmModal from '../templates/modals/confirm.html?raw';
 import toastComponent from '../templates/modals/toast.html?raw';
 import workoutModal from '../templates/modals/workout.html?raw';
 import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
+import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
+import workoutComparisonModal from '../templates/modals/workout-comparison.html?raw';
 import prCelebrationModal from '../templates/modals/pr-celebration.html?raw';
 
 Chart.register(...registerables);
@@ -49,6 +51,8 @@ if (modalsContainer) {
         toastComponent,
         workoutModal,
         workoutHistoryModal,
+        workoutPickerModal,
+        workoutComparisonModal,
         prCelebrationModal
     ].join('\n');
 }
@@ -131,13 +135,19 @@ function app() {
             let total = 0;
             let done = 0;
             for (const ex of this.workoutSession.exercises) {
-                if (ex.type === 'cardio' || ex.type === 'distance') {
+                if (ex.tracked === false || ex.type === 'cardio' || ex.type === 'distance') {
                     total++;
                     if (ex.done) done++;
                 } else {
                     const sets = ex.sets || [];
-                    total += sets.length;
-                    done += sets.filter(s => s.done).length;
+                    if (sets.length === 0) {
+                        // Untracked strength exercise
+                        total++;
+                        if (ex.done) done++;
+                    } else {
+                        total += sets.length;
+                        done += sets.filter(s => s.done).length;
+                    }
                 }
             }
             if (total === 0) return 0;
@@ -158,7 +168,7 @@ function app() {
         // --- INIT ---
         async initApp() {
             try {
-                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords] =
+                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords, workoutLogs] =
                     await Promise.all([
                         Supa.getSettings().catch(() => null),
                         Supa.getRewards().catch(() => []),
@@ -166,7 +176,8 @@ function app() {
                         Supa.getLayout().catch(() => null),
                         Supa.getWeightEntries().catch(() => []),
                         Supa.getAllPhotoDates().catch(() => []),
-                        Supa.getPersonalRecords().catch(() => [])
+                        Supa.getPersonalRecords().catch(() => []),
+                        Supa.getWorkoutLogs().catch(() => [])
                     ]);
 
                 // Apply settings
@@ -188,6 +199,15 @@ function app() {
 
                 // Apply layout
                 if (layout && layout.left && layout.right) {
+                    // Migrate: replace old 'training' widget with 'workouts'
+                    for (const col of ['left', 'right']) {
+                        const idx = layout[col].indexOf('training');
+                        if (idx !== -1) {
+                            layout[col][idx] = 'workouts';
+                        }
+                        // Remove old 'workout-history' if present (merged into workouts)
+                        layout[col] = layout[col].filter(w => w !== 'workout-history');
+                    }
                     const allInLayout = [...layout.left, ...layout.right];
                     const allWidgets = Object.keys(WIDGET_REGISTRY);
                     allWidgets.forEach(w => {
@@ -210,6 +230,10 @@ function app() {
 
                 // Apply personal records
                 this.personalRecords = personalRecords || [];
+
+                // Apply workout logs
+                this.workoutHistory = workoutLogs || [];
+                this.workoutHistoryLoaded = true;
 
             } catch (e) {
                 console.error('Failed to initialize app:', e);
@@ -248,7 +272,8 @@ function app() {
                 this.modalOpen || this.settingsOpen || this.profileOpen ||
                 this.trainingOpen || this.milestonesOpen || this.bmiDetailOpen ||
                 this.lootboxOpen || this.progressPicsOpen || this.editMode ||
-                this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen;
+                this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen ||
+                this.workoutPickerOpen || this.workoutComparisonOpen;
 
             document.addEventListener('touchstart', (e) => {
                 if (getScrollTop() > 5 || isAnyModalOpen() || this._ptr.refreshing) return;
@@ -674,8 +699,10 @@ function app() {
         // --- ESCAPE KEY HANDLER (centralized) ---
         handleEscape() {
             if (this.confirmModal.show) { this.cancelConfirm(); return; }
+            if (this.workoutComparisonOpen) { this.closeWorkoutComparison(); return; }
             if (this.prCelebrationOpen) { this.closePRCelebration(); return; }
             if (this.workoutHistoryOpen) { this.closeWorkoutHistory(); return; }
+            if (this.workoutPickerOpen) { this.closeWorkoutPicker(); return; }
             if (this.workoutOpen) { this.closeWorkout(); return; }
             if (this.lootboxOpen) { this.closeLootbox(); return; }
             if (this.progressPicsOpen) { this.closeProgressPics(); return; }

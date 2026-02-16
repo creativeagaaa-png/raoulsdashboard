@@ -1,0 +1,146 @@
+<!-- Workout Comparison Modal -->
+<div class="fixed inset-0 z-[65] flex items-center justify-center p-4 modal-mobile-sheet"
+     :class="workoutComparisonOpen ? 'pointer-events-auto' : 'pointer-events-none'"
+     role="dialog" aria-modal="true" aria-label="Workout Vergleich">
+
+    <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
+         x-show="workoutComparisonOpen"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @click="closeWorkoutComparison()"></div>
+
+    <div class="bg-surface border border-[var(--glass-border)] rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col relative z-10 shadow-2xl overflow-hidden"
+         x-show="workoutComparisonOpen"
+         x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100 scale-100" x-transition:leave-end="translate-y-12 opacity-0 scale-90">
+
+        <!-- Header -->
+        <div class="p-5 border-b border-[var(--glass-border)] bg-surface z-20 shrink-0">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                        <i class="ph-bold ph-chart-line-up text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-foreground">Vergleich</h2>
+                        <p class="text-[10px] text-muted uppercase tracking-widest font-mono"
+                           x-text="workoutComparisonData ? new Date(workoutComparisonData.workout.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short', year: 'numeric'}) : ''"></p>
+                    </div>
+                </div>
+                <button type="button" @click="closeWorkoutComparison()" class="text-muted hover:text-foreground transition-colors p-2 hover:bg-[var(--glass)] rounded-xl">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Comparison Content -->
+        <div class="overflow-y-auto flex-1 px-5 py-4 custom-scrollbar space-y-4">
+            <template x-if="workoutComparisonData">
+                <div>
+                    <template x-for="(comp, cIdx) in workoutComparisonData.comparisons" :key="cIdx">
+                        <div class="mb-4 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] overflow-hidden">
+                            <!-- Exercise Name -->
+                            <div class="px-4 py-3 border-b border-[var(--glass-border)] flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-foreground" x-text="comp.name"></h3>
+                                <span x-show="comp.previous"
+                                      class="text-[9px] font-mono text-muted"
+                                      x-text="comp.previousDate ? 'vs. ' + new Date(comp.previousDate).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : ''"></span>
+                            </div>
+
+                            <div class="px-4 py-3">
+                                <!-- Strength comparison -->
+                                <template x-if="comp.type === 'strength'">
+                                    <div>
+                                        <!-- Volume & Max Weight summary -->
+                                        <div class="grid grid-cols-2 gap-3 mb-3" x-show="comp.previous">
+                                            <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Max Gewicht</p>
+                                                <div class="flex items-end gap-2">
+                                                    <span class="text-lg font-bold text-foreground tabular-nums" x-text="getExerciseMaxWeight(comp.current) + ' kg'"></span>
+                                                    <span class="text-[10px] font-mono font-bold mb-0.5"
+                                                          :class="getExerciseMaxWeight(comp.current) >= getExerciseMaxWeight(comp.previous) ? 'text-emerald-400' : 'text-rose-400'"
+                                                          x-text="formatDelta(getExerciseMaxWeight(comp.current), getExerciseMaxWeight(comp.previous))"></span>
+                                                </div>
+                                            </div>
+                                            <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Volumen</p>
+                                                <div class="flex items-end gap-2">
+                                                    <span class="text-lg font-bold text-foreground tabular-nums" x-text="getExerciseVolume(comp.current)"></span>
+                                                    <span class="text-[10px] font-mono font-bold mb-0.5"
+                                                          :class="getExerciseVolume(comp.current) >= getExerciseVolume(comp.previous) ? 'text-emerald-400' : 'text-rose-400'"
+                                                          x-text="formatDelta(getExerciseVolume(comp.current), getExerciseVolume(comp.previous))"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Set-by-set comparison table -->
+                                        <div class="space-y-1">
+                                            <div class="grid gap-2 text-[9px] text-muted uppercase tracking-wider font-bold px-1"
+                                                 :class="comp.previous ? 'grid-cols-[2rem,1fr,1fr,1fr,1fr]' : 'grid-cols-[2rem,1fr,1fr]'">
+                                                <span>Set</span>
+                                                <span>Kg</span>
+                                                <span>Reps</span>
+                                                <template x-if="comp.previous">
+                                                    <span class="text-muted/50">Vorher Kg</span>
+                                                </template>
+                                                <template x-if="comp.previous">
+                                                    <span class="text-muted/50">Vorher Reps</span>
+                                                </template>
+                                            </div>
+                                            <template x-for="(set, sIdx) in (comp.current.sets || []).filter(s => s.done)" :key="sIdx">
+                                                <div class="grid gap-2 items-center px-1"
+                                                     :class="comp.previous ? 'grid-cols-[2rem,1fr,1fr,1fr,1fr]' : 'grid-cols-[2rem,1fr,1fr]'">
+                                                    <span class="text-xs font-bold text-muted tabular-nums" x-text="sIdx + 1"></span>
+                                                    <span class="text-xs font-mono text-foreground tabular-nums" x-text="set.weight"></span>
+                                                    <span class="text-xs font-mono text-foreground tabular-nums" x-text="set.reps"></span>
+                                                    <template x-if="comp.previous">
+                                                        <span class="text-[10px] font-mono text-muted tabular-nums"
+                                                              x-text="comp.previous.sets && comp.previous.sets[sIdx] && comp.previous.sets[sIdx].done ? comp.previous.sets[sIdx].weight : '–'"></span>
+                                                    </template>
+                                                    <template x-if="comp.previous">
+                                                        <span class="text-[10px] font-mono text-muted tabular-nums"
+                                                              x-text="comp.previous.sets && comp.previous.sets[sIdx] && comp.previous.sets[sIdx].done ? comp.previous.sets[sIdx].reps : '–'"></span>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Cardio/Distance comparison -->
+                                <template x-if="comp.type === 'cardio' || comp.type === 'distance'">
+                                    <div class="space-y-2">
+                                        <div class="flex items-center gap-4">
+                                            <div x-show="comp.type === 'distance'" class="flex-1">
+                                                <p class="text-[9px] text-muted uppercase font-bold mb-1">Distanz</p>
+                                                <p class="text-sm font-mono text-foreground" x-text="(comp.current.distance || '–') + ' km'"></p>
+                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted" x-text="'Vorher: ' + (comp.previous.distance || '–') + ' km'"></p>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="text-[9px] text-muted uppercase font-bold mb-1">Dauer</p>
+                                                <p class="text-sm font-mono text-foreground" x-text="comp.current.duration || '–'"></p>
+                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted" x-text="'Vorher: ' + (comp.previous.duration || '–')"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- No previous data -->
+                                <div x-show="!comp.previous" class="mt-2 text-[10px] text-muted/60 italic">
+                                    Kein vorheriges Training zum Vergleich vorhanden.
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-5 border-t border-[var(--glass-border)] bg-surface z-20 shrink-0">
+            <button type="button" @click="closeWorkoutComparison()" class="w-full py-3.5 rounded-xl border border-[var(--glass-border)] text-muted font-bold text-xs hover:bg-[var(--glass)] active:scale-[0.97] transition-all">
+                Schliessen
+            </button>
+        </div>
+    </div>
+</div>

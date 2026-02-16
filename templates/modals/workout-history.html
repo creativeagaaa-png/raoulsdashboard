@@ -35,27 +35,46 @@
                     <div class="p-4 rounded-2xl bg-[var(--glass)] border border-[var(--glass-border)] hover:border-[var(--glass-hover)] transition-all"
                          x-data="{ expanded: false }">
                         <div class="flex items-center justify-between cursor-pointer" @click="expanded = !expanded">
-                            <div>
-                                <p class="text-sm font-bold text-foreground" x-text="new Date(workout.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short', year: 'numeric'})"></p>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-sm font-bold text-foreground" x-text="new Date(workout.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short', year: 'numeric'})"></p>
+                                    <span x-show="workout.tracked === false"
+                                          class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-yellow-500/15 text-yellow-400">Ohne Tracking</span>
+                                </div>
                                 <p class="text-[10px] text-muted font-mono mt-0.5">
                                     <span x-text="formatWorkoutDuration(workout.durationSeconds)"></span> &middot;
                                     <span x-text="getWorkoutExerciseCount(workout) + ' Uebungen'"></span> &middot;
                                     <span x-text="getWorkoutSetsCompleted(workout) + ' Sets'"></span>
                                 </p>
                             </div>
-                            <span class="text-muted transition-transform duration-200" :class="expanded && 'rotate-180'">▼</span>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button x-show="workout.tracked !== false"
+                                        @click.stop="openWorkoutComparison(workout)"
+                                        class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 hover:bg-indigo-500/20 transition-all active:scale-90"
+                                        title="Vergleich anzeigen">
+                                    <i class="ph ph-chart-line-up text-sm"></i>
+                                </button>
+                                <span class="text-muted transition-transform duration-200" :class="expanded && 'rotate-180'">&#9660;</span>
+                            </div>
                         </div>
                         <div x-show="expanded" x-collapse class="mt-3 space-y-2">
                             <template x-for="(ex, eIdx) in workout.exercises" :key="eIdx">
                                 <div class="p-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                    <p class="text-xs font-bold text-foreground mb-1" x-text="ex.name"></p>
-                                    <div class="space-y-0.5">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <p class="text-xs font-bold text-foreground" x-text="ex.name"></p>
+                                        <span x-show="ex.tracked === false" class="text-[8px] text-yellow-400 font-bold uppercase">Nicht getrackt</span>
+                                    </div>
+                                    <div x-show="ex.tracked !== false" class="space-y-0.5">
                                         <template x-for="(set, sIdx) in (ex.sets || []).filter(s => s.done)" :key="sIdx">
                                             <p class="text-[10px] font-mono text-muted">
                                                 <span x-text="set.weight"></span> kg x <span x-text="set.reps"></span>
                                             </p>
                                         </template>
+                                        <p x-show="ex.type === 'cardio' && ex.done" class="text-[10px] font-mono text-muted" x-text="'Dauer: ' + (ex.duration || '–')"></p>
+                                        <p x-show="ex.type === 'distance' && ex.done" class="text-[10px] font-mono text-muted" x-text="(ex.distance || '–') + ' km · ' + (ex.duration || '–')"></p>
                                     </div>
+                                    <p x-show="ex.tracked === false && ex.done" class="text-[10px] text-emerald-400 font-mono">Erledigt ✓</p>
+                                    <p x-show="ex.tracked === false && !ex.done && !(ex.sets || []).some(s => s.done)" class="text-[10px] text-muted/50 font-mono">Nicht erledigt</p>
                                 </div>
                             </template>
                         </div>

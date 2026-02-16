@@ -23,7 +23,11 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-bold text-foreground">Workout</h2>
-                        <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="workoutDuration"></p>
+                        <div class="flex items-center gap-2">
+                            <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="workoutDuration"></p>
+                            <span x-show="workoutSession && workoutSession.tracked === false"
+                                  class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-yellow-500/15 text-yellow-400">Ohne Tracking</span>
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -62,8 +66,8 @@
                             <p x-show="exercise.note" class="text-[10px] text-muted mt-0.5" x-text="exercise.note"></p>
                         </div>
 
-                        <!-- Strength: Sets with weight/reps -->
-                        <div x-show="(exercise.type || 'strength') === 'strength'" class="px-4 py-2 space-y-1.5">
+                        <!-- TRACKED: Strength: Sets with weight/reps -->
+                        <div x-show="(exercise.type || 'strength') === 'strength' && exercise.tracked !== false" class="px-4 py-2 space-y-1.5">
                             <div class="grid grid-cols-[2rem,1fr,1fr,2.5rem] gap-2 text-[9px] text-muted uppercase tracking-wider font-bold px-1">
                                 <span>Set</span>
                                 <span>Kg</span>
@@ -92,12 +96,24 @@
                             </template>
                             <button @click="addWorkoutSet(exIdx)"
                                     class="w-full py-2 rounded-lg border border-dashed border-[var(--glass-border)] text-[11px] text-muted hover:text-foreground hover:border-[var(--glass-hover)] transition-all">
-                                ＋ Set hinzufuegen
+                                + Set hinzufuegen
                             </button>
                         </div>
 
-                        <!-- Cardio: Duration input + done -->
-                        <div x-show="exercise.type === 'cardio'" class="px-4 py-3">
+                        <!-- UNTRACKED: Strength (just a done toggle) -->
+                        <div x-show="(exercise.type || 'strength') === 'strength' && exercise.tracked === false" class="px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs text-muted" x-text="exercise.planned_sets + ' Sets x ' + exercise.planned_reps + ' Reps'"></p>
+                                <button @click="toggleExerciseDone(exIdx)"
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90"
+                                        :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
+                                    <span class="text-sm" x-text="exercise.done ? '✓' : ''"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TRACKED: Cardio: Duration input + done -->
+                        <div x-show="exercise.type === 'cardio' && exercise.tracked !== false" class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="flex-1">
                                     <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Dauer</label>
@@ -114,8 +130,20 @@
                             </div>
                         </div>
 
-                        <!-- Distance: Distance + Duration + done -->
-                        <div x-show="exercise.type === 'distance'" class="px-4 py-3">
+                        <!-- UNTRACKED: Cardio (just a done toggle) -->
+                        <div x-show="exercise.type === 'cardio' && exercise.tracked === false" class="px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs text-muted" x-text="exercise.planned_duration || 'Cardio'"></p>
+                                <button @click="toggleExerciseDone(exIdx)"
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90"
+                                        :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
+                                    <span class="text-sm" x-text="exercise.done ? '✓' : ''"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TRACKED: Distance: Distance + Duration + done -->
+                        <div x-show="exercise.type === 'distance' && exercise.tracked !== false" class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="flex-1">
                                     <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Distanz</label>
@@ -133,6 +161,18 @@
                                 </div>
                                 <button @click="toggleExerciseDone(exIdx)"
                                         class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90 mt-4"
+                                        :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
+                                    <span class="text-sm" x-text="exercise.done ? '✓' : ''"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- UNTRACKED: Distance (just a done toggle) -->
+                        <div x-show="exercise.type === 'distance' && exercise.tracked === false" class="px-4 py-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs text-muted" x-text="(exercise.planned_distance || '') + ' km · ' + (exercise.planned_duration || '')"></p>
+                                <button @click="toggleExerciseDone(exIdx)"
+                                        class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90"
                                         :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
                                     <span class="text-sm" x-text="exercise.done ? '✓' : ''"></span>
                                 </button>

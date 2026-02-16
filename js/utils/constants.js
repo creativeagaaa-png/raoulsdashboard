@@ -14,15 +14,15 @@ export const WIDGET_REGISTRY = {
     'current-status': { label: 'Status' },
     'prediction': { label: 'Prediction' },
     'training': { label: 'Training' },
+    'workouts': { label: 'Workouts' },
     'analytics': { label: 'Analytics' },
     'milestone': { label: 'Milestone' },
     'achievements': { label: 'Achievements' },
     'progress-pics': { label: 'Progress Pics' },
-    'workout-history': { label: 'Workout Log' },
     'logs': { label: 'Logs' }
 };
 
 export const DEFAULT_LAYOUT = {
-    left: ['current-status', 'prediction', 'training'],
+    left: ['current-status', 'prediction', 'workouts'],
     right: ['analytics', 'milestone', 'achievements', 'progress-pics', 'logs']
 };
