@@ -7,6 +7,7 @@
     "background_color": "#050505",
     "theme_color": "#050505",
     "orientation": "portrait-primary",
+    "categories": ["health", "fitness", "lifestyle"],
     "icons": [
         {
             "src": "icons/icon-192.png",
@@ -19,6 +20,22 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Gewicht loggen",
+            "short_name": "Log Weight",
+            "description": "Schnell dein aktuelles Gewicht eintragen",
+            "url": "/index.html?action=log-weight",
+            "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Workout starten",
+            "short_name": "Workout",
+            "description": "Heutiges Training starten",
+            "url": "/index.html?action=start-workout",
+            "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
         }
     ]
 }

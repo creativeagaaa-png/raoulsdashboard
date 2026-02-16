@@ -1,4 +1,5 @@
 import * as Supa from '../store/supabase.js';
+import { hapticHeavy } from '../utils/haptics.js';
 
 export const recordsMixin = () => ({
     personalRecords: [],
@@ -64,6 +65,7 @@ export const recordsMixin = () => ({
             const biggestPR = newPRs.reduce((a, b) => a.weight > b.weight ? a : b);
             this.prCelebration = biggestPR;
             this.prCelebrationOpen = true;
+            hapticHeavy();
             setTimeout(() => this.triggerPRConfetti(), 300);
         }
     },

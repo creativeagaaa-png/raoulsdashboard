@@ -80,10 +80,17 @@ body {
 
 /* Safe area insets for iPhone Dynamic Island & home indicator */
 .safe-area-body {
-    padding-top: calc(1.5rem + env(safe-area-inset-top));
+    padding-top: calc(1.25rem + env(safe-area-inset-top));
     padding-bottom: calc(6rem + env(safe-area-inset-bottom));
     padding-left: calc(1rem + env(safe-area-inset-left));
     padding-right: calc(1rem + env(safe-area-inset-right));
+}
+
+/* Standalone PWA mode: extra breathing room below Dynamic Island */
+@media all and (display-mode: standalone) {
+    .safe-area-body {
+        padding-top: calc(1.75rem + env(safe-area-inset-top));
+    }
 }
 
 @media (min-width: 768px) {
@@ -345,8 +352,16 @@ html, body { scrollbar-width: none; -ms-overflow-style: none; }
 /* Prevent background scroll-through on all modal overlays */
 .modal-mobile-sheet .overflow-y-auto,
 .modal-mobile-sheet .custom-scrollbar {
-    overscroll-behavior: contain;
+    overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
+}
+
+/* Native iOS rubber-band bounce inside scrollable modal content */
+@supports (-webkit-touch-callout: none) {
+    .modal-mobile-sheet .overflow-y-auto,
+    .modal-mobile-sheet .custom-scrollbar {
+        overscroll-behavior-y: auto;
+    }
 }
 
 /* Modal backdrop fade with blur ramp */

@@ -14,6 +14,8 @@ import { layoutMixin } from './features/layout.js';
 import { workoutMixin } from './features/workout.js';
 import { restTimerMixin } from './features/rest-timer.js';
 import { recordsMixin } from './features/records.js';
+import { hapticLight, hapticMedium, hapticSuccess, hapticWarning, hapticSelection } from './utils/haptics.js';
+import { registerSwipeDismiss } from './utils/swipe-dismiss.js';
 
 // Modal templates (loaded as raw HTML via Vite)
 import bmiDetailModal from '../templates/modals/bmi-detail.html?raw';
@@ -94,7 +96,28 @@ function app() {
 
         // Profile dropdown
         profileDropdownOpen: false,
+        switchTab(tab) {
+            if (this.activeTab !== tab) hapticSelection();
+            this.activeTab = tab;
+            this.updateThemeColor();
+        },
+
+        updateThemeColor() {
+            const isLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+            let color;
+            if (this.workoutActive) {
+                color = isLight ? '#059669' : '#064e3b';
+            } else if (this.activeTab === 'training') {
+                color = isLight ? '#f0fdf4' : '#050505';
+            } else {
+                color = isLight ? '#f5f5f7' : '#050505';
+            }
+            const meta = document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: ' + (isLight ? 'light' : 'dark') + ')"]');
+            if (meta) meta.setAttribute('content', color);
+        },
+
         toggleProfileDropdown() {
+            hapticLight();
             this.profileDropdownOpen = !this.profileDropdownOpen;
         },
         closeProfileDropdown() {
@@ -286,6 +309,8 @@ function app() {
                 this.refreshAnimations();
                 this.appLoaded = true;
                 this.initPullToRefresh();
+                this.handleShortcutAction();
+                this.updateThemeColor();
             });
 
             if ('serviceWorker' in navigator) {
@@ -439,6 +464,7 @@ function app() {
 
         // --- DATA MANIPULATION ---
         openModal() {
+            hapticLight();
             this.inputWeight = this.currentWeight;
             this.inputDate = new Date().toISOString().split('T')[0];
             this.modalOpen = true;
@@ -474,6 +500,7 @@ function app() {
                 this.showToast('Fehler beim Speichern');
             }
 
+            hapticSuccess();
             this.$nextTick(() => {
                 this.updateChart();
                 this.refreshAnimations();
@@ -510,6 +537,7 @@ function app() {
         quickLogStep(delta) {
             const base = this.quickLogDisplay;
             if (!base || base === 0) return;
+            hapticLight();
             this.quickLogWeight = Math.round((base + delta) * 10) / 10;
         },
 
@@ -525,11 +553,13 @@ function app() {
             this.history.push({ date: entryDate, weight: w });
             this.history.sort((a, b) => a.date.localeCompare(b.date));
 
+            let saved = true;
             try {
                 await Supa.upsertWeightEntry(entryDate, w);
             } catch (e) {
                 console.error('Failed to save quick entry:', e);
                 this.showToast('Fehler beim Speichern');
+                saved = false;
             }
 
             this.$nextTick(() => {
@@ -540,32 +570,44 @@ function app() {
             });
 
             this.quickLogWeight = null;
-            this.showToast(w.toFixed(1) + ' kg gespeichert');
+            if (saved) {
+                hapticSuccess();
+                this.showToast(w.toFixed(1) + ' kg gespeichert');
+            }
         },
 
         deleteEntry(index) {
             const logEntry = this.logs[index];
             if (!logEntry) return;
+            hapticWarning();
 
             const removed = { date: logEntry.date, weight: logEntry.weight };
             this.history = this.history.filter(h => h.date !== removed.date);
             const hadPhoto = this.photoDates.includes(removed.date);
 
-            Supa.deleteWeightEntry(removed.date).catch(e => console.error('Failed to delete entry:', e));
+            Supa.deleteWeightEntry(removed.date).catch(e => {
+                console.error('Failed to delete entry:', e);
+                this.showToast('Fehler beim Löschen');
+            });
 
             try { this.updateChart(); } catch (e) {}
             this.refreshAnimations();
 
             if (hadPhoto) {
-                Supa.deletePhoto(removed.date).then(() => {
-                    this.photoDates = this.photoDates.filter(d => d !== removed.date);
-                }).catch(e => console.error('Failed to delete photo:', e));
+                this.photoDates = this.photoDates.filter(d => d !== removed.date);
+                Supa.deletePhoto(removed.date).catch(e => {
+                    console.error('Failed to delete photo:', e);
+                });
             }
 
             this.showToast('Eintrag gelöscht', () => {
                 this.history.push(removed);
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
                 Supa.upsertWeightEntry(removed.date, removed.weight).catch(e => console.error('Failed to restore entry:', e));
+                if (hadPhoto && !this.photoDates.includes(removed.date)) {
+                    this.photoDates.push(removed.date);
+                    this.photoDates.sort();
+                }
                 this.updateChart();
                 this.refreshAnimations();
             });
@@ -691,14 +733,15 @@ function app() {
             const uniqueDates = [...new Set(this.history.map(h => h.date))].sort();
             const today = new Date().toISOString().split('T')[0];
             const lastLog = uniqueDates[uniqueDates.length - 1];
-            const diffHours = (new Date(today) - new Date(lastLog)) / (1000 * 3600);
-            if (diffHours > 48) return 0;
+            // Calculate difference in calendar days (not hours) to avoid timezone issues
+            const daysDiff = Math.round((new Date(today) - new Date(lastLog)) / (1000 * 60 * 60 * 24));
+            if (daysDiff > 1) return 0;
             let streak = 1;
             for (let i = uniqueDates.length - 1; i > 0; i--) {
-                const curr = new Date(uniqueDates[i]);
-                const prev = new Date(uniqueDates[i - 1]);
-                const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
-                if (diffDays <= 1.5) streak++; else break;
+                const currDate = new Date(uniqueDates[i]);
+                const prevDate = new Date(uniqueDates[i - 1]);
+                const calendarDaysDiff = Math.round((currDate - prevDate) / (1000 * 60 * 60 * 24));
+                if (calendarDaysDiff === 1) streak++; else break;
             }
             return streak;
         },
@@ -748,6 +791,22 @@ function app() {
         getWeightForDate(date) {
             const entry = this.history.find(h => h.date === date);
             return entry ? entry.weight.toFixed(1) + ' kg' : '';
+        },
+
+        // --- SHORTCUT ACTION HANDLER (manifest shortcuts via ?action=) ---
+        handleShortcutAction() {
+            const params = new URLSearchParams(window.location.search);
+            const action = params.get('action');
+            if (!action) return;
+            // Clean URL so refresh doesn't re-trigger
+            window.history.replaceState({}, '', window.location.pathname);
+            if (action === 'log-weight') {
+                this.activeTab = 'health';
+                setTimeout(() => this.openModal(), 300);
+            } else if (action === 'start-workout') {
+                this.activeTab = 'training';
+                setTimeout(() => this.openWorkoutPicker(), 300);
+            }
         },
 
         // --- ESCAPE KEY HANDLER (centralized) ---
@@ -841,6 +900,7 @@ function app() {
         },
 
         setChartFilter(filter) {
+            hapticSelection();
             this.chartFilter = filter;
             this.updateChart();
         },
@@ -1014,6 +1074,9 @@ function app() {
 
 // Global verfügbar machen für Alpine
 window.app = app;
+
+// Register custom Alpine directives
+registerSwipeDismiss(Alpine);
 
 // Alpine starten
 Alpine.start();

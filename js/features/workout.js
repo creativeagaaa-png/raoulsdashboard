@@ -1,6 +1,7 @@
 import { getTodayWeekdayIndex } from '../utils/formatting.js';
 import { WEEKDAYS } from '../utils/constants.js';
 import * as Supa from '../store/supabase.js';
+import { hapticMedium, hapticSuccess, hapticWarning, hapticLight } from '../utils/haptics.js';
 
 export const workoutMixin = () => ({
     // --- Workout Session State ---
@@ -12,6 +13,7 @@ export const workoutMixin = () => ({
     workoutHistoryLoaded: false,
     _workoutTimerInterval: null,
     _workoutElapsed: 0,
+    _workoutStartTimestamp: null,
 
     // --- Exercise Selection State ---
     workoutPickerOpen: false,
@@ -143,13 +145,17 @@ export const workoutMixin = () => ({
         this.workoutActive = true;
         this.workoutOpen = true;
         this._workoutElapsed = 0;
+        this._workoutStartTimestamp = Date.now();
         this._startWorkoutTimer();
+        if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
     },
 
     _startWorkoutTimer() {
         if (this._workoutTimerInterval) clearInterval(this._workoutTimerInterval);
         this._workoutTimerInterval = setInterval(() => {
-            this._workoutElapsed++;
+            if (this._workoutStartTimestamp) {
+                this._workoutElapsed = Math.floor((Date.now() - this._workoutStartTimestamp) / 1000);
+            }
         }, 1000);
     },
 
@@ -158,6 +164,7 @@ export const workoutMixin = () => ({
         if (!this.workoutSession) return;
         const set = this.workoutSession.exercises[exIdx].sets[setIdx];
         set.done = !set.done;
+        hapticMedium();
         if (set.done && typeof this.startRestTimer === 'function') {
             this.startRestTimer();
         }
@@ -168,6 +175,7 @@ export const workoutMixin = () => ({
         if (!this.workoutSession) return;
         const round = this.workoutSession.exercises[exIdx].rounds[roundIdx];
         round.done = !round.done;
+        hapticMedium();
     },
 
     // --- Toggle Cardio/Distance Exercise Done ---
@@ -175,11 +183,13 @@ export const workoutMixin = () => ({
         if (!this.workoutSession) return;
         const ex = this.workoutSession.exercises[exIdx];
         ex.done = !ex.done;
+        hapticMedium();
     },
 
     // --- Add Extra Set ---
     addWorkoutSet(exIdx) {
         if (!this.workoutSession) return;
+        hapticLight();
         const ex = this.workoutSession.exercises[exIdx];
         const lastSet = ex.sets[ex.sets.length - 1];
         ex.sets.push({
@@ -227,7 +237,10 @@ export const workoutMixin = () => ({
         this.workoutActive = false;
         this.workoutOpen = false;
         this._workoutElapsed = 0;
+        this._workoutStartTimestamp = null;
         if (typeof this.clearRestTimer === 'function') this.clearRestTimer();
+        hapticSuccess();
+        if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
         this.showToast('Workout gespeichert! 💪');
     },
 
@@ -253,17 +266,15 @@ export const workoutMixin = () => ({
                 this.workoutActive = false;
                 this.workoutOpen = false;
                 this._workoutElapsed = 0;
+                this._workoutStartTimestamp = null;
                 if (typeof this.clearRestTimer === 'function') this.clearRestTimer();
+                if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
             }
         };
     },
 
     closeWorkout() {
-        if (this.workoutActive) {
-            this.workoutOpen = false;
-        } else {
-            this.workoutOpen = false;
-        }
+        this.workoutOpen = false;
     },
 
     resumeWorkout() {

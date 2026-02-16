@@ -1,10 +1,13 @@
+import { hapticSuccess } from '../utils/haptics.js';
+
 export const restTimerMixin = () => ({
     restTimer: {
         active: false,
         remaining: 0,
         total: 90,
         defaultDuration: 90,
-        interval: null
+        interval: null,
+        _endTimestamp: null
     },
 
     startRestTimer(duration) {
@@ -13,20 +16,21 @@ export const restTimerMixin = () => ({
         this.restTimer.total = dur;
         this.restTimer.remaining = dur;
         this.restTimer.active = true;
+        this.restTimer._endTimestamp = Date.now() + dur * 1000;
 
         this.restTimer.interval = setInterval(() => {
-            this.restTimer.remaining--;
-            if (this.restTimer.remaining <= 0) {
+            const now = Date.now();
+            const remaining = Math.max(0, Math.ceil((this.restTimer._endTimestamp - now) / 1000));
+            this.restTimer.remaining = remaining;
+            if (remaining <= 0) {
                 this.restTimerComplete();
             }
-        }, 1000);
+        }, 250);
     },
 
     restTimerComplete() {
         this.clearRestTimer();
-        if (navigator.vibrate) {
-            navigator.vibrate([200, 100, 200]);
-        }
+        hapticSuccess();
         this.playTimerBeep();
     },
 
@@ -61,6 +65,7 @@ export const restTimerMixin = () => ({
         }
         this.restTimer.active = false;
         this.restTimer.remaining = 0;
+        this.restTimer._endTimestamp = null;
     },
 
     skipRestTimer() {

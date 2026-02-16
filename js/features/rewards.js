@@ -1,3 +1,5 @@
+import { hapticHeavy } from '../utils/haptics.js';
+
 export const rewardsMixin = () => ({
     checkUnlocks(oldW, newW) {
         if (typeof oldW !== 'number' || typeof newW !== 'number') return;
@@ -6,6 +8,7 @@ export const rewardsMixin = () => ({
         if (unlocked) {
             this.unlockedReward = unlocked;
             this.lootboxOpen = true;
+            hapticHeavy();
             setTimeout(() => this.triggerConfetti(), 300);
         }
     },
