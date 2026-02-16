@@ -807,7 +807,7 @@ function app() {
             this.showToast('+' + addedSteps.toLocaleString('en-US') + ' steps → ' + newTotal.toLocaleString('en-US') + ' total');
         },
 
-        deleteStepEntry(date) {
+        async deleteStepEntry(date) {
             hapticWarning();
             const removed = this.stepsHistory.find(e => e.date === date);
             if (!removed) return;
@@ -821,19 +821,33 @@ function app() {
                 this.refreshAnimations();
             }
 
-            Supa.deleteStepEntry(date).catch(e => {
+            try {
+                await Supa.deleteStepEntry(date);
+            } catch (e) {
                 console.error('Failed to delete step entry:', e);
-                this.showToast('Failed to delete');
-            });
-
-            this.showToast('Entry deleted', () => {
+                // Rollback UI on failure
                 this.stepsHistory.push(removed);
                 this.stepsHistory.sort((a, b) => b.date.localeCompare(a.date));
                 if (date === today) {
                     this.todaySteps = removed.steps;
                     this.refreshAnimations();
                 }
-                Supa.upsertStepEntry(removed.date, removed.steps).catch(e => console.error('Failed to restore step entry:', e));
+                this.showToast('Failed to delete');
+                return;
+            }
+
+            this.showToast('Entry deleted', async () => {
+                this.stepsHistory.push(removed);
+                this.stepsHistory.sort((a, b) => b.date.localeCompare(a.date));
+                if (date === today) {
+                    this.todaySteps = removed.steps;
+                    this.refreshAnimations();
+                }
+                try {
+                    await Supa.upsertStepEntry(removed.date, removed.steps);
+                } catch (e) {
+                    console.error('Failed to restore step entry:', e);
+                }
             });
         },
 
