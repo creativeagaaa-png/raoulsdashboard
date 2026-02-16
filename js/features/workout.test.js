@@ -15,7 +15,7 @@ vi.mock('../utils/formatting.js', () => ({
 
 // Mock constants.js
 vi.mock('../utils/constants.js', () => ({
-    WEEKDAYS: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+    WEEKDAYS: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 }));
 
 const { workoutMixin } = await import('./workout.js');

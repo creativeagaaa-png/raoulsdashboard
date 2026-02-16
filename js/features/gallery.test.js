@@ -46,7 +46,7 @@ describe('formatPhotoDate', () => {
         expect(m.formatPhotoDate('')).toBe('');
     });
 
-    it('formats date in German locale', () => {
+    it('formats date in English locale', () => {
         const m = createMixin();
         const result = m.formatPhotoDate('2025-03-15');
         expect(result).toBeTruthy();
@@ -153,5 +153,80 @@ describe('refreshProgressPicsPhotos', () => {
         await m.refreshProgressPicsPhotos();
         expect(m.progressPicsLoaded).toBe(true);
         expect(m.progressPicsPhotos).toHaveLength(1);
+    });
+});
+
+describe('loadMorePhotos', () => {
+    it('loads next batch of photos', async () => {
+        const m = createMixin({
+            history: [
+                { date: '2025-01-01', weight: 80 },
+                { date: '2025-01-02', weight: 79 },
+                { date: '2025-01-03', weight: 78 },
+                { date: '2025-01-04', weight: 77 },
+                { date: '2025-01-05', weight: 76 },
+                { date: '2025-01-06', weight: 75 },
+                { date: '2025-01-07', weight: 74 },
+                { date: '2025-01-08', weight: 73 }
+            ]
+        });
+        m.photoDates = ['2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04', '2025-01-05', '2025-01-06', '2025-01-07', '2025-01-08'];
+        m._photosLoadedCount = 6;
+        m.progressPicsPhotos = [
+            { date: '2025-01-08', photo: 'url', weight: 73 },
+            { date: '2025-01-07', photo: 'url', weight: 74 },
+            { date: '2025-01-06', photo: 'url', weight: 75 },
+            { date: '2025-01-05', photo: 'url', weight: 76 },
+            { date: '2025-01-04', photo: 'url', weight: 77 },
+            { date: '2025-01-03', photo: 'url', weight: 78 }
+        ];
+        m.hasMorePhotos = true;
+
+        await m.loadMorePhotos();
+
+        expect(m.progressPicsPhotos).toHaveLength(8);
+        expect(m._photosLoadedCount).toBe(8);
+    });
+
+    it('does nothing when already loading', async () => {
+        const m = createMixin({
+            history: [{ date: '2025-01-01', weight: 80 }]
+        });
+        m.progressPicsLoading = true;
+        m.photoDates = ['2025-01-01', '2025-01-02'];
+        m._photosLoadedCount = 1;
+        m.progressPicsPhotos = [{ date: '2025-01-02', photo: 'url', weight: 80 }];
+        m.hasMorePhotos = true;
+
+        const initialLength = m.progressPicsPhotos.length;
+        await m.loadMorePhotos();
+
+        expect(m.progressPicsPhotos).toHaveLength(initialLength);
+        expect(m._photosLoadedCount).toBe(1);
+    });
+});
+
+describe('_photosLoadedCount', () => {
+    it('tracks loaded count correctly', async () => {
+        const m = createMixin({
+            history: [
+                { date: '2025-01-01', weight: 80 },
+                { date: '2025-01-02', weight: 79 },
+                { date: '2025-01-03', weight: 78 }
+            ]
+        });
+        m.photoDates = ['2025-01-01', '2025-01-02', '2025-01-03'];
+
+        expect(m._photosLoadedCount).toBe(0);
+
+        await m.loadProgressPicsPhotos();
+        expect(m._photosLoadedCount).toBe(3);
+
+        m.photoDates.push('2025-01-04');
+        m.history.push({ date: '2025-01-04', weight: 77 });
+        m.hasMorePhotos = true;
+
+        await m.loadMorePhotos();
+        expect(m._photosLoadedCount).toBe(4);
     });
 });

@@ -3,7 +3,7 @@ import { Chart, registerables } from 'chart.js';
 import confetti from 'canvas-confetti';
 
 import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT, WEEKDAYS, WEEKDAY_SHORT, STEPS_GOAL } from './utils/constants.js';
-import { getTodayWeekdayIndex } from './utils/formatting.js';
+import { getTodayWeekdayIndex, getLocalDateString } from './utils/formatting.js';
 import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './utils/analytics.js';
 import * as Supa from './store/supabase.js';
 import { settingsMixin } from './store/settings.js';
@@ -128,7 +128,7 @@ function app() {
 
         // Inputs & Display
         inputWeight: null,
-        inputDate: new Date().toISOString().split('T')[0],
+        inputDate: getLocalDateString(),
         displayWeight: 0,
         displayBmi: 0,
         displayProgress: 0,
@@ -144,7 +144,7 @@ function app() {
         stepsLogOpen: false,
         stepsHistory: [],
         stepsInput: '',
-        stepsInputDate: new Date().toISOString().split('T')[0],
+        stepsInputDate: getLocalDateString(),
         stepsLogView: 'days',
 
         // --- MIXINS ---
@@ -242,6 +242,11 @@ function app() {
             return `${mins}:${String(secs).padStart(2, '0')}`;
         },
 
+        // Gallery getter
+        get hasMorePhotos() {
+            return this._photosLoadedCount < this.photoDates.length;
+        },
+
         // --- INIT ---
         async initApp() {
             try {
@@ -320,6 +325,9 @@ function app() {
                 console.error('Failed to initialize app:', e);
             }
 
+            // Restore active workout from localStorage (crash recovery)
+            this.restoreWorkoutFromStorage();
+
             this.$nextTick(() => {
                 this.renderChart();
                 this.refreshAnimations();
@@ -357,7 +365,7 @@ function app() {
             const isAnyModalOpen = () =>
                 this.modalOpen || this.settingsOpen || this.profileOpen ||
                 this.trainingOpen || this.milestonesOpen || this.bmiDetailOpen ||
-                this.lootboxOpen || this.progressPicsOpen || this.editMode ||
+                this.lootboxOpen || this.progressPicsOpen ||
                 this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen ||
                 this.workoutPickerOpen || this.workoutComparisonOpen ||
                 this.profileDropdownOpen || this.stepsLogOpen;
@@ -477,10 +485,10 @@ function app() {
                     this.refreshAnimations();
                 });
 
-                this.showToast('Dashboard aktualisiert');
+                this.showToast('Dashboard refreshed');
             } catch (e) {
                 console.error('Failed to refresh dashboard:', e);
-                this.showToast('Fehler beim Aktualisieren');
+                this.showToast('Failed to refresh');
             }
         },
 
@@ -488,7 +496,7 @@ function app() {
         openModal() {
             hapticLight();
             this.inputWeight = this.currentWeight;
-            this.inputDate = new Date().toISOString().split('T')[0];
+            this.inputDate = getLocalDateString();
             this.modalOpen = true;
             setTimeout(() => document.getElementById('weightInput')?.focus(), 100);
         },
@@ -519,7 +527,7 @@ function app() {
                 await Supa.upsertWeightEntry(entryDate, w);
             } catch (e) {
                 console.error('Failed to save entry:', e);
-                this.showToast('Fehler beim Speichern');
+                this.showToast('Failed to save');
             }
 
             hapticSuccess();
@@ -539,14 +547,14 @@ function app() {
                     if (this.progressPicsLoaded) this.refreshProgressPicsPhotos();
                 } catch (e) {
                     console.error('Failed to save photo:', e);
-                    this.showToast('Foto konnte nicht gespeichert werden');
+                    this.showToast('Failed to save photo');
                 }
             }
             this._saving = false;
         },
 
         get todayWeight() {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString();
             const entry = this.history.find(h => h.date === today);
             return entry ? entry.weight : null;
         },
@@ -566,7 +574,7 @@ function app() {
         async quickLogSave() {
             const w = this.quickLogDisplay;
             if (!w || w === 0 || this._saving) return;
-            const entryDate = new Date().toISOString().split('T')[0];
+            const entryDate = getLocalDateString();
 
             this._saving = true;
             const oldW = this.currentWeight;
@@ -580,7 +588,7 @@ function app() {
                 await Supa.upsertWeightEntry(entryDate, w);
             } catch (e) {
                 console.error('Failed to save quick entry:', e);
-                this.showToast('Fehler beim Speichern');
+                this.showToast('Failed to save');
                 saved = false;
             }
 
@@ -594,7 +602,7 @@ function app() {
             this.quickLogWeight = null;
             if (saved) {
                 hapticSuccess();
-                this.showToast(w.toFixed(1) + ' kg gespeichert');
+                this.showToast(w.toFixed(1) + ' kg saved');
             }
         },
 
@@ -609,7 +617,7 @@ function app() {
 
             Supa.deleteWeightEntry(removed.date).catch(e => {
                 console.error('Failed to delete entry:', e);
-                this.showToast('Fehler beim Löschen');
+                this.showToast('Failed to delete');
             });
 
             try { this.updateChart(); } catch (e) {}
@@ -622,7 +630,7 @@ function app() {
                 });
             }
 
-            this.showToast('Eintrag gelöscht', () => {
+            this.showToast('Entry deleted', () => {
                 this.history.push(removed);
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
                 Supa.upsertWeightEntry(removed.date, removed.weight).catch(e => console.error('Failed to restore entry:', e));
@@ -638,8 +646,8 @@ function app() {
         clearAllEntries() {
             this.confirmModal = {
                 show: true,
-                title: 'Alle Einträge löschen',
-                message: 'Alle ' + this.history.length + ' Gewichtseinträge und Fotos löschen?',
+                title: 'Delete all entries',
+                message: 'Delete all ' + this.history.length + ' weight entries and photos?',
                 onConfirm: async () => {
                     this.history = [];
                     this.photoDates = [];
@@ -656,7 +664,7 @@ function app() {
                     }
                     this.updateChart();
                     this.refreshAnimations();
-                    this.showToast('Alle Einträge gelöscht');
+                    this.showToast('All entries deleted');
                 }
             };
         },
@@ -664,8 +672,8 @@ function app() {
         resetData() {
             this.confirmModal = {
                 show: true,
-                title: 'Kompletter Reset',
-                message: 'Alle Daten inklusive Einstellungen, Training und Fotos löschen?',
+                title: 'Full Reset',
+                message: 'Delete all data including settings, training and photos?',
                 onConfirm: async () => {
                     try {
                         await Promise.all([
@@ -713,7 +721,7 @@ function app() {
                     this.settingsOpen = false;
                     this.updateChart();
                     this.refreshAnimations();
-                    this.showToast('Alle Daten gelöscht');
+                    this.showToast('All data deleted');
                 }
             };
         },
@@ -737,7 +745,7 @@ function app() {
         checkStepsCelebration(oldSteps, newSteps) {
             if (oldSteps < STEPS_GOAL && newSteps >= STEPS_GOAL && !this._stepsCelebrated) {
                 this._stepsCelebrated = true;
-                this.showToast('10.000 Schritte erreicht! 🎉');
+                this.showToast('10,000 steps reached! 🎉');
                 setTimeout(() => this.triggerConfetti(), 300);
             }
         },
@@ -746,7 +754,7 @@ function app() {
             hapticLight();
             this.stepsLogOpen = true;
             this.stepsInput = '';
-            this.stepsInputDate = new Date().toISOString().split('T')[0];
+            this.stepsInputDate = getLocalDateString();
             try {
                 this.stepsHistory = await Supa.getStepHistory();
             } catch (e) {
@@ -759,47 +767,81 @@ function app() {
         },
 
         async saveManualSteps() {
-            const steps = parseInt(this.stepsInput);
-            if (!steps || isNaN(steps) || steps < 0) return;
+            const addedSteps = parseInt(this.stepsInput);
+            if (!addedSteps || isNaN(addedSteps) || addedSteps <= 0) return;
             const date = this.stepsInputDate;
 
             hapticSuccess();
             const oldSteps = this.todaySteps;
 
+            // Find existing entry for that date and add to it
+            const existing = this.stepsHistory.find(e => e.date === date);
+            const previousSteps = existing ? existing.steps : 0;
+            const newTotal = previousSteps + addedSteps;
+
             try {
-                await Supa.upsertStepEntry(date, steps);
+                await Supa.upsertStepEntry(date, newTotal);
             } catch (e) {
                 console.error('Failed to save steps:', e);
-                this.showToast('Fehler beim Speichern');
+                this.showToast('Failed to save');
                 return;
             }
 
             // Update today's steps if the entry is for today
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString();
             if (date === today) {
-                this.todaySteps = steps;
-                this.checkStepsCelebration(oldSteps, steps);
+                this.todaySteps = newTotal;
+                this.checkStepsCelebration(oldSteps, newTotal);
                 this.refreshAnimations();
             }
 
             // Update history in modal
-            const existing = this.stepsHistory.findIndex(e => e.date === date);
-            if (existing >= 0) {
-                this.stepsHistory[existing].steps = steps;
+            if (existing) {
+                existing.steps = newTotal;
             } else {
-                this.stepsHistory.push({ date, steps });
+                this.stepsHistory.push({ date, steps: newTotal });
                 this.stepsHistory.sort((a, b) => b.date.localeCompare(a.date));
             }
 
             this.stepsInput = '';
-            this.showToast(steps.toLocaleString('de-DE') + ' Schritte gespeichert');
+            this.showToast('+' + addedSteps.toLocaleString('en-US') + ' steps → ' + newTotal.toLocaleString('en-US') + ' total');
+        },
+
+        deleteStepEntry(date) {
+            hapticWarning();
+            const removed = this.stepsHistory.find(e => e.date === date);
+            if (!removed) return;
+
+            this.stepsHistory = this.stepsHistory.filter(e => e.date !== date);
+
+            const today = getLocalDateString();
+            if (date === today) {
+                this.todaySteps = 0;
+                this._stepsCelebrated = false;
+                this.refreshAnimations();
+            }
+
+            Supa.deleteStepEntry(date).catch(e => {
+                console.error('Failed to delete step entry:', e);
+                this.showToast('Failed to delete');
+            });
+
+            this.showToast('Entry deleted', () => {
+                this.stepsHistory.push(removed);
+                this.stepsHistory.sort((a, b) => b.date.localeCompare(a.date));
+                if (date === today) {
+                    this.todaySteps = removed.steps;
+                    this.refreshAnimations();
+                }
+                Supa.upsertStepEntry(removed.date, removed.steps).catch(e => console.error('Failed to restore step entry:', e));
+            });
         },
 
         get stepsWeekAvg() {
             const now = new Date();
             const weekAgo = new Date(now);
             weekAgo.setDate(weekAgo.getDate() - 7);
-            const weekStr = weekAgo.toISOString().split('T')[0];
+            const weekStr = getLocalDateString(weekAgo);
             const entries = this.stepsHistory.filter(e => e.date >= weekStr);
             if (entries.length === 0) return 0;
             return Math.round(entries.reduce((s, e) => s + e.steps, 0) / entries.length);
@@ -809,7 +851,7 @@ function app() {
             const now = new Date();
             const monthAgo = new Date(now);
             monthAgo.setDate(monthAgo.getDate() - 30);
-            const monthStr = monthAgo.toISOString().split('T')[0];
+            const monthStr = getLocalDateString(monthAgo);
             const entries = this.stepsHistory.filter(e => e.date >= monthStr);
             if (entries.length === 0) return 0;
             return Math.round(entries.reduce((s, e) => s + e.steps, 0) / entries.length);
@@ -825,7 +867,7 @@ function app() {
             return Object.keys(groups).sort().reverse().map(key => {
                 const steps = groups[key];
                 const [y, m] = key.split('-');
-                const label = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+                const label = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                 return {
                     key,
                     label,
@@ -875,7 +917,7 @@ function app() {
         get streakDays() {
             if (this.history.length === 0) return 0;
             const uniqueDates = [...new Set(this.history.map(h => h.date))].sort();
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString();
             const lastLog = uniqueDates[uniqueDates.length - 1];
             // Calculate difference in calendar days (not hours) to avoid timezone issues
             const daysDiff = Math.round((new Date(today) - new Date(lastLog)) / (1000 * 60 * 60 * 24));
@@ -1124,7 +1166,7 @@ function app() {
 
             if (goalLineData) {
                 datasets.push({
-                    label: 'Ziel-Linie',
+                    label: 'Goal Line',
                     data: goalLineData,
                     borderColor: 'rgba(16, 185, 129, 0.45)',
                     borderWidth: 1.5,
@@ -1138,7 +1180,7 @@ function app() {
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.map(h => new Date(h.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })),
+                    labels: data.map(h => new Date(h.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' })),
                     datasets
                 },
                 options: {
@@ -1159,7 +1201,7 @@ function app() {
                             displayColors: false,
                             callbacks: {
                                 label: (ctx) => {
-                                    if (ctx.dataset.label === 'Ziel-Linie') return null;
+                                    if (ctx.dataset.label === 'Goal Line') return null;
                                     return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + ' kg';
                                 }
                             }
@@ -1180,19 +1222,19 @@ function app() {
                         const data = this.getRawChartData();
                         const weights = data.map(h => h.weight);
                         if (!chartInstance) return;
-                        chartInstance.data.labels = data.map(h => new Date(h.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }));
+                        chartInstance.data.labels = data.map(h => new Date(h.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' }));
                         chartInstance.data.datasets[0].data = weights;
                         if (chartInstance.data.datasets[1]) {
                             chartInstance.data.datasets[1].data = this.computeMovingAverage(weights, 7);
                         }
                         const goalLineData = this.buildGoalLineData(data);
-                        const goalDatasetIdx = chartInstance.data.datasets.findIndex(d => d.label === 'Ziel-Linie');
+                        const goalDatasetIdx = chartInstance.data.datasets.findIndex(d => d.label === 'Goal Line');
                         if (goalLineData) {
                             if (goalDatasetIdx >= 0) {
                                 chartInstance.data.datasets[goalDatasetIdx].data = goalLineData;
                             } else {
                                 chartInstance.data.datasets.push({
-                                    label: 'Ziel-Linie',
+                                    label: 'Goal Line',
                                     data: goalLineData,
                                     borderColor: 'rgba(16, 185, 129, 0.45)',
                                     borderWidth: 1.5,
@@ -1218,11 +1260,11 @@ function app() {
     };
 }
 
-// Global verfügbar machen für Alpine
+// Make available globally for Alpine
 window.app = app;
 
 // Register custom Alpine directives
 registerSwipeDismiss(Alpine);
 
-// Alpine starten
+// Start Alpine
 Alpine.start();

@@ -5,11 +5,11 @@ export function calculateBMI(weight, height) {
     if (h <= 0) return { value: 0, label: "-", color: "bg-gray-500" };
 
     const val = (weight / (h * h)).toFixed(1);
-    let label = "Normalgewicht";
+    let label = "Normal";
     let color = "bg-emerald-500";
-    if (val >= 25) { label = "Übergewicht"; color = "bg-yellow-500"; }
-    if (val >= 30) { label = "Adipositas"; color = "bg-rose-500"; }
-    if (val < 18.5) { label = "Untergewicht"; color = "bg-blue-500"; }
+    if (val >= 25) { label = "Overweight"; color = "bg-yellow-500"; }
+    if (val >= 30) { label = "Obese"; color = "bg-rose-500"; }
+    if (val < 18.5) { label = "Underweight"; color = "bg-blue-500"; }
     return { value: val, label, color };
 }
 
@@ -18,10 +18,10 @@ export function getBMIRanges(height) {
     if (h <= 0) return [];
     const hh = h * h;
     return [
-        { label: 'Untergewicht', bmi: '< 18.5', min: null, max: (18.5 * hh).toFixed(1), color: 'bg-blue-500', text: 'text-blue-400', border: 'border-blue-500/30' },
-        { label: 'Normalgewicht', bmi: '18.5 – 24.9', min: (18.5 * hh).toFixed(1), max: (25 * hh).toFixed(1), color: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-        { label: 'Übergewicht', bmi: '25 – 29.9', min: (25 * hh).toFixed(1), max: (30 * hh).toFixed(1), color: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/30' },
-        { label: 'Adipositas', bmi: '≥ 30', min: (30 * hh).toFixed(1), max: null, color: 'bg-rose-500', text: 'text-rose-400', border: 'border-rose-500/30' },
+        { label: 'Underweight', bmi: '< 18.5', min: null, max: (18.5 * hh).toFixed(1), color: 'bg-blue-500', text: 'text-blue-400', border: 'border-blue-500/30' },
+        { label: 'Normal', bmi: '18.5 – 24.9', min: (18.5 * hh).toFixed(1), max: (25 * hh).toFixed(1), color: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+        { label: 'Overweight', bmi: '25 – 29.9', min: (25 * hh).toFixed(1), max: (30 * hh).toFixed(1), color: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/30' },
+        { label: 'Obese', bmi: '≥ 30', min: (30 * hh).toFixed(1), max: null, color: 'bg-rose-500', text: 'text-rose-400', border: 'border-rose-500/30' },
     ];
 }
 
@@ -81,12 +81,12 @@ export function calculateOracle(history, currentWeight, goalWeight) {
     const isPlateau = recentWeeks.length >= 2 && recentRange < 0.3;
 
     const plateauTips = [
-        'Refeed Day einplanen – ein Tag mit mehr Kalorien kann den Stoffwechsel ankurbeln',
-        'Trainingsintensität erhöhen oder Trainingsart wechseln',
-        'Schlaf und Stress prüfen – beides beeinflusst das Gewicht stark',
-        'Wassereinlagerungen? Salzkonsum und Zyklus beachten',
-        'Kaloriendefizit überprüfen – der Körper passt sich an',
-        'Mehr Protein kann helfen, die Muskelmasse zu erhalten'
+        'Plan a refeed day – a higher calorie day can boost your metabolism',
+        'Increase training intensity or switch up your routine',
+        'Check sleep and stress levels – both strongly affect weight',
+        'Water retention? Watch sodium intake and hormonal cycles',
+        'Review your calorie deficit – your body adapts over time',
+        'More protein can help maintain muscle mass'
     ];
     const tipIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24)) % plateauTips.length;
 
@@ -121,7 +121,7 @@ export function calculateOracle(history, currentWeight, goalWeight) {
 
     return {
         valid: true,
-        date: goalDate.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }),
+        date: goalDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
         rate: weeklySlope.toFixed(2),
         weeklyAvg: ewma.toFixed(1),
         isPlateau,

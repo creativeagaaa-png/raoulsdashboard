@@ -1,9 +1,23 @@
-const CACHE_NAME = 'health-os-v8';
+const CACHE_NAME = 'health-os-v9';
+
+// Essential assets to pre-cache during install
+const PRE_CACHE_URLS = [
+    '/',
+    '/index.html',
+    '/css/styles.css',
+    '/manifest.json',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png',
+    '/icons/icon.svg'
+];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(() => self.skipWaiting())
+        caches.open(CACHE_NAME).then(cache =>
+            cache.addAll(PRE_CACHE_URLS).catch(() => {
+                // Pre-cache best-effort; don't block install
+            })
+        ).then(() => self.skipWaiting())
     );
 });
 

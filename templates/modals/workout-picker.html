@@ -1,7 +1,7 @@
 <!-- Workout Picker Modal -->
 <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-mobile-sheet"
      :class="workoutPickerOpen ? 'pointer-events-auto' : 'pointer-events-none'"
-     role="dialog" aria-modal="true" aria-label="Workout starten">
+     role="dialog" aria-modal="true" aria-label="Start Workout">
 
     <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
          x-show="workoutPickerOpen"
@@ -26,7 +26,7 @@
                         <i class="ph-bold ph-play text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-foreground">Workout starten</h2>
+                        <h2 class="text-lg font-bold text-foreground">Start Workout</h2>
                         <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="todayWeekday"></p>
                     </div>
                 </div>
@@ -39,10 +39,10 @@
         <!-- Exercise Selection -->
         <div class="overflow-y-auto flex-1 px-5 py-4 custom-scrollbar">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Übungen auswählen</p>
+                <p class="text-[10px] text-muted uppercase tracking-widest font-bold">Select Exercises</p>
                 <button @click="selectAllPickerExercises()"
                         class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-500/10">
-                    <span x-text="workoutPickerExercises.every(e => e.selected) ? 'Keine' : 'Alle'"></span>
+                    <span x-text="workoutPickerExercises.every(e => e.selected) ? 'None' : 'All'"></span>
                 </button>
             </div>
 
@@ -61,8 +61,8 @@
                             <p class="text-sm font-bold text-foreground truncate" x-text="ex.name"></p>
                             <p class="text-[10px] font-mono text-muted mt-0.5"
                                x-text="(ex.type || 'strength') === 'strength'
-                                   ? (ex.sets ? ex.sets + 'x' + ex.reps + (ex.weight ? ' · ' + ex.weight + 'kg' : '') : 'Kraft')
-                                   : (ex.type === 'cardio' ? (ex.duration || 'Cardio') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Runden' : 'Zirkel') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : 'Distanz'))))">
+                                   ? (ex.sets ? ex.sets + 'x' + ex.reps + (ex.weight ? ' · ' + ex.weight + 'kg' : '') : 'Strength')
+                                   : (ex.type === 'cardio' ? (ex.duration || 'Cardio') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Rounds' : 'Circuit') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : 'Distance'))))">
                             </p>
                         </div>
                         <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase shrink-0"
@@ -72,7 +72,7 @@
                                   'bg-blue-500/15 text-blue-400': ex.type === 'distance',
                                   'bg-violet-500/15 text-violet-400': ex.type === 'circuit'
                               }"
-                              x-text="(ex.type || 'strength') === 'strength' ? 'Kraft' : (ex.type === 'cardio' ? 'Cardio' : (ex.type === 'circuit' ? 'Zirkel' : 'Distanz'))"></span>
+                              x-text="(ex.type || 'strength') === 'strength' ? 'Strength' : (ex.type === 'cardio' ? 'Cardio' : (ex.type === 'circuit' ? 'Circuit' : 'Distance'))"></span>
                     </button>
                 </template>
             </div>
@@ -86,8 +86,8 @@
                             <i class="ph-bold ph-chart-line-up text-sm"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-foreground">Training tracken</p>
-                            <p class="text-[10px] text-muted mt-0.5">Gewichte, Reps & Zeiten dokumentieren</p>
+                            <p class="text-xs font-bold text-foreground">Track workout</p>
+                            <p class="text-[10px] text-muted mt-0.5">Track weights, reps & times</p>
                         </div>
                     </div>
                     <button @click="workoutTrackingEnabled = !workoutTrackingEnabled"
@@ -98,7 +98,7 @@
                     </button>
                 </div>
                 <p x-show="!workoutTrackingEnabled" class="text-[10px] text-yellow-400/70 mt-2 pl-11">
-                    Ohne Tracking werden keine Gewichte/Reps gespeichert – nur Übungen als erledigt markiert.
+                    Without tracking, no weights/reps will be saved – exercises will only be marked as done.
                 </p>
             </div>
         </div>
@@ -106,13 +106,13 @@
         <!-- Footer -->
         <div class="p-5 border-t border-[var(--glass-border)] bg-surface z-20 flex gap-3 shrink-0">
             <button type="button" @click="closeWorkoutPicker()" class="flex-1 py-3.5 rounded-xl border border-[var(--glass-border)] text-muted font-bold text-xs hover:bg-[var(--glass)] active:scale-[0.97] transition-all">
-                Abbrechen
+                Cancel
             </button>
             <button type="button" @click="startWorkout(true)"
                     class="flex-1 py-3.5 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-30 disabled:pointer-events-none"
                     :disabled="!workoutPickerExercises.some(e => e.selected)">
                 <i class="ph-bold ph-play mr-1"></i>
-                <span x-text="workoutPickerExercises.filter(e => e.selected).length + ' Übungen starten'"></span>
+                <span x-text="'Start ' + workoutPickerExercises.filter(e => e.selected).length + ' Exercises'"></span>
             </button>
         </div>
     </div>

@@ -396,7 +396,8 @@ export async function clearAllPersonalRecords() {
 // ── Step Entries ────────────────────────────────────────
 
 export async function getTodaySteps() {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const { data, error } = await db
         .from('step_entries')
         .select('steps')
@@ -420,4 +421,12 @@ export async function getStepHistory() {
         .order('date', { ascending: false });
     if (error) throw error;
     return (data || []).map(e => ({ date: e.date, steps: Number(e.steps) }));
+}
+
+export async function deleteStepEntry(date) {
+    const { error } = await db
+        .from('step_entries')
+        .delete()
+        .eq('date', date);
+    if (error) throw error;
 }

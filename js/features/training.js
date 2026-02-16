@@ -18,7 +18,7 @@ export const trainingMixin = () => ({
             await Supa.saveTrainingPlan(this.trainingPlan);
         } catch (e) {
             console.error('Failed to save training plan:', e);
-            this.showToast('Fehler beim Speichern des Trainingsplans');
+            this.showToast('Failed to save training plan');
         }
     },
 
@@ -40,9 +40,9 @@ export const trainingMixin = () => ({
         if (this.trainingDirty && !force) {
             this.confirmModal = {
                 show: true,
-                title: 'Ungespeicherte Änderungen',
-                message: 'Änderungen am Trainingsplan verwerfen?',
-                confirmLabel: 'Verwerfen',
+                title: 'Unsaved Changes',
+                message: 'Discard training plan changes?',
+                confirmLabel: 'Discard',
                 onConfirm: () => {
                     this.trainingOpen = false;
                 }
@@ -115,7 +115,7 @@ export const trainingMixin = () => ({
         await this.saveTrainingPlan();
         this.trainingDirty = false;
         this.trainingOpen = false;
-        this.showToast('Trainingsplan gespeichert');
+        this.showToast('Training plan saved');
     },
 
     markTrainingDirty() {

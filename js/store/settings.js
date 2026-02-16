@@ -37,7 +37,7 @@ export const settingsMixin = () => ({
             });
         } catch (e) {
             console.error('Failed to save settings:', e);
-            this.showToast('Fehler beim Speichern der Einstellungen');
+            this.showToast('Failed to save settings');
         }
     },
 
@@ -67,9 +67,9 @@ export const settingsMixin = () => ({
         if (this.profileDirty && !force) {
             this.confirmModal = {
                 show: true,
-                title: 'Ungespeicherte Änderungen',
-                message: 'Änderungen am Profil verwerfen?',
-                confirmLabel: 'Verwerfen',
+                title: 'Unsaved Changes',
+                message: 'Discard changes to profile?',
+                confirmLabel: 'Discard',
                 onConfirm: () => {
                     this.profileOpen = false;
                 }
@@ -92,7 +92,7 @@ export const settingsMixin = () => ({
         const newHeight = parseInt(f.userHeight);
 
         if (!newStart || newStart <= 0 || !newGoal || newGoal <= 0 || !newHeight || newHeight <= 0) {
-            this.showToast('Fehler: Bitte Größe und Gewicht korrekt ausfüllen');
+            this.showToast('Error: Please fill in height and weight correctly');
             return;
         }
 
@@ -110,7 +110,7 @@ export const settingsMixin = () => ({
 
         this.$nextTick(() => {
             this.updateChart();
-            this.showToast('Profil gespeichert');
+            this.showToast('Profile saved');
         });
     },
 
@@ -130,9 +130,9 @@ export const settingsMixin = () => ({
         if (this.milestonesDirty && !force) {
             this.confirmModal = {
                 show: true,
-                title: 'Ungespeicherte Änderungen',
-                message: 'Änderungen an Milestones verwerfen?',
-                confirmLabel: 'Verwerfen',
+                title: 'Unsaved Changes',
+                message: 'Discard milestone changes?',
+                confirmLabel: 'Discard',
                 onConfirm: () => {
                     this.milestonesOpen = false;
                 }
@@ -189,11 +189,11 @@ export const settingsMixin = () => ({
             await Supa.saveRewards(this.rewards);
         } catch (e) {
             console.error('Failed to save milestones:', e);
-            this.showToast('Fehler beim Speichern der Milestones');
+            this.showToast('Failed to save milestones');
         }
         this.milestonesDirty = false;
         this.milestonesOpen = false;
-        this.showToast('Milestones gespeichert');
+        this.showToast('Milestones saved');
     },
 
     markMilestonesDirty() {
@@ -204,8 +204,8 @@ export const settingsMixin = () => ({
     clearAllMilestones() {
         this.confirmModal = {
             show: true,
-            title: 'Alle Milestones löschen',
-            message: 'Alle ' + this.rewards.length + ' Milestones unwiderruflich löschen?',
+            title: 'Delete all milestones',
+            message: 'Permanently delete all ' + this.rewards.length + ' milestones?',
             onConfirm: async () => {
                 this.rewards = [];
                 try {
@@ -213,7 +213,7 @@ export const settingsMixin = () => ({
                 } catch (e) {
                     console.error('Failed to clear milestones:', e);
                 }
-                this.showToast('Alle Milestones gelöscht');
+                this.showToast('All milestones deleted');
             }
         };
     }

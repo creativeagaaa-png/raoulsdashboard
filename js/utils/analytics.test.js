@@ -2,28 +2,28 @@ import { describe, it, expect } from 'vitest';
 import { calculateBMI, getBMIRanges, calculateTrend, calculateOracle } from './analytics.js';
 
 describe('calculateBMI', () => {
-    it('returns Normalgewicht for BMI between 18.5 and 24.9', () => {
+    it('returns Normal for BMI between 18.5 and 24.9', () => {
         const result = calculateBMI(70, 175);
-        expect(result.label).toBe('Normalgewicht');
+        expect(result.label).toBe('Normal');
         expect(result.color).toBe('bg-emerald-500');
         expect(parseFloat(result.value)).toBeCloseTo(22.9, 1);
     });
 
-    it('returns Übergewicht for BMI between 25 and 29.9', () => {
+    it('returns Overweight for BMI between 25 and 29.9', () => {
         const result = calculateBMI(85, 175);
-        expect(result.label).toBe('Übergewicht');
+        expect(result.label).toBe('Overweight');
         expect(result.color).toBe('bg-yellow-500');
     });
 
-    it('returns Adipositas for BMI >= 30', () => {
+    it('returns Obese for BMI >= 30', () => {
         const result = calculateBMI(100, 175);
-        expect(result.label).toBe('Adipositas');
+        expect(result.label).toBe('Obese');
         expect(result.color).toBe('bg-rose-500');
     });
 
-    it('returns Untergewicht for BMI < 18.5', () => {
+    it('returns Underweight for BMI < 18.5', () => {
         const result = calculateBMI(50, 175);
-        expect(result.label).toBe('Untergewicht');
+        expect(result.label).toBe('Underweight');
         expect(result.color).toBe('bg-blue-500');
     });
 
@@ -42,13 +42,13 @@ describe('calculateBMI', () => {
     it('calculates correctly at BMI boundary 25.0', () => {
         // 25 * (1.80)^2 = 81.0
         const result = calculateBMI(81, 180);
-        expect(result.label).toBe('Übergewicht');
+        expect(result.label).toBe('Overweight');
     });
 
     it('calculates correctly at BMI boundary 18.5', () => {
-        // 59 kg at 180cm => BMI 18.2 -> Untergewicht
+        // 59 kg at 180cm => BMI 18.2 -> Underweight
         const result = calculateBMI(59, 180);
-        expect(result.label).toBe('Untergewicht');
+        expect(result.label).toBe('Underweight');
     });
 });
 
@@ -61,19 +61,19 @@ describe('getBMIRanges', () => {
     it('returns correct labels', () => {
         const ranges = getBMIRanges(180);
         expect(ranges.map(r => r.label)).toEqual([
-            'Untergewicht', 'Normalgewicht', 'Übergewicht', 'Adipositas'
+            'Underweight', 'Normal', 'Overweight', 'Obese'
         ]);
     });
 
     it('calculates correct weight boundaries for 180cm', () => {
         const ranges = getBMIRanges(180);
         const h = 1.80;
-        // Untergewicht: max = 18.5 * h^2
+        // Underweight: max = 18.5 * h^2
         expect(parseFloat(ranges[0].max)).toBeCloseTo(18.5 * h * h, 0);
-        // Normalgewicht: min = 18.5*h^2, max = 25*h^2
+        // Normal: min = 18.5*h^2, max = 25*h^2
         expect(parseFloat(ranges[1].min)).toBeCloseTo(18.5 * h * h, 0);
         expect(parseFloat(ranges[1].max)).toBeCloseTo(25 * h * h, 0);
-        // Adipositas: min = 30*h^2
+        // Obese: min = 30*h^2
         expect(parseFloat(ranges[3].min)).toBeCloseTo(30 * h * h, 0);
     });
 

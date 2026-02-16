@@ -1,7 +1,7 @@
 <!-- PR Celebration Modal -->
 <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6 modal-mobile-sheet"
      x-show="prCelebrationOpen" x-cloak
-     role="dialog" aria-modal="true" aria-label="Neuer persoenlicher Rekord"
+     role="dialog" aria-modal="true" aria-label="New Personal Record"
      @keydown.enter.window="prCelebrationOpen && closePRCelebration()">
 
     <div class="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity duration-700"
@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <h2 class="text-4xl font-black text-yellow-400 mb-3 tracking-tight">Neuer PR!</h2>
+        <h2 class="text-4xl font-black text-yellow-400 mb-3 tracking-tight">New PR!</h2>
         <div class="w-16 h-1 bg-yellow-500/30 rounded-full mx-auto mb-4"></div>
         <p class="text-lg text-gray-300 font-medium mb-2" x-text="prCelebration?.exercise_name"></p>
         <p class="text-3xl font-bold text-white mb-2">
@@ -30,11 +30,11 @@
             <span class="text-lg text-yellow-400/60" x-text="'x ' + (prCelebration?.reps || 1)"></span>
         </p>
         <p x-show="prCelebration?.previousBest" class="text-sm text-muted mb-6">
-            Vorher: <span x-text="prCelebration?.previousBest"></span> kg
+            Previous: <span x-text="prCelebration?.previousBest"></span> kg
         </p>
 
         <button @click="closePRCelebration()" class="w-full px-8 py-5 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)]">
-            Weiter so! 💪
+            Keep it up! 💪
         </button>
     </div>
 </div>

@@ -24,16 +24,16 @@
     ],
     "shortcuts": [
         {
-            "name": "Gewicht loggen",
+            "name": "Log Weight",
             "short_name": "Log Weight",
-            "description": "Schnell dein aktuelles Gewicht eintragen",
+            "description": "Quickly log your current weight",
             "url": "/index.html?action=log-weight",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
         },
         {
-            "name": "Workout starten",
+            "name": "Start Workout",
             "short_name": "Workout",
-            "description": "Heutiges Training starten",
+            "description": "Start today's training session",
             "url": "/index.html?action=start-workout",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
         }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getTodayWeekdayIndex, getISOWeekKey, formatGalleryDate } from './formatting.js';
+import { getTodayWeekdayIndex, getISOWeekKey, formatGalleryDate, getLocalDateString } from './formatting.js';
 
 describe('getTodayWeekdayIndex', () => {
     it('returns a number between 0 and 6', () => {
@@ -79,11 +79,39 @@ describe('formatGalleryDate', () => {
         expect(formatGalleryDate('')).toBe('');
     });
 
-    it('formats date in German locale', () => {
+    it('formats date in English locale', () => {
         const result = formatGalleryDate('2025-01-15');
         expect(result).toBeTruthy();
         expect(typeof result).toBe('string');
         // Should contain day, month abbreviation, and year
         expect(result).toMatch(/\d{2}/); // at least the day
+    });
+});
+
+describe('getLocalDateString', () => {
+    it('returns today\'s date in YYYY-MM-DD format', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2025-06-15T12:00:00'));
+        const result = getLocalDateString();
+        expect(result).toBe('2025-06-15');
+        vi.useRealTimers();
+    });
+
+    it('handles Date object input', () => {
+        const date = new Date('2025-03-20T10:30:00');
+        const result = getLocalDateString(date);
+        expect(result).toBe('2025-03-20');
+    });
+
+    it('handles string date input', () => {
+        const result = getLocalDateString('2025-12-25T15:45:00');
+        expect(result).toBe('2025-12-25');
+    });
+
+    it('returns correct local date (not UTC) - test with a date near midnight', () => {
+        // Test with a date near midnight to ensure local time is used, not UTC
+        const date = new Date('2025-01-15T23:59:00');
+        const result = getLocalDateString(date);
+        expect(result).toBe('2025-01-15');
     });
 });

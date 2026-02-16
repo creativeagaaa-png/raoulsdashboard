@@ -10,6 +10,8 @@ export function getPendingPhotoBlob() {
     return blob;
 }
 
+const PHOTOS_PER_PAGE = 6;
+
 export const galleryMixin = () => ({
     photoDates: [],
     photoPreview: null,
@@ -19,6 +21,7 @@ export const galleryMixin = () => ({
     progressPicsPhotos: [],
     progressPicsLoading: false,
     progressPicsLoaded: false,
+    _photosLoadedCount: 0,
 
     // Lightbox
     lightboxPhoto: null,
@@ -34,7 +37,7 @@ export const galleryMixin = () => ({
             this.photoPreview = URL.createObjectURL(blob);
         } catch (e) {
             console.error('Failed to compress image:', e);
-            this.showToast('Foto konnte nicht geladen werden');
+            this.showToast('Failed to load photo');
         }
     },
 
@@ -59,18 +62,23 @@ export const galleryMixin = () => ({
         this.lightboxPhoto = null;
     },
 
+    // NOTE: hasMorePhotos is defined as a getter in main.js to preserve reactivity.
+
     async loadProgressPicsPhotos() {
         if (this.progressPicsLoading || this.photoDates.length === 0) return;
         this.progressPicsLoading = true;
         try {
+            const sorted = [...this.photoDates].sort().reverse();
+            const batch = sorted.slice(0, PHOTOS_PER_PAGE);
             const photos = await Promise.all(
-                this.photoDates.map(async (date) => {
+                batch.map(async (date) => {
                     const url = await Supa.getPhotoUrl(date);
                     const entry = this.history.find(h => h.date === date);
                     return { date, photo: url, weight: entry ? entry.weight : null };
                 })
             );
-            this.progressPicsPhotos = photos.reverse();
+            this.progressPicsPhotos = photos;
+            this._photosLoadedCount = batch.length;
             this.progressPicsLoaded = true;
         } catch (e) {
             console.error('Failed to load progress pics:', e);
@@ -79,9 +87,33 @@ export const galleryMixin = () => ({
         }
     },
 
+    async loadMorePhotos() {
+        if (this.progressPicsLoading || !this.hasMorePhotos) return;
+        this.progressPicsLoading = true;
+        try {
+            const sorted = [...this.photoDates].sort().reverse();
+            const start = this._photosLoadedCount;
+            const batch = sorted.slice(start, start + PHOTOS_PER_PAGE);
+            const photos = await Promise.all(
+                batch.map(async (date) => {
+                    const url = await Supa.getPhotoUrl(date);
+                    const entry = this.history.find(h => h.date === date);
+                    return { date, photo: url, weight: entry ? entry.weight : null };
+                })
+            );
+            this.progressPicsPhotos.push(...photos);
+            this._photosLoadedCount += batch.length;
+        } catch (e) {
+            console.error('Failed to load more photos:', e);
+        } finally {
+            this.progressPicsLoading = false;
+        }
+    },
+
     async refreshProgressPicsPhotos() {
         this.progressPicsLoaded = false;
         this.progressPicsPhotos = [];
+        this._photosLoadedCount = 0;
         await this.loadProgressPicsPhotos();
     },
 
@@ -99,6 +131,6 @@ export const galleryMixin = () => ({
 
     formatPhotoDate(dateStr) {
         if (!dateStr) return '';
-        return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: '2-digit' });
+        return new Date(dateStr).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: '2-digit' });
     }
 });

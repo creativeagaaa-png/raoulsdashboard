@@ -1,4 +1,4 @@
-import { getTodayWeekdayIndex } from '../utils/formatting.js';
+import { getTodayWeekdayIndex, getLocalDateString } from '../utils/formatting.js';
 import { WEEKDAYS } from '../utils/constants.js';
 import * as Supa from '../store/supabase.js';
 import { hapticMedium, hapticSuccess, hapticWarning, hapticLight } from '../utils/haptics.js';
@@ -27,6 +27,38 @@ export const workoutMixin = () => ({
 
     // --- History Filter State ---
     workoutHistoryFilter: '',
+
+    // --- LocalStorage Persistence ---
+    _persistWorkout() {
+        if (!this.workoutSession) return;
+        try {
+            localStorage.setItem('active_workout', JSON.stringify({
+                session: this.workoutSession,
+                startTimestamp: this._workoutStartTimestamp
+            }));
+        } catch (e) { /* quota exceeded or private browsing */ }
+    },
+
+    _clearWorkoutStorage() {
+        try { localStorage.removeItem('active_workout'); } catch (e) {}
+    },
+
+    restoreWorkoutFromStorage() {
+        try {
+            const raw = localStorage.getItem('active_workout');
+            if (!raw) return;
+            const { session, startTimestamp } = JSON.parse(raw);
+            if (!session || !startTimestamp) { this._clearWorkoutStorage(); return; }
+            this.workoutSession = session;
+            this.workoutActive = true;
+            this._workoutStartTimestamp = startTimestamp;
+            this._workoutElapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+            this._startWorkoutTimer();
+            if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
+        } catch (e) {
+            this._clearWorkoutStorage();
+        }
+    },
 
     // --- Open Exercise Picker (replaces direct startWorkout) ---
     openWorkoutPicker() {
@@ -136,7 +168,7 @@ export const workoutMixin = () => ({
         });
 
         this.workoutSession = {
-            date: new Date().toISOString().split('T')[0],
+            date: getLocalDateString(),
             dayIndex: dayIdx,
             startedAt: new Date().toISOString(),
             tracked: tracking,
@@ -147,6 +179,7 @@ export const workoutMixin = () => ({
         this._workoutElapsed = 0;
         this._workoutStartTimestamp = Date.now();
         this._startWorkoutTimer();
+        this._persistWorkout();
         if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
     },
 
@@ -165,6 +198,7 @@ export const workoutMixin = () => ({
         const set = this.workoutSession.exercises[exIdx].sets[setIdx];
         set.done = !set.done;
         hapticMedium();
+        this._persistWorkout();
         if (set.done && typeof this.startRestTimer === 'function') {
             this.startRestTimer();
         }
@@ -176,6 +210,7 @@ export const workoutMixin = () => ({
         const round = this.workoutSession.exercises[exIdx].rounds[roundIdx];
         round.done = !round.done;
         hapticMedium();
+        this._persistWorkout();
     },
 
     // --- Toggle Cardio/Distance Exercise Done ---
@@ -184,6 +219,7 @@ export const workoutMixin = () => ({
         const ex = this.workoutSession.exercises[exIdx];
         ex.done = !ex.done;
         hapticMedium();
+        this._persistWorkout();
     },
 
     // --- Add Extra Set ---
@@ -197,6 +233,7 @@ export const workoutMixin = () => ({
             reps: lastSet ? lastSet.reps : 0,
             done: false
         });
+        this._persistWorkout();
     },
 
     // NOTE: workoutDuration, workoutCompletionPercent are defined as getters
@@ -224,7 +261,7 @@ export const workoutMixin = () => ({
             this.workoutHistoryLoaded = true;
         } catch (e) {
             console.error('Failed to save workout:', e);
-            this.showToast('Fehler beim Speichern des Workouts');
+            this.showToast('Failed to save workout');
         }
 
         // Check for PRs only if tracking was enabled
@@ -238,10 +275,11 @@ export const workoutMixin = () => ({
         this.workoutOpen = false;
         this._workoutElapsed = 0;
         this._workoutStartTimestamp = null;
+        this._clearWorkoutStorage();
         if (typeof this.clearRestTimer === 'function') this.clearRestTimer();
         hapticSuccess();
         if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
-        this.showToast('Workout gespeichert! 💪');
+        this.showToast('Workout saved! 💪');
     },
 
     showPostWorkoutComparison() {
@@ -254,9 +292,9 @@ export const workoutMixin = () => ({
     cancelWorkout() {
         this.confirmModal = {
             show: true,
-            title: 'Workout abbrechen',
-            message: 'Workout ohne Speichern beenden?',
-            confirmLabel: 'Abbrechen',
+            title: 'Cancel Workout',
+            message: 'End workout without saving?',
+            confirmLabel: 'Cancel',
             onConfirm: () => {
                 if (this._workoutTimerInterval) {
                     clearInterval(this._workoutTimerInterval);
@@ -267,6 +305,7 @@ export const workoutMixin = () => ({
                 this.workoutOpen = false;
                 this._workoutElapsed = 0;
                 this._workoutStartTimestamp = null;
+                this._clearWorkoutStorage();
                 if (typeof this.clearRestTimer === 'function') this.clearRestTimer();
                 if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
             }
@@ -312,9 +351,9 @@ export const workoutMixin = () => ({
         if (!workout) return;
         this.confirmModal = {
             show: true,
-            title: 'Workout löschen',
-            message: 'Dieses Workout unwiderruflich löschen?',
-            confirmLabel: 'Löschen',
+            title: 'Delete Workout',
+            message: 'Permanently delete this workout?',
+            confirmLabel: 'Delete',
             onConfirm: async () => {
                 const removed = this.workoutHistory.splice(wIdx, 1)[0];
                 if (removed && removed.id) {
@@ -323,11 +362,11 @@ export const workoutMixin = () => ({
                     } catch (e) {
                         console.error('Failed to delete workout:', e);
                         this.workoutHistory.splice(wIdx, 0, removed);
-                        this.showToast('Fehler beim Löschen');
+                        this.showToast('Failed to delete');
                         return;
                     }
                 }
-                this.showToast('Workout gelöscht');
+                this.showToast('Workout deleted');
             }
         };
     },
@@ -336,17 +375,17 @@ export const workoutMixin = () => ({
         if (this.workoutHistory.length === 0) return;
         this.confirmModal = {
             show: true,
-            title: 'Alle Workouts löschen',
-            message: 'Alle ' + this.workoutHistory.length + ' Workouts unwiderruflich löschen?',
-            confirmLabel: 'Alle löschen',
+            title: 'Delete All Workouts',
+            message: 'Permanently delete all ' + this.workoutHistory.length + ' workouts?',
+            confirmLabel: 'Delete All',
             onConfirm: async () => {
                 try {
                     await Supa.clearAllWorkoutLogs();
                     this.workoutHistory = [];
-                    this.showToast('Alle Workouts gelöscht');
+                    this.showToast('All workouts deleted');
                 } catch (e) {
                     console.error('Failed to clear workouts:', e);
-                    this.showToast('Fehler beim Löschen');
+                    this.showToast('Failed to delete');
                 }
             }
         };

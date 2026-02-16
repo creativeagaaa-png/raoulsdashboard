@@ -23,8 +23,8 @@
                     <i class="ph-bold ph-heartbeat text-lg"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-white">BMI Übersicht</h2>
-                    <p class="text-[10px] text-muted">Basierend auf deiner Körpergröße (<span x-text="userHeight"></span> cm)</p>
+                    <h2 class="text-lg font-bold text-white">BMI Overview</h2>
+                    <p class="text-[10px] text-muted">Based on your height (<span x-text="userHeight"></span> cm)</p>
                 </div>
             </div>
             <button type="button" @click="closeBmiDetail()" class="text-muted hover:text-white transition-colors p-2 -mr-2 hover:bg-white/5 rounded-xl">
@@ -34,12 +34,12 @@
 
         <div class="overflow-y-auto p-6 space-y-4 custom-scrollbar">
             <div class="p-4 rounded-2xl border border-white/10 bg-white/5 text-center">
-                <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">Dein aktueller BMI</p>
+                <p class="text-[10px] text-muted uppercase tracking-wider font-bold mb-1">Your current BMI</p>
                 <div class="flex items-center justify-center gap-3">
                     <span class="text-3xl font-bold text-white tabular-nums" x-text="bmi.value"></span>
                     <span class="text-xs font-bold px-2 py-1 rounded-lg" :class="bmi.color + ' text-white'" x-text="bmi.label"></span>
                 </div>
-                <p class="text-xs text-muted mt-2">bei <span x-text="currentWeight.toFixed(1)"></span> kg & <span x-text="userHeight"></span> cm</p>
+                <p class="text-xs text-muted mt-2">at <span x-text="currentWeight.toFixed(1)"></span> kg & <span x-text="userHeight"></span> cm</p>
             </div>
 
             <div class="space-y-2">
@@ -56,17 +56,17 @@
                                     <span class="text-[10px] text-muted ml-1.5">BMI <span x-text="range.bmi"></span></span>
                                 </div>
                             </div>
-                            <div x-show="bmi.label === range.label" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/80">AKTUELL</div>
+                            <div x-show="bmi.label === range.label" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/80">CURRENT</div>
                         </div>
                         <div class="mt-1.5 text-xs text-muted pl-5">
                             <template x-if="range.min && range.max">
                                 <span><span x-text="range.min"></span> – <span x-text="range.max"></span> kg</span>
                             </template>
                             <template x-if="!range.min && range.max">
-                                <span>unter <span x-text="range.max"></span> kg</span>
+                                <span>under <span x-text="range.max"></span> kg</span>
                             </template>
                             <template x-if="range.min && !range.max">
-                                <span>ab <span x-text="range.min"></span> kg</span>
+                                <span>from <span x-text="range.min"></span> kg</span>
                             </template>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
 
         <div class="p-6 border-t border-white/5 bg-surface z-20 shrink-0">
             <button type="button" @click="closeBmiDetail()" class="w-full py-3.5 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
-                Schließen
+                Close
             </button>
         </div>
     </div>

@@ -37,12 +37,12 @@ describe('WEEKDAYS', () => {
         expect(WEEKDAYS).toHaveLength(7);
     });
 
-    it('starts with Monday (German)', () => {
-        expect(WEEKDAYS[0]).toBe('Montag');
+    it('starts with Monday', () => {
+        expect(WEEKDAYS[0]).toBe('Monday');
     });
 
-    it('ends with Sunday (German)', () => {
-        expect(WEEKDAYS[6]).toBe('Sonntag');
+    it('ends with Sunday', () => {
+        expect(WEEKDAYS[6]).toBe('Sunday');
     });
 });
 
@@ -51,17 +51,17 @@ describe('WEEKDAY_SHORT', () => {
         expect(WEEKDAY_SHORT).toHaveLength(7);
     });
 
-    it('starts with Mo', () => {
-        expect(WEEKDAY_SHORT[0]).toBe('Mo');
+    it('starts with Mon', () => {
+        expect(WEEKDAY_SHORT[0]).toBe('Mon');
     });
 
-    it('ends with So', () => {
-        expect(WEEKDAY_SHORT[6]).toBe('So');
+    it('ends with Sun', () => {
+        expect(WEEKDAY_SHORT[6]).toBe('Sun');
     });
 
     it('matches WEEKDAYS order', () => {
-        expect(WEEKDAY_SHORT[0]).toBe('Mo'); // Montag
-        expect(WEEKDAY_SHORT[4]).toBe('Fr'); // Freitag
+        expect(WEEKDAY_SHORT[0]).toBe('Mon'); // Monday
+        expect(WEEKDAY_SHORT[4]).toBe('Fri'); // Friday
     });
 });
 

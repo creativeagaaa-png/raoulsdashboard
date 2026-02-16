@@ -10,8 +10,8 @@ vi.mock('../utils/formatting.js', () => ({
 }));
 
 vi.mock('../utils/constants.js', () => ({
-    WEEKDAYS: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'],
-    WEEKDAY_SHORT: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+    WEEKDAYS: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    WEEKDAY_SHORT: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 }));
 
 const { trainingMixin } = await import('./training.js');
@@ -245,7 +245,7 @@ describe('applyTraining', () => {
         expect(m.trainingPlan[0][0].name).toBe('Bench');
         expect(m.trainingDirty).toBe(false);
         expect(m.trainingOpen).toBe(false);
-        expect(m.showToast).toHaveBeenCalledWith('Trainingsplan gespeichert');
+        expect(m.showToast).toHaveBeenCalledWith('Training plan saved');
     });
 });
 

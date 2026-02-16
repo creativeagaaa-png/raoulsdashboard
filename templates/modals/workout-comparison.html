@@ -1,7 +1,7 @@
 <!-- Workout Comparison Modal -->
 <div class="fixed inset-0 z-[65] flex items-center justify-center p-4 modal-mobile-sheet"
      :class="workoutComparisonOpen ? 'pointer-events-auto' : 'pointer-events-none'"
-     role="dialog" aria-modal="true" aria-label="Workout Vergleich">
+     role="dialog" aria-modal="true" aria-label="Workout Comparison">
 
     <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
          x-show="workoutComparisonOpen"
@@ -26,9 +26,9 @@
                         <i class="ph-bold ph-chart-line-up text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-foreground">Vergleich</h2>
+                        <h2 class="text-lg font-bold text-foreground">Comparison</h2>
                         <p class="text-[10px] text-muted uppercase tracking-widest font-mono"
-                           x-text="workoutComparisonData ? new Date(workoutComparisonData.workout.date).toLocaleDateString('de-DE', {day: '2-digit', month: 'short', year: 'numeric'}) : ''"></p>
+                           x-text="workoutComparisonData ? new Date(workoutComparisonData.workout.date).toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'}) : ''"></p>
                     </div>
                 </div>
                 <button type="button" @click="closeWorkoutComparison()" class="text-muted hover:text-foreground transition-colors p-2 hover:bg-[var(--glass)] rounded-xl">
@@ -47,7 +47,7 @@
                             <div class="w-7 h-7 rounded-lg bg-cyan-500/15 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
                                 <i class="ph ph-timer text-sm"></i>
                             </div>
-                            <p class="text-[9px] text-muted uppercase tracking-wider font-bold">Workout-Dauer</p>
+                            <p class="text-[9px] text-muted uppercase tracking-wider font-bold">Workout Duration</p>
                         </div>
                         <div class="flex items-end gap-3">
                             <span class="text-lg font-bold text-foreground tabular-nums" x-text="formatDurationCompare(workoutComparisonData.workout.durationSeconds)"></span>
@@ -59,7 +59,7 @@
                         </div>
                         <template x-if="workoutComparisonData.previousWorkoutDuration">
                             <p class="text-[10px] font-mono text-muted mt-1"
-                               x-text="'Vorher: ' + formatDurationCompare(workoutComparisonData.previousWorkoutDuration) + ' (' + new Date(workoutComparisonData.previousWorkoutDate).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) + ')'"></p>
+                               x-text="'Previous: ' + formatDurationCompare(workoutComparisonData.previousWorkoutDuration) + ' (' + new Date(workoutComparisonData.previousWorkoutDate).toLocaleDateString('en-US', {day: '2-digit', month: 'short'}) + ')'"></p>
                         </template>
                     </div>
 
@@ -76,7 +76,7 @@
                                 </div>
                                 <span x-show="comp.previous"
                                       class="text-[9px] font-mono text-muted"
-                                      x-text="comp.previousDate ? 'vs. ' + new Date(comp.previousDate).toLocaleDateString('de-DE', {day: '2-digit', month: 'short'}) : ''"></span>
+                                      x-text="comp.previousDate ? 'vs. ' + new Date(comp.previousDate).toLocaleDateString('en-US', {day: '2-digit', month: 'short'}) : ''"></span>
                             </div>
 
                             <div class="px-4 py-3">
@@ -86,7 +86,7 @@
                                         <!-- Volume & Max Weight summary -->
                                         <div class="grid grid-cols-2 gap-3 mb-3" x-show="comp.previous">
                                             <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Max Gewicht</p>
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Max Weight</p>
                                                 <div class="flex items-end gap-2">
                                                     <span class="text-lg font-bold text-foreground tabular-nums" x-text="getExerciseMaxWeight(comp.current) + ' kg'"></span>
                                                     <span class="text-[10px] font-mono font-bold mb-0.5"
@@ -95,7 +95,7 @@
                                                 </div>
                                             </div>
                                             <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Volumen</p>
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Volume</p>
                                                 <div class="flex items-end gap-2">
                                                     <span class="text-lg font-bold text-foreground tabular-nums" x-text="getExerciseVolume(comp.current)"></span>
                                                     <span class="text-[10px] font-mono font-bold mb-0.5"
@@ -113,10 +113,10 @@
                                                 <span>Kg</span>
                                                 <span>Reps</span>
                                                 <template x-if="comp.previous">
-                                                    <span class="text-muted/50">Vorher Kg</span>
+                                                    <span class="text-muted/50">Prev Kg</span>
                                                 </template>
                                                 <template x-if="comp.previous">
-                                                    <span class="text-muted/50">Vorher Reps</span>
+                                                    <span class="text-muted/50">Prev Reps</span>
                                                 </template>
                                             </div>
                                             <template x-for="(set, sIdx) in (comp.current.sets || []).filter(s => s.done)" :key="sIdx">
@@ -145,7 +145,7 @@
                                         <!-- Summary cards with deltas (like strength) -->
                                         <div class="grid gap-3" :class="comp.type === 'distance' ? 'grid-cols-2' : 'grid-cols-1'">
                                             <div x-show="comp.type === 'distance'" class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Distanz</p>
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Distance</p>
                                                 <div class="flex items-end gap-2">
                                                     <span class="text-lg font-bold text-foreground tabular-nums" x-text="(comp.current.distance || '–') + ' km'"></span>
                                                     <template x-if="comp.previous && parseDistance(comp.current.distance) > 0 && parseDistance(comp.previous?.distance) > 0">
@@ -154,10 +154,10 @@
                                                               x-text="formatDelta(parseDistance(comp.current.distance), parseDistance(comp.previous?.distance))"></span>
                                                     </template>
                                                 </div>
-                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted mt-1" x-text="'Vorher: ' + (comp.previous?.distance || '–') + ' km'"></p>
+                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted mt-1" x-text="'Previous: ' + (comp.previous?.distance || '–') + ' km'"></p>
                                             </div>
                                             <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Dauer</p>
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Duration</p>
                                                 <div class="flex items-end gap-2">
                                                     <span class="text-lg font-bold text-foreground tabular-nums" x-text="comp.current.duration || '–'"></span>
                                                     <template x-if="comp.previous && parseDurationMinutes(comp.current.duration) > 0 && parseDurationMinutes(comp.previous?.duration) > 0">
@@ -166,7 +166,7 @@
                                                               x-text="formatDelta(parseDurationMinutes(comp.current.duration), parseDurationMinutes(comp.previous?.duration))"></span>
                                                     </template>
                                                 </div>
-                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted mt-1" x-text="'Vorher: ' + (comp.previous?.duration || '–')"></p>
+                                                <p x-show="comp.previous" class="text-[10px] font-mono text-muted mt-1" x-text="'Previous: ' + (comp.previous?.duration || '–')"></p>
                                             </div>
                                         </div>
                                     </div>
@@ -178,7 +178,7 @@
                                         <!-- Rounds summary -->
                                         <div class="grid grid-cols-2 gap-3">
                                             <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Runden</p>
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Rounds</p>
                                                 <div class="flex items-end gap-2">
                                                     <span class="text-lg font-bold text-foreground tabular-nums" x-text="getCircuitRoundsCompleted(comp.current) + '/' + getCircuitRoundsTotal(comp.current)"></span>
                                                     <template x-if="comp.previous">
@@ -189,7 +189,7 @@
                                                 </div>
                                             </div>
                                             <div class="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--glass-border)]">
-                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Uebungen</p>
+                                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Exercises</p>
                                                 <span class="text-lg font-bold text-foreground tabular-nums" x-text="(comp.current.circuitExercises || []).length"></span>
                                             </div>
                                         </div>
@@ -207,7 +207,7 @@
                                             </template>
                                         </div>
                                         <template x-if="comp.previous">
-                                            <p class="text-[10px] font-mono text-muted" x-text="'Vorher: ' + getCircuitRoundsCompleted(comp.previous) + '/' + getCircuitRoundsTotal(comp.previous) + ' Runden'"></p>
+                                            <p class="text-[10px] font-mono text-muted" x-text="'Previous: ' + getCircuitRoundsCompleted(comp.previous) + '/' + getCircuitRoundsTotal(comp.previous) + ' Rounds'"></p>
                                         </template>
                                     </div>
                                 </template>
@@ -218,8 +218,8 @@
                                         <i class="ph ph-clock-counter-clockwise text-sm text-muted/50"></i>
                                     </div>
                                     <div>
-                                        <p class="text-[10px] font-bold text-muted">Kein Vergleich verfuegbar</p>
-                                        <p class="text-[9px] text-muted/50">Beim naechsten Workout wird hier der Vergleich angezeigt.</p>
+                                        <p class="text-[10px] font-bold text-muted">No comparison available</p>
+                                        <p class="text-[9px] text-muted/50">The comparison will be shown here after your next workout.</p>
                                     </div>
                                 </div>
                             </div>
@@ -232,7 +232,7 @@
         <!-- Footer -->
         <div class="p-5 border-t border-[var(--glass-border)] bg-surface z-20 shrink-0">
             <button type="button" @click="closeWorkoutComparison()" class="w-full py-3.5 rounded-xl border border-[var(--glass-border)] text-muted font-bold text-xs hover:bg-[var(--glass)] active:scale-[0.97] transition-all">
-                Schliessen
+                Close
             </button>
         </div>
     </div>

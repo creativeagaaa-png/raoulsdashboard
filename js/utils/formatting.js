@@ -1,3 +1,11 @@
+export function getLocalDateString(date = new Date()) {
+    const d = date instanceof Date ? date : new Date(date);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 export function getTodayWeekdayIndex() {
     const jsDay = new Date().getDay();
     return jsDay === 0 ? 6 : jsDay - 1;
@@ -14,5 +22,5 @@ export function getISOWeekKey(date) {
 
 export function formatGalleryDate(dateStr) {
     if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
 }

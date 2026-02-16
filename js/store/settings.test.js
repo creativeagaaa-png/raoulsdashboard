@@ -119,14 +119,14 @@ describe('applyProfile', () => {
         const m = createMixin();
         m.profileForm = { startWeight: 0, goalWeight: 70, goalDate: '', userHeight: 180, userAge: 30 };
         await m.applyProfile();
-        expect(m.showToast).toHaveBeenCalledWith(expect.stringContaining('Fehler'));
+        expect(m.showToast).toHaveBeenCalledWith('Error: Please fill in height and weight correctly');
     });
 
     it('rejects profile with zero height', async () => {
         const m = createMixin();
         m.profileForm = { startWeight: 80, goalWeight: 70, goalDate: '', userHeight: 0, userAge: 30 };
         await m.applyProfile();
-        expect(m.showToast).toHaveBeenCalledWith(expect.stringContaining('Fehler'));
+        expect(m.showToast).toHaveBeenCalledWith('Error: Please fill in height and weight correctly');
     });
 
     it('handles string values with comma', async () => {
@@ -288,6 +288,6 @@ describe('clearAllMilestones', () => {
         m.clearAllMilestones();
         await m.confirmModal.onConfirm();
         expect(m.rewards).toEqual([]);
-        expect(m.showToast).toHaveBeenCalledWith('Alle Milestones gelöscht');
+        expect(m.showToast).toHaveBeenCalledWith('All milestones deleted');
     });
 });
