@@ -105,7 +105,13 @@
                                  if (dx < -10) { swiping = true; currentX = Math.max(dx, -120); $event.preventDefault(); }
                              })()"
                              @touchend="(() => {
-                                 if (currentX < -80) { $el.querySelector('.swipe-content').classList.add('removing'); $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)'; setTimeout(() => deleteStepEntry(entry.date), 300); }
+                                 if (currentX < -80) {
+                                     const d = entry.date;
+                                     const comp = $data;
+                                     $el.querySelector('.swipe-content').classList.add('removing');
+                                     $el.querySelector('.swipe-content').style.transform = 'translateX(-100%)';
+                                     setTimeout(() => comp.deleteStepEntry(d), 300);
+                                 }
                                  else { currentX = 0; swiping = false; }
                              })()">
                             <div class="swipe-delete-bg" :class="{ 'visible': currentX < -10 }">
@@ -118,7 +124,7 @@
                                     <span class="text-xs font-medium text-white"
                                           x-text="new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' })"></span>
                                     <span class="text-[10px] text-muted font-mono mt-0.5"
-                                          x-text="entry.date === new Date().toISOString().split('T')[0] ? 'Today' : ''"></span>
+                                          x-text="(() => { const d = new Date(); return entry.date === d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') ? 'Today' : '' })()"></span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <div class="w-20 h-1.5 bg-white/5 rounded-full overflow-hidden">
