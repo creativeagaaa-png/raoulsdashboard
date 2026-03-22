@@ -532,184 +532,119 @@
         <template x-if="activeTab === 'training'">
             <div class="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-5 animate-slide-up" style="--delay: 0.1s">
 
-                <!-- Left Column: Today's Training + Quick Start -->
-                <div class="md:col-span-4 flex flex-col gap-5">
-
-                    <!-- Today's Training Widget -->
+                <!-- Today's Training Widget (expandable) -->
+                <div class="md:col-span-12 flex flex-col gap-5">
                     <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Today's training">
                         <div class="absolute inset-0 bg-linear-to-br from-emerald-500/5 to-cyan-500/5"></div>
                         <div class="relative z-10">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center border" :class="isRestDay ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'">
-                                        <i :class="isRestDay ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i>
+                            <!-- Header -->
+                            <div class="flex items-center justify-between mb-5">
+                                <div class="flex items-center gap-3 cursor-pointer" @click="trainingExpanded = !trainingExpanded">
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center border" :class="selectedDayExercises.length === 0 ? 'bg-white/5 border-white/10 text-white/30' : 'bg-emerald-500/20 border-emerald-500/20 text-emerald-400'">
+                                        <i class="text-lg" :class="selectedDayExercises.length === 0 ? 'ph ph-moon-stars' : 'ph-bold ph-barbell'"></i>
                                     </div>
                                     <div>
-                                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Today</h3>
-                                        <p class="text-[10px] text-muted font-mono" x-text="todayWeekday"></p>
+                                        <h3 class="text-sm font-bold text-white uppercase tracking-wider" x-text="trainingDayOffset === 0 ? 'Today' : selectedDayName"></h3>
+                                        <p class="text-[10px] text-muted font-mono" x-text="selectedDayName + (trainingDayOffset !== 0 ? ' (' + (trainingDayOffset > 0 ? '+' : '') + trainingDayOffset + ')' : '')"></p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <button @click.stop="openTraining()" class="p-1.5 rounded-lg text-muted hover:text-white hover:bg-white/5 transition-all" title="Edit training plan">
-                                        <i class="ph ph-note-pencil text-sm"></i>
+                                <div class="flex items-center gap-1.5">
+                                    <!-- Day navigation -->
+                                    <button @click.stop="prevTrainingDay()" class="p-2 rounded-xl text-muted hover:text-white hover:bg-white/5 transition-all" title="Previous day">
+                                        <i class="ph-bold ph-caret-left text-sm"></i>
                                     </button>
-                                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold" :class="isRestDay ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
-                                        <i class="text-xs" :class="isRestDay ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
-                                        <span x-text="isRestDay ? 'Rest Day' : todayTraining.length + ' Exercises'"></span>
-                                    </div>
+                                    <button @click.stop="trainingDayOffset = 0" x-show="trainingDayOffset !== 0" class="px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition-all" title="Back to today">
+                                        Today
+                                    </button>
+                                    <button @click.stop="nextTrainingDay()" class="p-2 rounded-xl text-muted hover:text-white hover:bg-white/5 transition-all" title="Next day">
+                                        <i class="ph-bold ph-caret-right text-sm"></i>
+                                    </button>
+                                    <div class="w-px h-5 bg-white/10 mx-1"></div>
+                                    <!-- Edit button -->
+                                    <button @click.stop="openTraining()" class="p-2 rounded-xl text-muted hover:text-emerald-400 hover:bg-emerald-500/10 transition-all" title="Edit training plan">
+                                        <i class="ph ph-pencil-simple text-sm"></i>
+                                    </button>
+                                    <!-- Expand/collapse -->
+                                    <button @click="trainingExpanded = !trainingExpanded" class="p-2 rounded-xl text-muted hover:text-white hover:bg-white/5 transition-all" title="Expand/Collapse">
+                                        <i class="ph text-sm transition-transform duration-200" :class="trainingExpanded ? 'ph-caret-up' : 'ph-caret-down'"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <template x-if="!isRestDay">
+
+                            <!-- Exercise count badge -->
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold" :class="selectedDayExercises.length === 0 ? 'bg-white/5 text-muted' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'">
+                                    <i class="text-xs" :class="selectedDayExercises.length === 0 ? 'ph ph-pause' : 'ph-bold ph-lightning'"></i>
+                                    <span x-text="selectedDayExercises.length === 0 ? 'Rest Day' : selectedDayExercises.length + ' Exercises'"></span>
+                                </div>
+                            </div>
+
+                            <!-- Exercises list -->
+                            <template x-if="selectedDayExercises.length > 0">
                                 <div>
-                                    <div class="space-y-1.5 max-h-37.5 overflow-y-auto custom-scrollbar pr-1">
-                                        <template x-for="(ex, i) in todayTraining" :key="i">
-                                            <div class="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/3 border border-white/3 hover:bg-white/5 transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.06) + 's'">
-                                                <span class="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0" x-text="i + 1"></span>
-                                                <span class="text-xs font-medium text-white flex-1 truncate" x-text="ex.name"></span>
-                                                <span class="text-[10px] font-mono text-muted" x-text="(ex.type || 'strength') === 'strength' ? (ex.sets ? ex.sets + 'x' + ex.reps + (ex.weight ? ' · ' + ex.weight + 'kg' : '') : '') : (ex.type === 'cardio' ? (ex.duration || '') : (ex.type === 'circuit' ? (ex.rounds ? ex.rounds + ' Rounds' : '') : ((ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : ''))))"></span>
+                                    <div class="space-y-2 overflow-hidden transition-all duration-300" :class="trainingExpanded ? '' : 'max-h-52'" :style="trainingExpanded ? 'max-height: none' : ''">
+                                        <template x-for="(ex, i) in selectedDayExercises" :key="i">
+                                            <div class="flex items-start gap-3 py-3 px-4 rounded-xl bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] transition-all animate-list-item" :style="'--item-delay: ' + (i * 0.04) + 's'">
+                                                <!-- Number -->
+                                                <span class="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-[10px] text-emerald-400 font-bold tabular-nums shrink-0 mt-0.5" x-text="i + 1"></span>
+                                                <!-- Exercise info -->
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-xs font-semibold text-white leading-snug" :class="trainingExpanded ? '' : 'truncate'" x-text="ex.name"></p>
+                                                    <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                                        <!-- Type badge -->
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider"
+                                                              :class="{
+                                                                  'bg-blue-500/10 text-blue-400 border border-blue-500/15': (ex.type || 'strength') === 'strength',
+                                                                  'bg-orange-500/10 text-orange-400 border border-orange-500/15': ex.type === 'cardio',
+                                                                  'bg-purple-500/10 text-purple-400 border border-purple-500/15': ex.type === 'circuit',
+                                                                  'bg-cyan-500/10 text-cyan-400 border border-cyan-500/15': ex.type === 'distance'
+                                                              }">
+                                                            <i class="text-[9px]" :class="{
+                                                                'ph-bold ph-barbell': (ex.type || 'strength') === 'strength',
+                                                                'ph-bold ph-heart-beat': ex.type === 'cardio',
+                                                                'ph-bold ph-arrows-clockwise': ex.type === 'circuit',
+                                                                'ph-bold ph-person-simple-run': ex.type === 'distance'
+                                                            }"></i>
+                                                            <span x-text="ex.type || 'strength'"></span>
+                                                        </span>
+                                                        <!-- Details -->
+                                                        <template x-if="(ex.type || 'strength') === 'strength' && ex.sets">
+                                                            <span class="text-[10px] font-mono text-white/50" x-text="ex.sets + ' × ' + ex.reps + (ex.weight ? ' · ' + ex.weight + ' kg' : '')"></span>
+                                                        </template>
+                                                        <template x-if="ex.type === 'cardio' && ex.duration">
+                                                            <span class="text-[10px] font-mono text-white/50" x-text="ex.duration"></span>
+                                                        </template>
+                                                        <template x-if="ex.type === 'circuit' && ex.rounds">
+                                                            <span class="text-[10px] font-mono text-white/50" x-text="ex.rounds + ' Rounds'"></span>
+                                                        </template>
+                                                        <template x-if="ex.type === 'distance'">
+                                                            <span class="text-[10px] font-mono text-white/50" x-text="(ex.distance ? ex.distance + ' km' : '') + (ex.duration ? ' · ' + ex.duration : '')"></span>
+                                                        </template>
+                                                    </div>
+                                                    <!-- Notes -->
+                                                    <template x-if="ex.notes && trainingExpanded">
+                                                        <p class="text-[10px] text-white/30 mt-1 italic" x-text="ex.notes"></p>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
-                                    <button x-show="!workoutActive && !_lastFinishedWorkout" @click.stop="openWorkoutPicker()" class="mt-3 w-full py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
-                                        <i class="ph-bold ph-play"></i> Start Workout
-                                    </button>
-                                    <button x-show="workoutActive" @click.stop="resumeWorkout()" class="mt-3 w-full py-3 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2 animate-pulse">
-                                        <i class="ph-bold ph-play"></i> Resume Workout
-                                    </button>
-                                    <button x-show="!workoutActive && _lastFinishedWorkout" @click.stop="showPostWorkoutComparison()" class="mt-3 w-full py-3 rounded-xl bg-indigo-500 text-white font-bold text-xs hover:bg-indigo-600 active:scale-[0.97] transition-all flex items-center justify-center gap-2"
-                                            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
-                                        <i class="ph-bold ph-chart-line-up"></i> Show Comparison
-                                    </button>
+                                    <!-- Tap hint when collapsed -->
+                                    <div x-show="!trainingExpanded && selectedDayExercises.length > 3" class="flex items-center justify-center gap-1.5 mt-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] cursor-pointer" @click="trainingExpanded = true">
+                                        <i class="ph ph-caret-down text-[10px] text-emerald-400/60"></i>
+                                        <span class="text-[10px] text-muted font-medium">Show all <span x-text="selectedDayExercises.length"></span> exercises</span>
+                                    </div>
                                 </div>
                             </template>
-                            <template x-if="isRestDay">
-                                <div class="py-4 text-center"><p class="text-xs text-muted">No training planned.</p></div>
+                            <template x-if="selectedDayExercises.length === 0">
+                                <div class="py-8 text-center">
+                                    <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
+                                        <i class="ph ph-moon-stars text-2xl text-white/20"></i>
+                                    </div>
+                                    <p class="text-sm text-muted mb-1">Rest Day</p>
+                                    <p class="text-[10px] text-white/20">No training planned for this day.</p>
+                                </div>
                             </template>
-                        </div>
-                    </div>
-
-                    <!-- Personal Records Widget -->
-                    <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Personal Records">
-                        <div class="absolute inset-0 bg-linear-to-br from-yellow-500/5 to-orange-500/5"></div>
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 border border-yellow-500/20">
-                                    <i class="ph-bold ph-crown"></i>
-                                </div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Personal Records</h3>
-                                <span class="ml-auto px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 text-[9px] font-bold" x-text="personalRecords.length + ' PRs'"></span>
-                            </div>
-                            <div class="space-y-1.5" x-show="personalRecords.length > 0">
-                                <template x-for="(pr, prIdx) in getRecentPRs(5)" :key="'pr-'+prIdx">
-                                    <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-white/3 border border-white/3">
-                                        <div class="min-w-0">
-                                            <p class="text-xs font-medium text-white truncate" x-text="pr.exercise_name"></p>
-                                            <p class="text-[10px] text-muted font-mono" x-text="new Date(pr.date).toLocaleDateString('en-US', {day: '2-digit', month: 'short'})"></p>
-                                        </div>
-                                        <span class="text-xs font-bold text-yellow-400 tabular-nums" x-text="pr.weight + ' kg x ' + pr.reps"></span>
-                                    </div>
-                                </template>
-                            </div>
-                            <div x-show="personalRecords.length === 0" class="py-4 text-center">
-                                <p class="text-[10px] text-muted">No records yet. Start your first workout!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Workout History + Stats -->
-                <div class="md:col-span-8 flex flex-col gap-5">
-
-                    <!-- Recent Workouts Widget (only shows when history exists) -->
-                    <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Recent Workouts">
-                        <div class="absolute inset-0 bg-linear-to-br from-indigo-500/5 to-emerald-500/5"></div>
-                        <div class="relative z-10">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                                        <i class="ph ph-clipboard-text"></i>
-                                    </div>
-                                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Workouts</h3>
-                                </div>
-                                <button x-show="workoutHistory.length > 0" @click.stop="openWorkoutHistory()" class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors px-2 py-1 rounded-lg hover:bg-indigo-500/10">
-                                    View all
-                                </button>
-                            </div>
-                            <div class="space-y-1.5" x-show="workoutHistory.length > 0">
-                                <template x-for="(w, wIdx) in workoutHistory.slice(0, 5)" :key="'recent-'+wIdx">
-                                    <div class="flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/3 border border-white/3 hover:bg-white/5 transition-all cursor-pointer"
-                                         @click.stop="openWorkoutComparison(w)">
-                                        <div class="flex items-center gap-3 min-w-0">
-                                            <span class="w-8 h-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-[10px] text-muted font-mono shrink-0"
-                                                  x-text="new Date(w.date).getDate()"></span>
-                                            <div class="min-w-0">
-                                                <p class="text-xs font-medium text-white truncate" x-text="new Date(w.date).toLocaleDateString('en-US', {weekday: 'short', day: '2-digit', month: 'short'})"></p>
-                                                <p class="text-[10px] text-muted font-mono" x-text="getWorkoutExerciseCount(w) + ' Ueb. · ' + formatWorkoutDuration(w.durationSeconds)"></p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-2 shrink-0">
-                                            <span x-show="w.tracked !== false" class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
-                                                <i class="ph ph-chart-line-up text-[9px]"></i>
-                                            </span>
-                                            <i class="ph ph-caret-right text-[10px] text-muted"></i>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                            <div x-show="workoutHistory.length === 0" class="py-8 text-center">
-                                <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
-                                    <i class="ph-bold ph-barbell text-2xl text-white/20"></i>
-                                </div>
-                                <p class="text-sm text-muted mb-1">No workouts yet</p>
-                                <p class="text-[10px] text-white/20">Start your first workout above!</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Training Stats Widget -->
-                    <div class="bento-card p-6 relative overflow-hidden" role="region" aria-label="Training Statistics">
-                        <div class="absolute inset-0 bg-linear-to-br from-cyan-500/5 to-blue-500/5"></div>
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
-                                    <i class="ph-bold ph-chart-bar"></i>
-                                </div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Statistics</h3>
-                            </div>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                                    <p class="text-2xl font-bold text-white tabular-nums" x-text="workoutHistory.length"></p>
-                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Workouts</p>
-                                </div>
-                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                                    <p class="text-2xl font-bold text-white tabular-nums" x-text="workoutHistory.reduce((sum, w) => sum + (w.exercises || []).length, 0)"></p>
-                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Exercises</p>
-                                </div>
-                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                                    <p class="text-2xl font-bold text-white tabular-nums" x-text="Math.round(workoutHistory.reduce((sum, w) => sum + (w.durationSeconds || 0), 0) / 60)"></p>
-                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Minuten</p>
-                                </div>
-                                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                                    <p class="text-2xl font-bold text-yellow-400 tabular-nums" x-text="personalRecords.length"></p>
-                                    <p class="text-[9px] text-muted uppercase tracking-wider font-bold mt-1">Records</p>
-                                </div>
-                            </div>
-                            <!-- Weekly training overview -->
-                            <div class="mt-4 pt-4 border-t border-white/5">
-                                <p class="text-[10px] text-muted uppercase tracking-widest font-bold mb-3">Weekly Plan</p>
-                                <div class="flex gap-1.5">
-                                    <template x-for="(day, idx) in WEEKDAY_SHORT" :key="'wk-'+idx">
-                                        <div class="flex-1 text-center">
-                                            <div class="w-full py-2 rounded-lg text-[10px] font-bold transition-all"
-                                                 :class="trainingPlan[idx] && trainingPlan[idx].length > 0
-                                                     ? (idx === getTodayWeekdayIndex() ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/5 text-white border border-white/5')
-                                                     : 'bg-transparent text-white/20 border border-transparent'"
-                                                 x-text="day"></div>
-                                            <p class="text-[8px] text-muted mt-1 tabular-nums" x-text="trainingPlan[idx] ? trainingPlan[idx].length : 0"></p>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

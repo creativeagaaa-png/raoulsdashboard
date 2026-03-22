@@ -150,6 +150,10 @@ function app() {
         // Expose constants to template
         WEEKDAY_SHORT,
 
+        // Training day navigation state
+        trainingDayOffset: 0,
+        trainingExpanded: false,
+
         // Training getters
         get todayTraining() {
             const idx = getTodayWeekdayIndex();
@@ -160,6 +164,25 @@ function app() {
         },
         get isRestDay() {
             return this.todayTraining.length === 0;
+        },
+        get selectedDayIndex() {
+            const base = getTodayWeekdayIndex();
+            return ((base + this.trainingDayOffset) % 7 + 7) % 7;
+        },
+        get selectedDayName() {
+            return WEEKDAYS[this.selectedDayIndex];
+        },
+        get selectedDayExercises() {
+            return this.trainingPlan[this.selectedDayIndex] || [];
+        },
+
+        prevTrainingDay() {
+            this.trainingDayOffset--;
+            this.trainingExpanded = false;
+        },
+        nextTrainingDay() {
+            this.trainingDayOffset++;
+            this.trainingExpanded = false;
         },
 
         // Workout getters
