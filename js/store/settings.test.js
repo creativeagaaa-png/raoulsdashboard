@@ -117,14 +117,14 @@ describe('applyProfile', () => {
         const m = createMixin();
         m.profileForm = { startWeight: 0, goalWeight: 70, goalDate: '', userHeight: 180, userAge: 30 };
         await m.applyProfile();
-        expect(m.showToast).toHaveBeenCalledWith('Error: Please fill in height and weight correctly');
+        expect(m.showToast).toHaveBeenCalledWith('Fehler: Bitte Größe und Gewicht korrekt ausfüllen');
     });
 
     it('rejects profile with zero height', async () => {
         const m = createMixin();
         m.profileForm = { startWeight: 80, goalWeight: 70, goalDate: '', userHeight: 0, userAge: 30 };
         await m.applyProfile();
-        expect(m.showToast).toHaveBeenCalledWith('Error: Please fill in height and weight correctly');
+        expect(m.showToast).toHaveBeenCalledWith('Fehler: Bitte Größe und Gewicht korrekt ausfüllen');
     });
 
     it('handles string values with comma', async () => {

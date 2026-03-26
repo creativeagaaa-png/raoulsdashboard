@@ -3,19 +3,11 @@ import * as Supa from './supabase.js';
 
 export const settingsMixin = () => ({
     settingsOpen: false,
-
-    // BMI detail modal state
     bmiDetailOpen: false,
 
-    openBmiDetail() {
-        this.bmiDetailOpen = true;
-    },
+    openBmiDetail() { this.bmiDetailOpen = true; },
+    closeBmiDetail() { this.bmiDetailOpen = false; },
 
-    closeBmiDetail() {
-        this.bmiDetailOpen = false;
-    },
-
-    // Profile modal state
     profileOpen: false,
     profileForm: { ...DEFAULT_PROFILE },
     profileDirty: false,
@@ -27,31 +19,31 @@ export const settingsMixin = () => ({
                 goalWeight: this.goalWeight,
                 goalDate: this.goalDate,
                 userHeight: this.userHeight,
-                userAge: this.userAge
+                userAge: this.userAge,
+                gender: this.gender,
+                activityLevel: this.activityLevel,
+                weeklyGoalRate: this.weeklyGoalRate,
+                checklistItems: this.checklistItems
             });
         } catch (e) {
-            console.error('Failed to save settings:', e);
-            this.showToast('Failed to save settings');
+            console.error('Einstellungen konnten nicht gespeichert werden:', e);
+            this.showToast('Fehler beim Speichern');
         }
     },
 
-    // --- Settings Modal (Danger Zone) ---
-    openSettings() {
-        this.settingsOpen = true;
-    },
+    openSettings() { this.settingsOpen = true; },
+    closeSettings() { this.settingsOpen = false; },
 
-    closeSettings() {
-        this.settingsOpen = false;
-    },
-
-    // --- Profile Modal ---
     openProfile() {
         this.profileForm = {
             startWeight: this.startWeight,
             goalWeight: this.goalWeight,
             goalDate: this.goalDate || '',
             userHeight: this.userHeight,
-            userAge: this.userAge
+            userAge: this.userAge,
+            gender: this.gender || '',
+            activityLevel: this.activityLevel || 'moderately_active',
+            weeklyGoalRate: this.weeklyGoalRate || 0
         };
         this.profileDirty = false;
         this.profileOpen = true;
@@ -61,12 +53,10 @@ export const settingsMixin = () => ({
         if (this.profileDirty && !force) {
             this.confirmModal = {
                 show: true,
-                title: 'Unsaved Changes',
-                message: 'Discard changes to profile?',
-                confirmLabel: 'Discard',
-                onConfirm: () => {
-                    this.profileOpen = false;
-                }
+                title: 'Ungespeicherte Änderungen',
+                message: 'Änderungen am Profil verwerfen?',
+                confirmLabel: 'Verwerfen',
+                onConfirm: () => { this.profileOpen = false; }
             };
             return;
         }
@@ -86,7 +76,7 @@ export const settingsMixin = () => ({
         const newHeight = parseInt(f.userHeight);
 
         if (!newStart || newStart <= 0 || !newGoal || newGoal <= 0 || !newHeight || newHeight <= 0) {
-            this.showToast('Error: Please fill in height and weight correctly');
+            this.showToast('Fehler: Bitte Größe und Gewicht korrekt ausfüllen');
             return;
         }
 
@@ -95,7 +85,12 @@ export const settingsMixin = () => ({
         this.goalDate = f.goalDate || null;
         this.userHeight = newHeight;
         this.userAge = parseInt(f.userAge) || 0;
+        this.gender = f.gender || null;
+        this.activityLevel = f.activityLevel || 'moderately_active';
+        this.weeklyGoalRate = safeFloat(f.weeklyGoalRate);
+
         await this.saveSettings();
+        if (this.recalculateCalories) this.recalculateCalories();
 
         this.refreshAnimations();
         this.profileDirty = false;
@@ -103,11 +98,9 @@ export const settingsMixin = () => ({
 
         this.$nextTick(() => {
             this.updateChart();
-            this.showToast('Profile saved');
+            this.showToast('Profil gespeichert');
         });
     },
 
-    markProfileDirty() {
-        this.profileDirty = true;
-    }
+    markProfileDirty() { this.profileDirty = true; }
 });
