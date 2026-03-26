@@ -7,12 +7,24 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     console.error('Missing Supabase environment variables. Create a .env.local file with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
 }
 
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let db = null;
+try {
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+        db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+} catch (e) {
+    console.error('Failed to initialize Supabase client:', e);
+}
+
+function requireDb() {
+    if (!db) throw new Error('Supabase client not initialized — check your environment variables.');
+    return db;
+}
 
 // ── Weight Entries ──────────────────────────────────────
 
 export async function getWeightEntries() {
-    const { data, error } = await db
+    const { data, error } = await requireDb()
         .from('weight_entries')
         .select('date, weight')
         .order('date', { ascending: true });
@@ -21,14 +33,14 @@ export async function getWeightEntries() {
 }
 
 export async function upsertWeightEntry(date, weight) {
-    const { error } = await db
+    const { error } = await requireDb()
         .from('weight_entries')
         .upsert({ date, weight }, { onConflict: 'date' });
     if (error) throw error;
 }
 
 export async function deleteWeightEntry(date) {
-    const { error } = await db
+    const { error } = await requireDb()
         .from('weight_entries')
         .delete()
         .eq('date', date);
@@ -36,7 +48,7 @@ export async function deleteWeightEntry(date) {
 }
 
 export async function clearAllWeightEntries() {
-    const { error } = await db
+    const { error } = await requireDb()
         .from('weight_entries')
         .delete()
         .gte('id', 0);
@@ -46,7 +58,7 @@ export async function clearAllWeightEntries() {
 // ── Settings (single-row, id=1) ─────────────────────────
 
 export async function getSettings() {
-    const { data, error } = await db
+    const { data, error } = await requireDb()
         .from('settings')
         .select('*')
         .eq('id', 1)
@@ -66,7 +78,19 @@ export async function saveSettings(profile) {
     if (profile.goalDate !== undefined) {
         row.goal_date = profile.goalDate || null;
     }
-    const { error } = await db
+    if (profile.gender !== undefined) {
+        row.gender = profile.gender;
+    }
+    if (profile.activityLevel !== undefined) {
+        row.activity_level = profile.activityLevel;
+    }
+    if (profile.weeklyGoalRate !== undefined) {
+        row.weekly_goal_rate = profile.weeklyGoalRate;
+    }
+    if (profile.checklistItems !== undefined) {
+        row.checklist_items = profile.checklistItems;
+    }
+    const { error } = await requireDb()
         .from('settings')
         .upsert(row);
     if (error) throw error;
@@ -75,7 +99,7 @@ export async function saveSettings(profile) {
 // ── Training Plan ───────────────────────────────────────
 
 export async function getTrainingPlan() {
-    const { data, error } = await db
+    const { data, error } = await requireDb()
         .from('training_plan')
         .select('*')
         .order('day_index')
@@ -151,14 +175,14 @@ export async function saveTrainingPlan(plan) {
     }
 
     // Delete old plan then insert new one
-    const { error: delErr } = await db
+    const { error: delErr } = await requireDb()
         .from('training_plan')
         .delete()
         .gte('id', 0);
     if (delErr) throw delErr;
 
     if (rows.length > 0) {
-        const { error: insErr } = await db
+        const { error: insErr } = await requireDb()
             .from('training_plan')
             .insert(rows);
         if (insErr) throw insErr;
@@ -168,7 +192,7 @@ export async function saveTrainingPlan(plan) {
 // ── Workout Logs ────────────────────────────────────────
 
 export async function getWorkoutLogs() {
-    const { data, error } = await db
+    const { data, error } = await requireDb()
         .from('workout_logs')
         .select('*')
         .order('date', { ascending: false })
@@ -194,7 +218,7 @@ export async function saveWorkoutLog(session) {
         duration_seconds: session.durationSeconds,
         exercises: session.exercises
     };
-    const { data, error } = await db
+    const { data, error } = await requireDb()
         .from('workout_logs')
         .insert(row)
         .select('id')
@@ -204,7 +228,7 @@ export async function saveWorkoutLog(session) {
 }
 
 export async function deleteWorkoutLog(id) {
-    const { error } = await db
+    const { error } = await requireDb()
         .from('workout_logs')
         .delete()
         .eq('id', id);
@@ -212,8 +236,44 @@ export async function deleteWorkoutLog(id) {
 }
 
 export async function clearAllWorkoutLogs() {
-    const { error } = await db
+    const { error } = await requireDb()
         .from('workout_logs')
+        .delete()
+        .gte('id', 0);
+    if (error) throw error;
+}
+
+// ── Daily Check-Ins ─────────────────────────────────────
+
+export async function getCheckins(fromDate, toDate) {
+    const { data, error } = await requireDb()
+        .from('daily_checkins')
+        .select('date, items')
+        .gte('date', fromDate)
+        .lte('date', toDate)
+        .order('date', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+
+export async function upsertCheckin(date, items) {
+    const { error } = await requireDb()
+        .from('daily_checkins')
+        .upsert({ date, items }, { onConflict: 'date' });
+    if (error) throw error;
+}
+
+export async function deleteCheckin(date) {
+    const { error } = await requireDb()
+        .from('daily_checkins')
+        .delete()
+        .eq('date', date);
+    if (error) throw error;
+}
+
+export async function clearAllCheckins() {
+    const { error } = await requireDb()
+        .from('daily_checkins')
         .delete()
         .gte('id', 0);
     if (error) throw error;
