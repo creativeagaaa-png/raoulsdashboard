@@ -5,33 +5,5 @@ export const DEFAULT_PROFILE = {
     userAge: 0
 };
 
-export const DEFAULT_REWARDS = [];
-
 export const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-export const WIDGET_REGISTRY = {
-    'current-status': { label: 'Status' },
-    'prediction': { label: 'Prediction' },
-    'analytics': { label: 'Analytics' },
-    'milestone': { label: 'Milestone' },
-    'achievements': { label: 'Achievements' },
-    'progress-pics': { label: 'Progress Pics' },
-    'logs': { label: 'Logs' }
-};
-
-export const TRAINING_WIDGET_REGISTRY = {
-    'workouts': { label: 'Workouts' },
-    'training-stats': { label: 'Statistics' },
-    'personal-records': { label: 'Records' }
-};
-
-export const DEFAULT_LAYOUT = {
-    left: ['current-status', 'prediction'],
-    right: ['analytics', 'milestone', 'achievements', 'progress-pics', 'logs']
-};
-
-export const DEFAULT_TRAINING_LAYOUT = {
-    left: ['workouts'],
-    right: ['training-stats', 'personal-records']
-};

@@ -29,13 +29,6 @@
             "description": "Quickly log your current weight",
             "url": "/index.html?action=log-weight",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-        },
-        {
-            "name": "Start Workout",
-            "short_name": "Workout",
-            "description": "Start today's training session",
-            "url": "/index.html?action=start-workout",
-            "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
         }
     ]
 }

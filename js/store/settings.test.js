@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock Supabase
 vi.mock('./supabase.js', () => ({
-    saveSettings: vi.fn().mockResolvedValue(undefined),
-    saveRewards: vi.fn().mockResolvedValue(undefined)
+    saveSettings: vi.fn().mockResolvedValue(undefined)
 }));
 
 vi.mock('../utils/constants.js', () => ({
@@ -25,7 +24,6 @@ function createMixin(overrides = {}) {
         goalDate: null,
         userHeight: 180,
         userAge: 30,
-        rewards: [],
         confirmModal: { show: false },
         showToast: vi.fn(),
         refreshAnimations: vi.fn(),
@@ -155,139 +153,3 @@ describe('markProfileDirty', () => {
     });
 });
 
-describe('Milestones Modal', () => {
-    it('opens milestones with deep copy of rewards', () => {
-        const m = createMixin({
-            rewards: [{ target: 75, title: 'Test', icon: '⭐' }]
-        });
-        m.openMilestones();
-        expect(m.milestonesOpen).toBe(true);
-        expect(m.milestonesForm).toHaveLength(1);
-        // Should be a deep copy
-        m.milestonesForm[0].title = 'Modified';
-        expect(m.rewards[0].title).toBe('Test');
-    });
-
-    it('closes milestones when not dirty', () => {
-        const m = createMixin();
-        m.milestonesOpen = true;
-        m.milestonesDirty = false;
-        m.closeMilestones();
-        expect(m.milestonesOpen).toBe(false);
-    });
-
-    it('shows confirm when milestones dirty', () => {
-        const m = createMixin();
-        m.milestonesOpen = true;
-        m.milestonesDirty = true;
-        m.closeMilestones();
-        expect(m.confirmModal.show).toBe(true);
-    });
-
-    it('closes when forced even if dirty', () => {
-        const m = createMixin();
-        m.milestonesOpen = true;
-        m.milestonesDirty = true;
-        m.closeMilestones(true);
-        expect(m.milestonesOpen).toBe(false);
-    });
-});
-
-describe('addMilestone', () => {
-    it('does nothing when title is empty', () => {
-        const m = createMixin();
-        m.newMilestone = { title: '', target: '75', icon: '⭐' };
-        m.addMilestone();
-        expect(m.milestonesForm).toHaveLength(0);
-    });
-
-    it('does nothing when target is 0', () => {
-        const m = createMixin();
-        m.newMilestone = { title: 'Test', target: '0', icon: '⭐' };
-        m.addMilestone();
-        expect(m.milestonesForm).toHaveLength(0);
-    });
-
-    it('adds valid milestone', () => {
-        const m = createMixin();
-        m.newMilestone = { title: '75kg Ziel', target: '75', icon: '🏆' };
-        m.addMilestone();
-        expect(m.milestonesForm).toHaveLength(1);
-        expect(m.milestonesForm[0]).toEqual({ target: 75, title: '75kg Ziel', icon: '🏆' });
-        expect(m.milestonesDirty).toBe(true);
-    });
-
-    it('handles comma-separated target value', () => {
-        const m = createMixin();
-        m.newMilestone = { title: 'Test', target: '75,5', icon: '⭐' };
-        m.addMilestone();
-        expect(m.milestonesForm[0].target).toBe(75.5);
-    });
-
-    it('resets form after adding', () => {
-        const m = createMixin();
-        m.newMilestone = { title: 'Test', target: '75', icon: '🏆' };
-        m.addMilestone();
-        expect(m.newMilestone.title).toBe('');
-        expect(m.newMilestone.icon).toBe('⭐');
-    });
-});
-
-describe('removeMilestone', () => {
-    it('removes milestone at index', () => {
-        const m = createMixin();
-        m.milestonesForm = [
-            { target: 80, title: 'A', icon: '⭐' },
-            { target: 75, title: 'B', icon: '🏆' }
-        ];
-        m.removeMilestone(0);
-        expect(m.milestonesForm).toHaveLength(1);
-        expect(m.milestonesForm[0].title).toBe('B');
-        expect(m.milestonesDirty).toBe(true);
-    });
-});
-
-describe('applyMilestones', () => {
-    it('filters invalid milestones and sorts by target desc', async () => {
-        const m = createMixin();
-        m.milestonesForm = [
-            { target: 70, title: 'Goal', icon: '🏆' },
-            { target: 0, title: 'Invalid', icon: '⭐' },
-            { target: 80, title: 'Start', icon: '⭐' },
-            { target: 75, title: '', icon: '⭐' }
-        ];
-        m.milestonesOpen = true;
-        m.milestonesDirty = true;
-        await m.applyMilestones();
-        expect(m.rewards).toHaveLength(2);
-        expect(m.rewards[0].target).toBe(80);
-        expect(m.rewards[1].target).toBe(70);
-        expect(m.milestonesOpen).toBe(false);
-        expect(m.milestonesDirty).toBe(false);
-    });
-});
-
-describe('markMilestonesDirty', () => {
-    it('sets milestonesDirty to true', () => {
-        const m = createMixin();
-        m.milestonesDirty = false;
-        m.markMilestonesDirty();
-        expect(m.milestonesDirty).toBe(true);
-    });
-});
-
-describe('clearAllMilestones', () => {
-    it('shows confirmation modal', () => {
-        const m = createMixin({ rewards: [{ target: 75, title: 'Test', icon: '⭐' }] });
-        m.clearAllMilestones();
-        expect(m.confirmModal.show).toBe(true);
-    });
-
-    it('clears all rewards when confirmed', async () => {
-        const m = createMixin({ rewards: [{ target: 75, title: 'Test', icon: '⭐' }] });
-        m.clearAllMilestones();
-        await m.confirmModal.onConfirm();
-        expect(m.rewards).toEqual([]);
-        expect(m.showToast).toHaveBeenCalledWith('All milestones deleted');
-    });
-});

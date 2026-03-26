@@ -1,19 +1,14 @@
 import Alpine from 'alpinejs';
 import { Chart, registerables } from 'chart.js';
-import confetti from 'canvas-confetti';
 
-import { DEFAULT_PROFILE, DEFAULT_REWARDS, WIDGET_REGISTRY, DEFAULT_LAYOUT, WEEKDAYS, WEEKDAY_SHORT } from './utils/constants.js';
+import { DEFAULT_PROFILE, WEEKDAYS, WEEKDAY_SHORT } from './utils/constants.js';
 import { getTodayWeekdayIndex, getLocalDateString } from './utils/formatting.js';
 import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './utils/analytics.js';
 import * as Supa from './store/supabase.js';
 import { settingsMixin } from './store/settings.js';
 import { trainingMixin } from './features/training.js';
-import { galleryMixin, getPendingPhotoBlob } from './features/gallery.js';
-import { rewardsMixin } from './features/rewards.js';
-import { layoutMixin } from './features/layout.js';
 import { workoutMixin } from './features/workout.js';
 import { restTimerMixin } from './features/rest-timer.js';
-import { recordsMixin } from './features/records.js';
 import { hapticLight, hapticMedium, hapticSuccess, hapticWarning, hapticSelection } from './utils/haptics.js';
 import { registerSwipeDismiss } from './utils/swipe-dismiss.js';
 
@@ -22,20 +17,14 @@ import bmiDetailModal from '../templates/modals/bmi-detail.html?raw';
 import settingsModal from '../templates/modals/settings.html?raw';
 import trainingModal from '../templates/modals/training.html?raw';
 import profileModal from '../templates/modals/profile.html?raw';
-import milestonesModal from '../templates/modals/milestones.html?raw';
 import weightEntryModal from '../templates/modals/weight-entry.html?raw';
-import lootboxModal from '../templates/modals/lootbox.html?raw';
-import progressPicsModal from '../templates/modals/progress-pics.html?raw';
 import confirmModal from '../templates/modals/confirm.html?raw';
 import toastComponent from '../templates/modals/toast.html?raw';
 import workoutModal from '../templates/modals/workout.html?raw';
 import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
 import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
-import workoutComparisonModal from '../templates/modals/workout-comparison.html?raw';
-import prCelebrationModal from '../templates/modals/pr-celebration.html?raw';
 
 Chart.register(...registerables);
-window.confetti = confetti;
 
 // Inject modal templates into the DOM before Alpine initializes
 const modalsContainer = document.getElementById('modals');
@@ -45,17 +34,12 @@ if (modalsContainer) {
         settingsModal,
         trainingModal,
         profileModal,
-        milestonesModal,
         weightEntryModal,
-        lootboxModal,
-        progressPicsModal,
         confirmModal,
         toastComponent,
         workoutModal,
         workoutHistoryModal,
-        workoutPickerModal,
-        workoutComparisonModal,
-        prCelebrationModal
+        workoutPickerModal
     ].join('\n');
 }
 
@@ -73,7 +57,6 @@ function app() {
         goalDate: null,
         userHeight: DEFAULT_PROFILE.userHeight,
         userAge: DEFAULT_PROFILE.userAge,
-        rewards: [...DEFAULT_REWARDS],
 
         history: [],
         chartFilter: '1M',
@@ -82,8 +65,6 @@ function app() {
         activeTab: 'health',
         appLoaded: false,
         modalOpen: false,
-        lootboxOpen: false,
-        unlockedReward: null,
         toast: { show: false, message: '', undoAction: null },
         _toastTimeout: null,
         confirmModal: { show: false, title: '', message: '', onConfirm: null, confirmLabel: null },
@@ -93,6 +74,9 @@ function app() {
 
         // Offline indicator
         isOffline: !navigator.onLine,
+
+        // Init error
+        _initFailed: false,
 
         // Profile dropdown
         profileDropdownOpen: false,
@@ -138,12 +122,8 @@ function app() {
         // --- MIXINS ---
         ...settingsMixin(),
         ...trainingMixin(),
-        ...galleryMixin(),
-        ...rewardsMixin(),
-        ...layoutMixin(),
         ...workoutMixin(),
         ...restTimerMixin(),
-        ...recordsMixin(),
 
         // --- MIXIN GETTERS (must be defined here, not in mixins, because spread destroys getters) ---
 
@@ -253,24 +233,15 @@ function app() {
             return `${mins}:${String(secs).padStart(2, '0')}`;
         },
 
-        // Gallery getter
-        get hasMorePhotos() {
-            return this._photosLoadedCount < this.photoDates.length;
-        },
-
         // --- INIT ---
         async initApp() {
             try {
-                const [settings, rewards, trainingPlan, layout, weightEntries, photoDates, personalRecords, workoutLogs] =
+                const [settings, trainingPlan, weightEntries, workoutLogs] =
                     await Promise.all([
-                        Supa.getSettings().catch(() => null),
-                        Supa.getRewards().catch(() => []),
-                        Supa.getTrainingPlan().catch(() => null),
-                        Supa.getLayout().catch(() => null),
-                        Supa.getWeightEntries().catch(() => []),
-                        Supa.getAllPhotoDates().catch(() => []),
-                        Supa.getPersonalRecords().catch(() => []),
-                        Supa.getWorkoutLogs().catch(() => [])
+                        Supa.getSettings(),
+                        Supa.getTrainingPlan(),
+                        Supa.getWeightEntries(),
+                        Supa.getWorkoutLogs()
                     ]);
 
                 // Apply settings
@@ -282,47 +253,14 @@ function app() {
                     this.userAge = settings.user_age != null ? parseInt(settings.user_age) : DEFAULT_PROFILE.userAge;
                 }
 
-                // Apply rewards
-                this.rewards = (rewards && rewards.length > 0) ? rewards : [];
-
                 // Apply training plan
                 if (trainingPlan) {
                     this.trainingPlan = trainingPlan;
                 }
 
-                // Apply layout
-                if (layout && layout.left && layout.right) {
-                    // Migrate: replace old 'training' widget with 'workouts'
-                    for (const col of ['left', 'right']) {
-                        const idx = layout[col].indexOf('training');
-                        if (idx !== -1) {
-                            layout[col][idx] = 'workouts';
-                        }
-                        // Remove old 'workout-history' if present (merged into workouts)
-                        layout[col] = layout[col].filter(w => w !== 'workout-history');
-                    }
-                    const allInLayout = [...layout.left, ...layout.right];
-                    const allWidgets = Object.keys(WIDGET_REGISTRY);
-                    allWidgets.forEach(w => {
-                        if (!allInLayout.includes(w)) {
-                            const def = DEFAULT_LAYOUT.right.includes(w) ? 'right' : 'left';
-                            layout[def].push(w);
-                        }
-                    });
-                    layout.left = layout.left.filter(w => WIDGET_REGISTRY[w]);
-                    layout.right = layout.right.filter(w => WIDGET_REGISTRY[w]);
-                    this.widgetLayout = layout;
-                }
-
                 // Apply weight entries
                 this.history = (weightEntries && weightEntries.length > 0) ? weightEntries : [];
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
-
-                // Apply photo dates
-                this.photoDates = (photoDates || []).sort();
-
-                // Apply personal records
-                this.personalRecords = personalRecords || [];
 
                 // Apply workout logs
                 this.workoutHistory = workoutLogs || [];
@@ -330,6 +268,8 @@ function app() {
 
             } catch (e) {
                 console.error('Failed to initialize app:', e);
+                this._initFailed = true;
+                this.showToast('Failed to load data — check your connection');
             }
 
             // Restore active workout from localStorage (crash recovery)
@@ -371,10 +311,10 @@ function app() {
 
             const isAnyModalOpen = () =>
                 this.modalOpen || this.settingsOpen || this.profileOpen ||
-                this.trainingOpen || this.milestonesOpen || this.bmiDetailOpen ||
-                this.lootboxOpen || this.progressPicsOpen ||
-                this.workoutOpen || this.workoutHistoryOpen || this.prCelebrationOpen ||
-                this.workoutPickerOpen || this.workoutComparisonOpen ||
+                this.trainingOpen ||
+                this.bmiDetailOpen ||
+                this.workoutOpen || this.workoutHistoryOpen ||
+                this.workoutPickerOpen ||
                 this.profileDropdownOpen;
 
             document.addEventListener('touchstart', (e) => {
@@ -396,7 +336,6 @@ function app() {
                     return;
                 }
 
-                // Prevent iOS bounce/rubber-band when pulling down at top
                 if (diff > 10) {
                     e.preventDefault();
                 }
@@ -454,15 +393,12 @@ function app() {
 
         async refreshDashboard() {
             try {
-                const [settings, rewards, trainingPlan, weightEntries, photoDates, workoutLogs, personalRecords] =
+                const [settings, trainingPlan, weightEntries, workoutLogs] =
                     await Promise.all([
-                        Supa.getSettings().catch(() => null),
-                        Supa.getRewards().catch(() => []),
-                        Supa.getTrainingPlan().catch(() => null),
-                        Supa.getWeightEntries().catch(() => []),
-                        Supa.getAllPhotoDates().catch(() => []),
-                        Supa.getWorkoutLogs().catch(() => []),
-                        Supa.getPersonalRecords().catch(() => [])
+                        Supa.getSettings(),
+                        Supa.getTrainingPlan(),
+                        Supa.getWeightEntries(),
+                        Supa.getWorkoutLogs()
                     ]);
 
                 if (settings) {
@@ -472,14 +408,12 @@ function app() {
                     this.userHeight = settings.user_height != null ? parseInt(settings.user_height) : DEFAULT_PROFILE.userHeight;
                     this.userAge = settings.user_age != null ? parseInt(settings.user_age) : DEFAULT_PROFILE.userAge;
                 }
-                this.rewards = (rewards && rewards.length > 0) ? rewards : [];
                 if (trainingPlan) this.trainingPlan = trainingPlan;
                 this.history = (weightEntries && weightEntries.length > 0) ? weightEntries : [];
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
-                this.photoDates = (photoDates || []).sort();
                 this.workoutHistory = workoutLogs || [];
                 this.workoutHistoryLoaded = true;
-                this.personalRecords = personalRecords || [];
+                this._initFailed = false;
 
                 this.$nextTick(() => {
                     this.updateChart();
@@ -509,48 +443,32 @@ function app() {
             if (!w || isNaN(w)) return;
 
             this._saving = true;
-            const oldW = this.currentWeight;
-            const photoBlob = getPendingPhotoBlob();
             const entryDate = this.inputDate;
 
-            // Clean up preview URL before closing
-            if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
             this.closeModal();
-            this.photoPreview = null;
             this.inputWeight = null;
 
-            // Optimistic UI update
+            // Optimistic UI update — save snapshot for rollback
+            const previousHistory = [...this.history];
             this.history = this.history.filter(h => h.date !== entryDate);
             this.history.push({ date: entryDate, weight: w });
             this.history.sort((a, b) => a.date.localeCompare(b.date));
 
             try {
                 await Supa.upsertWeightEntry(entryDate, w);
+                hapticSuccess();
+                this.showToast(w.toFixed(1) + ' kg saved');
             } catch (e) {
                 console.error('Failed to save entry:', e);
+                // Rollback on failure
+                this.history = previousHistory;
                 this.showToast('Failed to save');
             }
 
-            hapticSuccess();
             this.$nextTick(() => {
                 this.updateChart();
                 this.refreshAnimations();
-                this.checkUnlocks(oldW, w);
             });
-
-            if (photoBlob) {
-                try {
-                    await Supa.savePhoto(entryDate, photoBlob);
-                    if (!this.photoDates.includes(entryDate)) {
-                        this.photoDates.push(entryDate);
-                        this.photoDates.sort();
-                    }
-                    if (this.progressPicsLoaded) this.refreshProgressPicsPhotos();
-                } catch (e) {
-                    console.error('Failed to save photo:', e);
-                    this.showToast('Failed to save photo');
-                }
-            }
             this._saving = false;
         },
 
@@ -578,8 +496,9 @@ function app() {
             const entryDate = getLocalDateString();
 
             this._saving = true;
-            const oldW = this.currentWeight;
 
+            // Optimistic UI update with rollback
+            const previousHistory = [...this.history];
             this.history = this.history.filter(h => h.date !== entryDate);
             this.history.push({ date: entryDate, weight: w });
             this.history.sort((a, b) => a.date.localeCompare(b.date));
@@ -589,6 +508,7 @@ function app() {
                 await Supa.upsertWeightEntry(entryDate, w);
             } catch (e) {
                 console.error('Failed to save quick entry:', e);
+                this.history = previousHistory;
                 this.showToast('Failed to save');
                 saved = false;
             }
@@ -596,7 +516,6 @@ function app() {
             this.$nextTick(() => {
                 this.updateChart();
                 this.refreshAnimations();
-                this.checkUnlocks(oldW, w);
                 this._saving = false;
             });
 
@@ -614,7 +533,6 @@ function app() {
 
             const removed = { date: logEntry.date, weight: logEntry.weight };
             this.history = this.history.filter(h => h.date !== removed.date);
-            const hadPhoto = this.photoDates.includes(removed.date);
 
             Supa.deleteWeightEntry(removed.date).catch(e => {
                 console.error('Failed to delete entry:', e);
@@ -624,21 +542,10 @@ function app() {
             try { this.updateChart(); } catch (e) {}
             this.refreshAnimations();
 
-            if (hadPhoto) {
-                this.photoDates = this.photoDates.filter(d => d !== removed.date);
-                Supa.deletePhoto(removed.date).catch(e => {
-                    console.error('Failed to delete photo:', e);
-                });
-            }
-
             this.showToast('Entry deleted', () => {
                 this.history.push(removed);
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
                 Supa.upsertWeightEntry(removed.date, removed.weight).catch(e => console.error('Failed to restore entry:', e));
-                if (hadPhoto && !this.photoDates.includes(removed.date)) {
-                    this.photoDates.push(removed.date);
-                    this.photoDates.sort();
-                }
                 this.updateChart();
                 this.refreshAnimations();
             });
@@ -648,15 +555,11 @@ function app() {
             this.confirmModal = {
                 show: true,
                 title: 'Delete all entries',
-                message: 'Delete all ' + this.history.length + ' weight entries and photos?',
+                message: 'Delete all ' + this.history.length + ' weight entries?',
                 onConfirm: async () => {
                     this.history = [];
-                    this.photoDates = [];
                     try {
-                        await Promise.all([
-                            Supa.clearAllWeightEntries(),
-                            Supa.clearAllPhotos()
-                        ]);
+                        await Supa.clearAllWeightEntries();
                     } catch (e) {
                         console.error('Failed to clear entries:', e);
                     }
@@ -674,7 +577,7 @@ function app() {
             this.confirmModal = {
                 show: true,
                 title: 'Full Reset',
-                message: 'Delete all data including settings, training and photos?',
+                message: 'Delete all data including settings and training?',
                 onConfirm: async () => {
                     try {
                         await Promise.all([
@@ -686,35 +589,25 @@ function app() {
                                 userHeight: 0,
                                 userAge: 0
                             }),
-                            Supa.saveRewards([]),
                             Supa.saveTrainingPlan(Array.from({ length: 7 }, () => [])),
-                            Supa.saveLayout(DEFAULT_LAYOUT),
-                            Supa.clearAllPhotos(),
-                            Supa.clearAllWorkoutLogs(),
-                            Supa.clearAllPersonalRecords()
+                            Supa.clearAllWorkoutLogs()
                         ]);
                     } catch (e) {
                         console.error('Failed to reset data:', e);
                     }
 
-                    // Clear service worker cache so stale data doesn't come back on reload
                     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                         navigator.serviceWorker.controller.postMessage('CLEAR_CACHE');
                     }
 
-                    // Reset local state without reload to avoid seed data creation
                     this.history = [];
                     this.startWeight = 0;
                     this.goalWeight = 0;
                     this.goalDate = null;
                     this.userHeight = 0;
                     this.userAge = 0;
-                    this.rewards = [];
                     this.trainingPlan = Array.from({ length: 7 }, () => []);
-                    this.photoDates = [];
                     this.workoutHistory = [];
-                    this.personalRecords = [];
-                    this.widgetLayout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
 
                     this.settingsOpen = false;
                     this.updateChart();
@@ -764,7 +657,6 @@ function app() {
             const uniqueDates = [...new Set(this.history.map(h => h.date))].sort();
             const today = getLocalDateString();
             const lastLog = uniqueDates[uniqueDates.length - 1];
-            // Calculate difference in calendar days (not hours) to avoid timezone issues
             const daysDiff = Math.round((new Date(today) - new Date(lastLog)) / (1000 * 60 * 60 * 24));
             if (daysDiff > 1) return 0;
             let streak = 1;
@@ -775,10 +667,6 @@ function app() {
                 if (calendarDaysDiff === 1) streak++; else break;
             }
             return streak;
-        },
-
-        get nextReward() {
-            return this.rewards.find(r => r.target < this.currentWeight) || null;
         },
 
         get filteredHistory() {
@@ -829,14 +717,10 @@ function app() {
             const params = new URLSearchParams(window.location.search);
             const action = params.get('action');
             if (!action) return;
-            // Clean URL so refresh doesn't re-trigger
             window.history.replaceState({}, '', window.location.pathname);
             if (action === 'log-weight') {
                 this.activeTab = 'health';
                 setTimeout(() => this.openModal(), 300);
-            } else if (action === 'start-workout') {
-                this.activeTab = 'training';
-                setTimeout(() => this.openWorkoutPicker(), 300);
             }
         },
 
@@ -844,18 +728,12 @@ function app() {
         handleEscape() {
             if (this.profileDropdownOpen) { this.closeProfileDropdown(); return; }
             if (this.confirmModal.show) { this.cancelConfirm(); return; }
-            if (this.workoutComparisonOpen) { this.closeWorkoutComparison(); return; }
-            if (this.prCelebrationOpen) { this.closePRCelebration(); return; }
             if (this.workoutHistoryOpen) { this.closeWorkoutHistory(); return; }
             if (this.workoutPickerOpen) { this.closeWorkoutPicker(); return; }
             if (this.workoutOpen) { this.closeWorkout(); return; }
-            if (this.lootboxOpen) { this.closeLootbox(); return; }
-            if (this.lightboxPhoto) { this.closeLightbox(); return; }
-            if (this.progressPicsOpen) { this.closeProgressPics(); return; }
             if (this.bmiDetailOpen) { this.closeBmiDetail(); return; }
             if (this.modalOpen) { this.closeModal(); return; }
             if (this.profileOpen) { this.closeProfile(); return; }
-            if (this.milestonesOpen) { this.closeMilestones(); return; }
             if (this.settingsOpen) { this.closeSettings(); return; }
             if (this.trainingOpen) { this.closeTraining(); return; }
         },

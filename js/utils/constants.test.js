@@ -1,13 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
     DEFAULT_PROFILE,
-    DEFAULT_REWARDS,
     WEEKDAYS,
-    WEEKDAY_SHORT,
-    WIDGET_REGISTRY,
-    DEFAULT_LAYOUT,
-    TRAINING_WIDGET_REGISTRY,
-    DEFAULT_TRAINING_LAYOUT
+    WEEKDAY_SHORT
 } from './constants.js';
 
 describe('DEFAULT_PROFILE', () => {
@@ -23,12 +18,6 @@ describe('DEFAULT_PROFILE', () => {
         expect(DEFAULT_PROFILE.goalWeight).toBe(0);
         expect(DEFAULT_PROFILE.userHeight).toBe(0);
         expect(DEFAULT_PROFILE.userAge).toBe(0);
-    });
-});
-
-describe('DEFAULT_REWARDS', () => {
-    it('is an empty array', () => {
-        expect(DEFAULT_REWARDS).toEqual([]);
     });
 });
 
@@ -62,66 +51,5 @@ describe('WEEKDAY_SHORT', () => {
     it('matches WEEKDAYS order', () => {
         expect(WEEKDAY_SHORT[0]).toBe('Mon'); // Monday
         expect(WEEKDAY_SHORT[4]).toBe('Fri'); // Friday
-    });
-});
-
-describe('WIDGET_REGISTRY', () => {
-    it('has expected widget keys', () => {
-        const keys = Object.keys(WIDGET_REGISTRY);
-        expect(keys).toContain('current-status');
-        expect(keys).toContain('analytics');
-        expect(keys).toContain('logs');
-    });
-
-    it('each widget has a label', () => {
-        Object.values(WIDGET_REGISTRY).forEach(widget => {
-            expect(widget).toHaveProperty('label');
-            expect(typeof widget.label).toBe('string');
-        });
-    });
-});
-
-describe('DEFAULT_LAYOUT', () => {
-    it('has left and right columns', () => {
-        expect(DEFAULT_LAYOUT).toHaveProperty('left');
-        expect(DEFAULT_LAYOUT).toHaveProperty('right');
-        expect(Array.isArray(DEFAULT_LAYOUT.left)).toBe(true);
-        expect(Array.isArray(DEFAULT_LAYOUT.right)).toBe(true);
-    });
-
-    it('contains only valid widget IDs', () => {
-        const allWidgets = Object.keys(WIDGET_REGISTRY);
-        [...DEFAULT_LAYOUT.left, ...DEFAULT_LAYOUT.right].forEach(id => {
-            expect(allWidgets).toContain(id);
-        });
-    });
-
-    it('contains all widgets from WIDGET_REGISTRY', () => {
-        const allInLayout = [...DEFAULT_LAYOUT.left, ...DEFAULT_LAYOUT.right];
-        Object.keys(WIDGET_REGISTRY).forEach(id => {
-            expect(allInLayout).toContain(id);
-        });
-    });
-});
-
-describe('TRAINING_WIDGET_REGISTRY', () => {
-    it('has expected keys', () => {
-        expect(TRAINING_WIDGET_REGISTRY).toHaveProperty('workouts');
-        expect(TRAINING_WIDGET_REGISTRY).toHaveProperty('training-stats');
-        expect(TRAINING_WIDGET_REGISTRY).toHaveProperty('personal-records');
-    });
-});
-
-describe('DEFAULT_TRAINING_LAYOUT', () => {
-    it('has left and right columns', () => {
-        expect(DEFAULT_TRAINING_LAYOUT).toHaveProperty('left');
-        expect(DEFAULT_TRAINING_LAYOUT).toHaveProperty('right');
-    });
-
-    it('contains only valid training widget IDs', () => {
-        const allWidgets = Object.keys(TRAINING_WIDGET_REGISTRY);
-        [...DEFAULT_TRAINING_LAYOUT.left, ...DEFAULT_TRAINING_LAYOUT.right].forEach(id => {
-            expect(allWidgets).toContain(id);
-        });
     });
 });

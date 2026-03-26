@@ -20,12 +20,6 @@ export const settingsMixin = () => ({
     profileForm: { ...DEFAULT_PROFILE },
     profileDirty: false,
 
-    // Milestones modal state
-    milestonesOpen: false,
-    milestonesForm: [],
-    milestonesDirty: false,
-    newMilestone: { title: '', target: '', icon: '⭐' },
-
     async saveSettings() {
         try {
             await Supa.saveSettings({
@@ -41,7 +35,7 @@ export const settingsMixin = () => ({
         }
     },
 
-    // --- Settings Modal (now only Danger Zone) ---
+    // --- Settings Modal (Danger Zone) ---
     openSettings() {
         this.settingsOpen = true;
     },
@@ -96,7 +90,6 @@ export const settingsMixin = () => ({
             return;
         }
 
-        const oldStart = this.startWeight;
         this.startWeight = newStart;
         this.goalWeight = newGoal;
         this.goalDate = f.goalDate || null;
@@ -116,105 +109,5 @@ export const settingsMixin = () => ({
 
     markProfileDirty() {
         this.profileDirty = true;
-    },
-
-    // --- Milestones Modal ---
-    openMilestones() {
-        this.milestonesForm = JSON.parse(JSON.stringify(this.rewards));
-        this.milestonesDirty = false;
-        this.newMilestone = { title: '', target: '', icon: '⭐' };
-        this.milestonesOpen = true;
-    },
-
-    closeMilestones(force) {
-        if (this.milestonesDirty && !force) {
-            this.confirmModal = {
-                show: true,
-                title: 'Unsaved Changes',
-                message: 'Discard milestone changes?',
-                confirmLabel: 'Discard',
-                onConfirm: () => {
-                    this.milestonesOpen = false;
-                }
-            };
-            return;
-        }
-        this.milestonesOpen = false;
-    },
-
-    addMilestone() {
-        const m = this.newMilestone;
-        if (!m.title || String(m.title).trim() === '') return;
-        const safeFloat = (val) => {
-            if (val === null || val === undefined) return 0;
-            if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
-            return parseFloat(val);
-        };
-        const target = safeFloat(m.target);
-        if (!target || target <= 0) return;
-
-        this.milestonesForm.push({
-            target: target,
-            title: String(m.title).trim(),
-            icon: m.icon ? String(m.icon).trim() : '⭐'
-        });
-        this.newMilestone = { title: '', target: '', icon: '⭐' };
-        this.milestonesDirty = true;
-    },
-
-    removeMilestone(index) {
-        this.milestonesForm.splice(index, 1);
-        this.milestonesDirty = true;
-    },
-
-    async applyMilestones() {
-        const safeFloat = (val) => {
-            if (val === null || val === undefined) return 0;
-            if (typeof val === 'string') return parseFloat(val.replace(',', '.'));
-            return parseFloat(val);
-        };
-
-        const validRewards = this.milestonesForm.filter(r =>
-            r.title && String(r.title).trim() !== '' &&
-            r.target && safeFloat(r.target) > 0
-        );
-
-        this.rewards = validRewards.map(r => ({
-            target: safeFloat(r.target),
-            title: String(r.title).trim(),
-            icon: r.icon ? String(r.icon).trim() : '⭐'
-        })).sort((a, b) => b.target - a.target);
-
-        try {
-            await Supa.saveRewards(this.rewards);
-        } catch (e) {
-            console.error('Failed to save milestones:', e);
-            this.showToast('Failed to save milestones');
-        }
-        this.milestonesDirty = false;
-        this.milestonesOpen = false;
-        this.showToast('Milestones saved');
-    },
-
-    markMilestonesDirty() {
-        this.milestonesDirty = true;
-    },
-
-    // --- Danger Zone ---
-    clearAllMilestones() {
-        this.confirmModal = {
-            show: true,
-            title: 'Delete all milestones',
-            message: 'Permanently delete all ' + this.rewards.length + ' milestones?',
-            onConfirm: async () => {
-                this.rewards = [];
-                try {
-                    await Supa.saveRewards([]);
-                } catch (e) {
-                    console.error('Failed to clear milestones:', e);
-                }
-                this.showToast('All milestones deleted');
-            }
-        };
     }
 });

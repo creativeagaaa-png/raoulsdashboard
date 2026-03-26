@@ -46,30 +46,6 @@
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <label class="text-[10px] text-muted font-bold uppercase ml-1 tracking-widest">Photo (Optional)</label>
-                <input type="file" accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
-                       @change="handlePhotoUpload($event)"
-                       id="photoFileInput"
-                       class="hidden">
-
-                <button x-show="!photoPreview"
-                        @click="document.getElementById('photoFileInput').click()"
-                        type="button"
-                        class="w-full py-3.5 rounded-xl border border-dashed border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2 text-xs text-muted hover:text-white">
-                    <i class="ph ph-image text-lg"></i>
-                    <span>Add Photo</span>
-                </button>
-
-                <div x-show="photoPreview" class="relative rounded-xl overflow-hidden">
-                    <img :src="photoPreview" class="w-full h-32 object-cover rounded-xl">
-                    <button @click="removePhotoPreview()" type="button"
-                            class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rose-500/80 transition-colors">
-                        <i class="ph ph-x text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
             <div class="grid grid-cols-2 gap-3 mt-2">
                 <button @click="closeModal()" class="py-4 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
                     Cancel

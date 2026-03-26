@@ -20,11 +20,6 @@ export const workoutMixin = () => ({
     workoutPickerExercises: [],
     workoutTrackingEnabled: true,
 
-    // --- Comparison State ---
-    workoutComparisonOpen: false,
-    workoutComparisonData: null,
-    _lastFinishedWorkout: null,
-
     // --- History Filter State ---
     workoutHistoryFilter: '',
 
@@ -60,7 +55,7 @@ export const workoutMixin = () => ({
         }
     },
 
-    // --- Open Exercise Picker (replaces direct startWorkout) ---
+    // --- Open Exercise Picker ---
     openWorkoutPicker() {
         const dayIdx = getTodayWeekdayIndex();
         const todayPlan = this.trainingPlan[dayIdx] || [];
@@ -98,7 +93,6 @@ export const workoutMixin = () => ({
             if (selectedPlan.length === 0) return;
             this.workoutPickerOpen = false;
         } else {
-            // Legacy direct start (fallback)
             const todayPlan = this.trainingPlan[dayIdx] || [];
             if (todayPlan.length === 0) return;
             selectedPlan = todayPlan;
@@ -236,9 +230,6 @@ export const workoutMixin = () => ({
         this._persistWorkout();
     },
 
-    // NOTE: workoutDuration, workoutCompletionPercent are defined as getters
-    // in main.js to preserve reactivity (spread destroys getters).
-
     // --- Complete Workout ---
     async finishWorkout() {
         if (!this.workoutSession) return;
@@ -264,12 +255,6 @@ export const workoutMixin = () => ({
             this.showToast('Failed to save workout');
         }
 
-        // Check for PRs only if tracking was enabled
-        if (session.tracked !== false && typeof this.checkPersonalRecords === 'function') {
-            await this.checkPersonalRecords(session);
-        }
-
-        this._lastFinishedWorkout = session;
         this.workoutSession = null;
         this.workoutActive = false;
         this.workoutOpen = false;
@@ -279,13 +264,7 @@ export const workoutMixin = () => ({
         if (typeof this.clearRestTimer === 'function') this.clearRestTimer();
         hapticSuccess();
         if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
-        this.showToast('Workout saved! 💪');
-    },
-
-    showPostWorkoutComparison() {
-        if (!this._lastFinishedWorkout) return;
-        this.openWorkoutComparison(this._lastFinishedWorkout);
-        this._lastFinishedWorkout = null;
+        this.showToast('Workout saved!');
     },
 
     // --- Cancel Workout ---
@@ -342,9 +321,6 @@ export const workoutMixin = () => ({
         this.workoutHistoryOpen = false;
         this.workoutHistoryFilter = '';
     },
-
-    // NOTE: filteredWorkoutHistory, workoutHistoryExerciseNames are defined as getters
-    // in main.js to preserve reactivity (spread destroys getters).
 
     deleteWorkout(wIdx) {
         const workout = this.workoutHistory[wIdx];
@@ -405,71 +381,6 @@ export const workoutMixin = () => ({
         return (workout.exercises || []).flatMap(e => e.sets || []).filter(s => s.done).length;
     },
 
-    // --- Comparison: find last workout for same exercises ---
-    getLastWorkoutForExercise(exerciseName) {
-        if (!this.workoutHistory || this.workoutHistory.length === 0) return null;
-        for (const workout of this.workoutHistory) {
-            if (workout.tracked === false) continue;
-            const ex = (workout.exercises || []).find(
-                e => e.name.toLowerCase() === exerciseName.toLowerCase() && e.tracked !== false
-            );
-            if (ex) return { exercise: ex, date: workout.date };
-        }
-        return null;
-    },
-
-    openWorkoutComparison(workout) {
-        if (!workout || !workout.exercises) return;
-
-        // Find the previous workout on the same day-type for duration comparison
-        let previousWorkout = null;
-        for (const w of this.workoutHistory) {
-            if (w.date === workout.date && w.startedAt === workout.startedAt) continue;
-            if (w.tracked === false) continue;
-            previousWorkout = w;
-            break;
-        }
-
-        const comparisons = workout.exercises
-            .filter(ex => ex.tracked !== false)
-            .map(ex => {
-                // Find the previous workout with the same exercise (excluding this one)
-                let previous = null;
-                for (const w of this.workoutHistory) {
-                    if (w.date === workout.date && w.startedAt === workout.startedAt) continue;
-                    if (w.tracked === false) continue;
-                    const prevEx = (w.exercises || []).find(
-                        e => e.name.toLowerCase() === ex.name.toLowerCase() && e.tracked !== false
-                    );
-                    if (prevEx) {
-                        previous = { exercise: prevEx, date: w.date };
-                        break;
-                    }
-                }
-                return {
-                    name: ex.name,
-                    type: ex.type || 'strength',
-                    current: ex,
-                    currentDate: workout.date,
-                    previous: previous ? previous.exercise : null,
-                    previousDate: previous ? previous.date : null
-                };
-            });
-
-        this.workoutComparisonData = {
-            workout,
-            comparisons,
-            previousWorkoutDuration: previousWorkout ? previousWorkout.durationSeconds : null,
-            previousWorkoutDate: previousWorkout ? previousWorkout.date : null
-        };
-        this.workoutComparisonOpen = true;
-    },
-
-    closeWorkoutComparison() {
-        this.workoutComparisonOpen = false;
-        this.workoutComparisonData = null;
-    },
-
     // Helper: get max weight for a strength exercise
     getExerciseMaxWeight(ex) {
         if (!ex || !ex.sets) return 0;
@@ -481,54 +392,5 @@ export const workoutMixin = () => ({
     getExerciseVolume(ex) {
         if (!ex || !ex.sets) return 0;
         return ex.sets.filter(s => s.done).reduce((sum, s) => sum + (s.weight || 0) * (s.reps || 0), 0);
-    },
-
-    // Helper: format comparison delta
-    formatDelta(current, previous) {
-        if (previous === 0 || !previous) return current > 0 ? '+' + current : '–';
-        const diff = current - previous;
-        if (diff === 0) return '±0';
-        return (diff > 0 ? '+' : '') + diff.toFixed(1);
-    },
-
-    // Helper: parse duration string (e.g. "25 min", "1:30:00", "45") to minutes
-    parseDurationMinutes(str) {
-        if (!str) return 0;
-        str = String(str).trim();
-        // "HH:MM:SS" or "MM:SS"
-        if (str.includes(':')) {
-            const parts = str.split(':').map(Number);
-            if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
-            if (parts.length === 2) return parts[0] + parts[1] / 60;
-        }
-        // "25 min" or just "25"
-        const num = parseFloat(str);
-        return isNaN(num) ? 0 : num;
-    },
-
-    // Helper: parse distance string to number
-    parseDistance(str) {
-        if (!str) return 0;
-        const num = parseFloat(String(str).replace(',', '.'));
-        return isNaN(num) ? 0 : num;
-    },
-
-    // Helper: get completed rounds count for circuit
-    getCircuitRoundsCompleted(ex) {
-        if (!ex || !ex.rounds) return 0;
-        return ex.rounds.filter(r => r.done).length;
-    },
-
-    // Helper: get total rounds for circuit
-    getCircuitRoundsTotal(ex) {
-        if (!ex || !ex.rounds) return 0;
-        return ex.rounds.length;
-    },
-
-    // Helper: format duration seconds to "X Min"
-    formatDurationCompare(seconds) {
-        if (!seconds) return '–';
-        const mins = Math.floor(seconds / 60);
-        return mins + ' Min';
     }
 });
