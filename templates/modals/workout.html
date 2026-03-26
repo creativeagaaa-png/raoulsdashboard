@@ -1,7 +1,7 @@
 <!-- Workout Session Modal -->
 <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-mobile-sheet"
      :class="workoutOpen ? 'pointer-events-auto' : 'pointer-events-none'"
-     role="dialog" aria-modal="true" aria-label="Workout Session">
+     role="dialog" aria-modal="true" aria-label="Workout-Sitzung">
 
     <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
          x-show="workoutOpen"
@@ -30,7 +30,7 @@
                         <div class="flex items-center gap-2">
                             <p class="text-[10px] text-muted uppercase tracking-widest font-mono" x-text="workoutDuration"></p>
                             <span x-show="workoutSession && workoutSession.tracked === false"
-                                  class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-yellow-500/15 text-yellow-400">Without Tracking</span>
+                                  class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-yellow-500/15 text-yellow-400">Ohne Tracking</span>
                         </div>
                     </div>
                 </div>
@@ -45,7 +45,7 @@
                 <div class="h-full bg-emerald-500 rounded-full transition-all duration-500 ease-out" :style="`width: ${workoutCompletionPercent}%`"></div>
             </div>
             <div class="flex justify-between mt-1.5">
-                <span class="text-[10px] text-muted font-mono" x-text="workoutCompletionPercent + '% completed'"></span>
+                <span class="text-[10px] text-muted font-mono" x-text="workoutCompletionPercent + '% abgeschlossen'"></span>
             </div>
         </div>
 
@@ -66,10 +66,10 @@
                                               'bg-blue-500/15 text-blue-400': exercise.type === 'distance',
                                               'bg-violet-500/15 text-violet-400': exercise.type === 'circuit'
                                           }"
-                                          x-text="exercise.type === 'cardio' ? 'Cardio' : (exercise.type === 'circuit' ? 'Circuit' : 'Distance')"></span>
+                                          x-text="exercise.type === 'cardio' ? 'Cardio' : (exercise.type === 'circuit' ? 'Zirkel' : 'Distanz')"></span>
                                 </div>
                                 <span class="text-[10px] font-mono text-muted"
-                                      x-text="(exercise.type || 'strength') === 'strength' ? exercise.planned_sets + 'x' + exercise.planned_reps + (exercise.planned_weight ? ' · ' + exercise.planned_weight + 'kg' : '') : (exercise.type === 'cardio' ? (exercise.planned_duration || '') : (exercise.type === 'circuit' ? (exercise.planned_rounds + ' Rounds') : ((exercise.planned_distance || '') + ' km')))"></span>
+                                      x-text="(exercise.type || 'strength') === 'strength' ? exercise.planned_sets + 'x' + exercise.planned_reps + (exercise.planned_weight ? ' · ' + exercise.planned_weight + 'kg' : '') : (exercise.type === 'cardio' ? (exercise.planned_duration || '') : (exercise.type === 'circuit' ? (exercise.planned_rounds + ' Runden') : ((exercise.planned_distance || '') + ' km')))"></span>
                             </div>
                             <p x-show="exercise.note" class="text-[10px] text-muted mt-0.5" x-text="exercise.note"></p>
                         </div>
@@ -77,9 +77,9 @@
                         <!-- TRACKED: Strength: Sets with weight/reps -->
                         <div x-show="(exercise.type || 'strength') === 'strength' && exercise.tracked !== false" class="px-4 py-2 space-y-1.5">
                             <div class="grid grid-cols-[2rem,1fr,1fr,2.5rem] gap-2 text-[9px] text-muted uppercase tracking-wider font-bold px-1">
-                                <span>Set</span>
+                                <span>Satz</span>
                                 <span>Kg</span>
-                                <span>Reps</span>
+                                <span>Wdh.</span>
                                 <span></span>
                             </div>
                             <template x-for="(set, setIdx) in exercise.sets" :key="setIdx">
@@ -104,14 +104,14 @@
                             </template>
                             <button @click="addWorkoutSet(exIdx)"
                                     class="w-full py-2 rounded-lg border border-dashed border-[var(--glass-border)] text-[11px] text-muted hover:text-foreground hover:border-[var(--glass-hover)] transition-all">
-                                + Add Set
+                                + Satz hinzufügen
                             </button>
                         </div>
 
                         <!-- UNTRACKED: Strength (just a done toggle) -->
                         <div x-show="(exercise.type || 'strength') === 'strength' && exercise.tracked === false" class="px-4 py-3">
                             <div class="flex items-center justify-between">
-                                <p class="text-xs text-muted" x-text="exercise.planned_sets + ' Sets x ' + exercise.planned_reps + ' Reps'"></p>
+                                <p class="text-xs text-muted" x-text="exercise.planned_sets + ' Sätze × ' + exercise.planned_reps + ' Wdh.'"></p>
                                 <button @click="toggleExerciseDone(exIdx)"
                                         class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90"
                                         :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
@@ -124,7 +124,7 @@
                         <div x-show="exercise.type === 'cardio' && exercise.tracked !== false" class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="flex-1">
-                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Duration</label>
+                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Dauer</label>
                                     <input type="text" x-model="exercise.duration"
                                            class="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:border-emerald-500/40 transition-colors"
                                            :class="exercise.done && 'opacity-50'"
@@ -154,14 +154,14 @@
                         <div x-show="exercise.type === 'distance' && exercise.tracked !== false" class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="flex-1">
-                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Distance</label>
+                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Distanz</label>
                                     <input type="text" x-model="exercise.distance"
                                            class="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:border-emerald-500/40 transition-colors"
                                            :class="exercise.done && 'opacity-50'"
                                            :placeholder="(exercise.planned_distance || '5') + ' km'">
                                 </div>
                                 <div class="flex-1">
-                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Duration</label>
+                                    <label class="text-[9px] text-muted uppercase font-bold mb-1 block">Dauer</label>
                                     <input type="text" x-model="exercise.duration"
                                            class="w-full bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-foreground font-mono focus:outline-none focus:border-emerald-500/40 transition-colors"
                                            :class="exercise.done && 'opacity-50'"
@@ -191,7 +191,7 @@
                         <div x-show="exercise.type === 'circuit' && exercise.tracked !== false" class="px-4 py-2">
                             <!-- Circuit exercises overview -->
                             <div x-show="exercise.circuitExercises && exercise.circuitExercises.length > 0" class="mb-2 pb-2 border-b border-[var(--glass-border)]">
-                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Exercises per round:</p>
+                                <p class="text-[9px] text-muted uppercase tracking-wider font-bold mb-1">Übungen pro Runde:</p>
                                 <div class="space-y-0.5">
                                     <template x-for="(ce, ceIdx) in exercise.circuitExercises" :key="'ce-'+ceIdx">
                                         <div class="flex items-center gap-2 text-[10px]">
@@ -208,7 +208,7 @@
                             <div class="space-y-1.5">
                                 <template x-for="(round, roundIdx) in exercise.rounds" :key="'round-'+roundIdx">
                                     <div class="flex items-center justify-between py-1.5 px-2 rounded-lg" :class="round.done ? 'bg-emerald-500/5' : ''">
-                                        <span class="text-xs font-bold text-muted" x-text="'Round ' + (roundIdx + 1)"></span>
+                                        <span class="text-xs font-bold text-muted" x-text="'Runde ' + (roundIdx + 1)"></span>
                                         <button @click="toggleCircuitRound(exIdx, roundIdx)"
                                                 class="w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-90"
                                                 :class="round.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
@@ -222,7 +222,7 @@
                         <!-- UNTRACKED: Circuit (just a done toggle) -->
                         <div x-show="exercise.type === 'circuit' && exercise.tracked === false" class="px-4 py-3">
                             <div class="flex items-center justify-between">
-                                <p class="text-xs text-muted" x-text="exercise.planned_rounds + ' Rounds'"></p>
+                                <p class="text-xs text-muted" x-text="exercise.planned_rounds + ' Runden'"></p>
                                 <button @click="toggleExerciseDone(exIdx)"
                                         class="w-10 h-10 rounded-lg flex items-center justify-center transition-all active:scale-90"
                                         :class="exercise.done ? 'bg-emerald-500 text-white' : 'bg-[var(--glass)] border border-[var(--glass-border)] text-muted hover:text-foreground'">
@@ -255,7 +255,7 @@
                     </div>
                 </div>
                 <div class="flex-1">
-                    <p class="text-[10px] text-muted uppercase tracking-widest font-bold mb-2">Rest</p>
+                    <p class="text-[10px] text-muted uppercase tracking-widest font-bold mb-2">Pause</p>
                     <div class="flex gap-1.5">
                         <template x-for="dur in [60, 90, 120, 180]" :key="dur">
                             <button @click="setRestDuration(dur)"
@@ -274,10 +274,10 @@
         <!-- Footer -->
         <div class="p-5 border-t border-[var(--glass-border)] bg-surface z-20 flex gap-3 shrink-0">
             <button type="button" @click="cancelWorkout()" class="flex-1 py-3.5 rounded-xl border border-[var(--glass-border)] text-muted font-bold text-xs hover:bg-[var(--glass)] active:scale-[0.97] transition-all">
-                Cancel
+                Abbrechen
             </button>
             <button type="button" @click="finishWorkout()" class="flex-1 py-3.5 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 active:scale-[0.97] transition-all shadow-lg shadow-emerald-500/20">
-                Finish Workout
+                Workout beenden
             </button>
         </div>
     </div>

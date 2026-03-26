@@ -2,7 +2,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-sheet"
      x-show="modalOpen" x-cloak
      @keydown.tab.window="modalOpen && trapFocus($event, $el)"
-     role="dialog" aria-modal="true" aria-label="Log weight entry">
+     role="dialog" aria-modal="true" aria-label="Gewicht eintragen">
 
     <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
          x-show="modalOpen"
@@ -20,15 +20,15 @@
         <div class="flex justify-center -mt-4 mb-2 md:hidden"><div class="w-10 h-1 rounded-full bg-white/15"></div></div>
 
         <div class="flex justify-between items-center mb-8">
-            <span class="text-xs font-bold text-muted uppercase tracking-widest">New Entry</span>
-            <button @click="closeModal()" aria-label="Close dialog" class="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-muted hover:text-white transition-colors">
+            <span class="text-xs font-bold text-muted uppercase tracking-widest">Neuer Eintrag</span>
+            <button @click="closeModal()" aria-label="Dialog schließen" class="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-muted hover:text-white transition-colors">
                 <i class="ph ph-x text-sm" aria-hidden="true"></i>
             </button>
         </div>
 
         <div class="flex flex-col gap-8">
             <div class="relative group text-center">
-                <label for="weightInput" class="block text-[10px] text-muted font-bold uppercase mb-4 tracking-widest">Weight Today</label>
+                <label for="weightInput" class="block text-[10px] text-muted font-bold uppercase mb-4 tracking-widest">Gewicht heute</label>
                 <div class="flex items-baseline justify-center gap-2 pb-2 transition-colors">
                     <input type="text" x-model="inputWeight" inputmode="decimal" id="weightInput"
                            @keydown.enter="addEntry()"
@@ -39,7 +39,7 @@
             </div>
 
             <div class="space-y-2">
-                 <label for="dateInput" class="text-[10px] text-muted font-bold uppercase ml-1">Date</label>
+                 <label for="dateInput" class="text-[10px] text-muted font-bold uppercase ml-1">Datum</label>
                 <div class="bg-black/20 rounded-xl px-4 py-3 flex items-center gap-3 border border-white/5 hover:border-white/10 focus-within:border-white/20 transition-all">
                     <i class="ph ph-calendar text-muted"></i>
                     <input type="date" x-model="inputDate" id="dateInput" class="bg-transparent border-none focus:outline-none text-white w-full font-sans text-sm font-medium">
@@ -48,10 +48,10 @@
 
             <div class="grid grid-cols-2 gap-3 mt-2">
                 <button @click="closeModal()" class="py-4 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
-                    Cancel
+                    Abbrechen
                 </button>
                 <button @click="addEntry()" class="py-4 rounded-xl bg-white text-black font-bold text-xs hover:bg-gray-200 active:scale-[0.97] transition-all shadow-lg shadow-white/5">
-                    Save Entry
+                    Eintrag speichern
                 </button>
             </div>
         </div>

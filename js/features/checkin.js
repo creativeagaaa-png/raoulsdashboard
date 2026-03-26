@@ -184,10 +184,12 @@ export const checkinMixin = () => ({
         this.checklistItems.push({ key, label: label.trim() });
         this.todayCheckin.push({ key, label: label.trim(), checked: false });
         this.newCheckinLabel = '';
+        this.saveSettings();
     },
 
     removeCheckinItem(key) {
         this.checklistItems = this.checklistItems.filter(i => i.key !== key);
         this.todayCheckin = this.todayCheckin.filter(i => i.key !== key);
+        this.saveSettings();
     }
 });

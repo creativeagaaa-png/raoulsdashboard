@@ -1,7 +1,7 @@
 <!-- Settings / Danger Zone Modal -->
 <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-mobile-sheet"
      :class="settingsOpen ? 'pointer-events-auto' : 'pointer-events-none'"
-     role="dialog" aria-modal="true" aria-label="Settings">
+     role="dialog" aria-modal="true" aria-label="Einstellungen">
 
     <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
          x-show="settingsOpen"
@@ -22,7 +22,7 @@
                 <div class="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-white/60 border border-white/5">
                     <i class="ph ph-gear text-lg"></i>
                 </div>
-                <h2 class="text-lg font-bold text-white">Settings</h2>
+                <h2 class="text-lg font-bold text-white">Einstellungen</h2>
             </div>
             <button type="button" @click="closeSettings()" class="text-muted hover:text-white transition-colors p-2 -mr-2 hover:bg-white/5 rounded-xl">
                 <i class="ph ph-x text-lg"></i>
@@ -31,22 +31,22 @@
 
         <div class="overflow-y-auto p-6 space-y-8 custom-scrollbar">
             <section>
-                <h3 class="text-xs font-bold text-rose-400/80 uppercase tracking-widest mb-4">Danger Zone</h3>
+                <h3 class="text-xs font-bold text-rose-400/80 uppercase tracking-widest mb-4">Gefahrenzone</h3>
                 <div class="space-y-3">
                     <button type="button" @click="clearAllEntries()"
                             class="w-full py-3.5 rounded-xl border border-rose-500/20 text-rose-400 font-bold text-xs hover:bg-rose-500/10 hover:border-rose-500/40 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
                         <i class="ph ph-trash text-sm"></i>
-                        Delete all weight entries
+                        Alle Gewichtseinträge löschen
                     </button>
                     <button type="button" @click="clearAllWorkouts()"
                             class="w-full py-3.5 rounded-xl border border-rose-500/20 text-rose-400 font-bold text-xs hover:bg-rose-500/10 hover:border-rose-500/40 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
                         <i class="ph ph-barbell text-sm"></i>
-                        Delete all workouts
+                        Alle Workouts löschen
                     </button>
                     <button type="button" @click="resetData()"
                             class="w-full py-3.5 rounded-xl border border-rose-500/20 text-rose-400 font-bold text-xs hover:bg-rose-500/10 hover:border-rose-500/40 active:scale-[0.97] transition-all flex items-center justify-center gap-2">
                         <i class="ph ph-warning text-sm"></i>
-                        Delete all data (Full Reset)
+                        Alle Daten löschen (Zurücksetzen)
                     </button>
                 </div>
             </section>
@@ -54,7 +54,7 @@
 
         <div class="p-6 border-t border-white/5 bg-surface z-20 shrink-0">
             <button type="button" @click="closeSettings()" class="w-full py-3.5 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
-                Close
+                Schließen
             </button>
         </div>
     </div>

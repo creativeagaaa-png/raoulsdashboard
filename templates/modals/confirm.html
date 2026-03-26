@@ -21,9 +21,9 @@
         <p class="text-muted text-xs mb-6" x-text="confirmModal.message"></p>
         <div class="grid grid-cols-2 gap-2">
             <button type="button" @click="cancelConfirm()" class="py-3 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
-                Cancel
+                Abbrechen
             </button>
-            <button type="button" @click="confirmAction()" class="py-3 rounded-xl bg-rose-500 text-white font-bold text-xs hover:bg-rose-600 active:scale-[0.97] transition-all" x-text="confirmModal.confirmLabel || 'Delete'">
+            <button type="button" @click="confirmAction()" class="py-3 rounded-xl bg-rose-500 text-white font-bold text-xs hover:bg-rose-600 active:scale-[0.97] transition-all" x-text="confirmModal.confirmLabel || 'Löschen'">
             </button>
         </div>
     </div>
