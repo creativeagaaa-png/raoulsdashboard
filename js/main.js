@@ -1,7 +1,7 @@
 import Alpine from 'alpinejs';
 import { Chart, registerables } from 'chart.js';
 
-import { DEFAULT_PROFILE, WEEKDAYS, WEEKDAY_SHORT } from './utils/constants.js';
+import { DEFAULT_PROFILE, WEEKDAYS, WEEKDAY_SHORT, ACTIVITY_LEVELS } from './utils/constants.js';
 import { getTodayWeekdayIndex, getLocalDateString } from './utils/formatting.js';
 import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './utils/analytics.js';
 import * as Supa from './store/supabase.js';
@@ -9,6 +9,8 @@ import { settingsMixin } from './store/settings.js';
 import { trainingMixin } from './features/training.js';
 import { workoutMixin } from './features/workout.js';
 import { restTimerMixin } from './features/rest-timer.js';
+import { caloriesMixin } from './features/calories.js';
+import { checkinMixin } from './features/checkin.js';
 import { hapticLight, hapticMedium, hapticSuccess, hapticWarning, hapticSelection } from './utils/haptics.js';
 import { registerSwipeDismiss } from './utils/swipe-dismiss.js';
 
@@ -57,6 +59,10 @@ function app() {
         goalDate: null,
         userHeight: DEFAULT_PROFILE.userHeight,
         userAge: DEFAULT_PROFILE.userAge,
+        gender: null,
+        activityLevel: 'moderately_active',
+        weeklyGoalRate: 0,
+        checklistItems: [...DEFAULT_PROFILE.checklistItems],
 
         history: [],
         chartFilter: '1M',
@@ -124,11 +130,14 @@ function app() {
         ...trainingMixin(),
         ...workoutMixin(),
         ...restTimerMixin(),
+        ...caloriesMixin(),
+        ...checkinMixin(),
 
         // --- MIXIN GETTERS (must be defined here, not in mixins, because spread destroys getters) ---
 
         // Expose constants to template
         WEEKDAY_SHORT,
+        ACTIVITY_LEVELS,
 
         // Training day navigation state
         trainingDayOffset: 0,
@@ -251,6 +260,10 @@ function app() {
                     this.goalDate = settings.goal_date || null;
                     this.userHeight = settings.user_height != null ? parseInt(settings.user_height) : DEFAULT_PROFILE.userHeight;
                     this.userAge = settings.user_age != null ? parseInt(settings.user_age) : DEFAULT_PROFILE.userAge;
+                    this.gender = settings.gender || null;
+                    this.activityLevel = settings.activity_level || 'moderately_active';
+                    this.weeklyGoalRate = settings.weekly_goal_rate != null ? Number(settings.weekly_goal_rate) : 0;
+                    this.checklistItems = settings.checklist_items || [...DEFAULT_PROFILE.checklistItems];
                 }
 
                 // Apply training plan
@@ -269,11 +282,17 @@ function app() {
             } catch (e) {
                 console.error('Failed to initialize app:', e);
                 this._initFailed = true;
-                this.showToast('Failed to load data — check your connection');
+                this.showToast('Daten konnten nicht geladen werden — Verbindung prüfen');
             }
 
             // Restore active workout from localStorage (crash recovery)
             this.restoreWorkoutFromStorage();
+
+            // Kalorien berechnen
+            this.recalculateCalories();
+
+            // Checkins laden
+            try { await this.loadCheckins(); } catch(e) { console.error('Failed to load checkins:', e); }
 
             this.$nextTick(() => {
                 this.renderChart();
@@ -407,12 +426,18 @@ function app() {
                     this.goalDate = settings.goal_date || null;
                     this.userHeight = settings.user_height != null ? parseInt(settings.user_height) : DEFAULT_PROFILE.userHeight;
                     this.userAge = settings.user_age != null ? parseInt(settings.user_age) : DEFAULT_PROFILE.userAge;
+                    this.gender = settings.gender || null;
+                    this.activityLevel = settings.activity_level || 'moderately_active';
+                    this.weeklyGoalRate = settings.weekly_goal_rate != null ? Number(settings.weekly_goal_rate) : 0;
+                    this.checklistItems = settings.checklist_items || [...DEFAULT_PROFILE.checklistItems];
                 }
                 if (trainingPlan) this.trainingPlan = trainingPlan;
                 this.history = (weightEntries && weightEntries.length > 0) ? weightEntries : [];
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
                 this.workoutHistory = workoutLogs || [];
                 this.workoutHistoryLoaded = true;
+                this.recalculateCalories();
+                try { await this.loadCheckins(); } catch(e) {}
                 this._initFailed = false;
 
                 this.$nextTick(() => {
@@ -420,10 +445,10 @@ function app() {
                     this.refreshAnimations();
                 });
 
-                this.showToast('Dashboard refreshed');
+                this.showToast('Dashboard aktualisiert');
             } catch (e) {
                 console.error('Failed to refresh dashboard:', e);
-                this.showToast('Failed to refresh');
+                this.showToast('Aktualisierung fehlgeschlagen');
             }
         },
 
@@ -457,12 +482,13 @@ function app() {
             try {
                 await Supa.upsertWeightEntry(entryDate, w);
                 hapticSuccess();
-                this.showToast(w.toFixed(1) + ' kg saved');
+                this.recalculateCalories();
+                this.showToast(w.toFixed(1) + ' kg gespeichert');
             } catch (e) {
-                console.error('Failed to save entry:', e);
+                console.error('Eintrag speichern fehlgeschlagen:', e);
                 // Rollback on failure
                 this.history = previousHistory;
-                this.showToast('Failed to save');
+                this.showToast('Fehler beim Speichern');
             }
 
             this.$nextTick(() => {
@@ -509,20 +535,24 @@ function app() {
             } catch (e) {
                 console.error('Failed to save quick entry:', e);
                 this.history = previousHistory;
-                this.showToast('Failed to save');
+                this.showToast('Fehler beim Speichern');
                 saved = false;
             }
 
             this.$nextTick(() => {
-                this.updateChart();
-                this.refreshAnimations();
-                this._saving = false;
+                try {
+                    this.updateChart();
+                    this.refreshAnimations();
+                } finally {
+                    this._saving = false;
+                }
             });
 
             this.quickLogWeight = null;
             if (saved) {
                 hapticSuccess();
-                this.showToast(w.toFixed(1) + ' kg saved');
+                this.recalculateCalories();
+                this.showToast(w.toFixed(1) + ' kg gespeichert');
             }
         },
 
@@ -536,13 +566,13 @@ function app() {
 
             Supa.deleteWeightEntry(removed.date).catch(e => {
                 console.error('Failed to delete entry:', e);
-                this.showToast('Failed to delete');
+                this.showToast('Fehler beim Löschen');
             });
 
             try { this.updateChart(); } catch (e) {}
             this.refreshAnimations();
 
-            this.showToast('Entry deleted', () => {
+            this.showToast('Eintrag gelöscht', () => {
                 this.history.push(removed);
                 this.history.sort((a, b) => a.date.localeCompare(b.date));
                 Supa.upsertWeightEntry(removed.date, removed.weight).catch(e => console.error('Failed to restore entry:', e));
@@ -554,8 +584,8 @@ function app() {
         clearAllEntries() {
             this.confirmModal = {
                 show: true,
-                title: 'Delete all entries',
-                message: 'Delete all ' + this.history.length + ' weight entries?',
+                title: 'Alle Einträge löschen',
+                message: this.history.length + ' Gewichtseinträge löschen?',
                 onConfirm: async () => {
                     this.history = [];
                     try {
@@ -568,7 +598,7 @@ function app() {
                     }
                     this.updateChart();
                     this.refreshAnimations();
-                    this.showToast('All entries deleted');
+                    this.showToast('Alle Einträge gelöscht');
                 }
             };
         },
@@ -576,21 +606,21 @@ function app() {
         resetData() {
             this.confirmModal = {
                 show: true,
-                title: 'Full Reset',
-                message: 'Delete all data including settings and training?',
+                title: 'Vollständiger Reset',
+                message: 'Alle Daten inklusive Einstellungen und Training löschen?',
                 onConfirm: async () => {
                     try {
                         await Promise.all([
                             Supa.clearAllWeightEntries(),
                             Supa.saveSettings({
-                                startWeight: 0,
-                                goalWeight: 0,
-                                goalDate: null,
-                                userHeight: 0,
-                                userAge: 0
+                                startWeight: 0, goalWeight: 0, goalDate: null,
+                                userHeight: 0, userAge: 0,
+                                gender: null, activityLevel: 'moderately_active',
+                                weeklyGoalRate: 0, checklistItems: DEFAULT_PROFILE.checklistItems
                             }),
                             Supa.saveTrainingPlan(Array.from({ length: 7 }, () => [])),
-                            Supa.clearAllWorkoutLogs()
+                            Supa.clearAllWorkoutLogs(),
+                            Supa.clearAllCheckins()
                         ]);
                     } catch (e) {
                         console.error('Failed to reset data:', e);
@@ -608,11 +638,19 @@ function app() {
                     this.userAge = 0;
                     this.trainingPlan = Array.from({ length: 7 }, () => []);
                     this.workoutHistory = [];
+                    this.gender = null;
+                    this.activityLevel = 'moderately_active';
+                    this.weeklyGoalRate = 0;
+                    this.checklistItems = [...DEFAULT_PROFILE.checklistItems];
+                    this.calorieData = { bmr: 0, tdee: 0, adjustment: 0, target: 0, isClamped: false, mode: 'maintenance' };
+                    this.todayCheckin = [];
+                    this.checkinHistory = [];
+                    this.checkinStreak = 0;
 
                     this.settingsOpen = false;
                     this.updateChart();
                     this.refreshAnimations();
-                    this.showToast('All data deleted');
+                    this.showToast('Alle Daten gelöscht');
                 }
             };
         },
@@ -865,7 +903,7 @@ function app() {
             const goalLineData = this.buildGoalLineData(data);
 
             const datasets = [{
-                label: 'Weight',
+                label: 'Gewicht',
                 data: weights,
                 borderColor: getCSSVar('--text-primary') || '#fff',
                 borderWidth: 2,
@@ -876,7 +914,7 @@ function app() {
                 pointHoverRadius: 6,
                 pointHitRadius: 20
             }, {
-                label: '7-Day Avg',
+                label: '7-Tage Ø',
                 data: movingAvg,
                 borderColor: 'rgba(129, 140, 248, 0.5)',
                 borderWidth: 1.5,
@@ -887,7 +925,7 @@ function app() {
 
             if (goalLineData) {
                 datasets.push({
-                    label: 'Goal Line',
+                    label: 'Ziellinie',
                     data: goalLineData,
                     borderColor: 'rgba(16, 185, 129, 0.45)',
                     borderWidth: 1.5,
@@ -901,7 +939,7 @@ function app() {
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.map(h => new Date(h.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' })),
+                    labels: data.map(h => new Date(h.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })),
                     datasets
                 },
                 options: {
@@ -922,7 +960,7 @@ function app() {
                             displayColors: false,
                             callbacks: {
                                 label: (ctx) => {
-                                    if (ctx.dataset.label === 'Goal Line') return null;
+                                    if (ctx.dataset.label === 'Ziellinie') return null;
                                     return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + ' kg';
                                 }
                             }
@@ -943,19 +981,19 @@ function app() {
                         const data = this.getRawChartData();
                         const weights = data.map(h => h.weight);
                         if (!chartInstance) return;
-                        chartInstance.data.labels = data.map(h => new Date(h.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' }));
+                        chartInstance.data.labels = data.map(h => new Date(h.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }));
                         chartInstance.data.datasets[0].data = weights;
                         if (chartInstance.data.datasets[1]) {
                             chartInstance.data.datasets[1].data = this.computeMovingAverage(weights, 7);
                         }
                         const goalLineData = this.buildGoalLineData(data);
-                        const goalDatasetIdx = chartInstance.data.datasets.findIndex(d => d.label === 'Goal Line');
+                        const goalDatasetIdx = chartInstance.data.datasets.findIndex(d => d.label === 'Ziellinie');
                         if (goalLineData) {
                             if (goalDatasetIdx >= 0) {
                                 chartInstance.data.datasets[goalDatasetIdx].data = goalLineData;
                             } else {
                                 chartInstance.data.datasets.push({
-                                    label: 'Goal Line',
+                                    label: 'Ziellinie',
                                     data: goalLineData,
                                     borderColor: 'rgba(16, 185, 129, 0.45)',
                                     borderWidth: 1.5,
