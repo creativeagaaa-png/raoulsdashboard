@@ -394,7 +394,7 @@
 
         <!-- Plan Tab -->
         <template x-if="activeTab === 'plan'">
-            <div class="space-y-3 animate-slide-up">
+            <div class="space-y-3 animate-fade-in">
                 <!-- Leerer Zustand: Profil nicht vollständig -->
                 <template x-if="!gender || !userHeight || !userAge">
                     <div class="bento-card p-8 text-center">
@@ -495,7 +495,7 @@
 
         <!-- Habits Tab -->
         <template x-if="activeTab === 'habits'">
-            <div class="space-y-3 animate-slide-up">
+            <div class="space-y-3 animate-fade-in">
                 <!-- Streak Hero -->
                 <div class="bento-card p-6 text-center">
                     <p class="text-[10px] text-amber-400 uppercase font-bold tracking-widest mb-1">Aktuelle Serie</p>
@@ -592,8 +592,7 @@
         </template>
 
         <!-- Bottom Tab Bar -->
-        <nav class="fixed bottom-0 left-0 right-0 z-40"
-             style="background: rgba(10,10,10,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.06); padding-bottom: env(safe-area-inset-bottom);">
+        <nav class="fixed bottom-0 left-0 right-0 z-40 bottom-tab-bar">
             <div class="flex justify-around items-center max-w-lg mx-auto px-2 py-1">
                 <button @click="switchTab('health')" class="flex flex-col items-center py-2 px-3 min-w-[64px] transition-all duration-200"
                         :class="activeTab === 'health' ? 'text-emerald-500' : 'text-gray-400'">

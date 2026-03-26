@@ -38,6 +38,15 @@
     --btn-primary-color: #000000;
     --scrollbar-thumb: #27272a;
     --scrollbar-hover: #3f3f46;
+    --accent-health: #34c759;
+    --accent-training: #0a84ff;
+    --accent-habits: #f59e0b;
+    --accent-danger: #ff6b6b;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
 }
 
 @media (prefers-color-scheme: light) {
@@ -65,6 +74,10 @@
         --btn-primary-color: #ffffff;
         --scrollbar-thumb: #d1d5db;
         --scrollbar-hover: #9ca3af;
+        --accent-health: #34c759;
+        --accent-training: #007aff;
+        --accent-habits: #f59e0b;
+        --accent-danger: #ef4444;
     }
 }
 
@@ -167,7 +180,7 @@ body {
 /* Mobile FAB (Floating Action Button) */
 .mobile-fab {
     position: fixed;
-    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    bottom: calc(5rem + env(safe-area-inset-bottom));
     right: 1.5rem;
     z-index: 40;
     width: 60px;
@@ -706,6 +719,44 @@ input[type="number"] {
     0% { transform: translateX(-100%); }
     50% { transform: translateX(200%); }
     100% { transform: translateX(-100%); }
+}
+
+/* Bottom Tab Bar */
+.bottom-tab-bar {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Fade-In Animation */
+.animate-fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton Loading */
+.skeleton {
+    background: linear-gradient(90deg, var(--surface-highlight) 25%, var(--surface) 50%, var(--surface-highlight) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-md, 12px);
+}
+
+/* Checkbox Bounce */
+.check-bounce {
+    animation: checkBounce 0.2s ease;
+}
+
+@keyframes checkBounce {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 @media (prefers-color-scheme: light) {
