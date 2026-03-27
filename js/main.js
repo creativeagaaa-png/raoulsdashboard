@@ -703,12 +703,16 @@ function app() {
             try { await this.loadPushState(); } catch(e) { console.error('Failed to load push state:', e); }
 
             this.$nextTick(() => {
-                this.renderChart();
-                this.refreshAnimations();
                 this.appLoaded = true;
-                this.initPullToRefresh();
-                this.handleShortcutAction();
-                this.updateThemeColor();
+                try {
+                    this.renderChart();
+                    this.refreshAnimations();
+                    this.initPullToRefresh();
+                    this.handleShortcutAction();
+                    this.updateThemeColor();
+                } catch (e) {
+                    console.error('Post-load init error:', e);
+                }
             });
         },
 
