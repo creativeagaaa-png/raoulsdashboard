@@ -1,12 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <rect width="512" height="512" rx="96" fill="#050505"/>
   <rect x="8" y="8" width="496" height="496" rx="88" stroke="white" stroke-opacity="0.1" stroke-width="2" fill="none"/>
-  <g transform="translate(256, 256)">
-    <!-- Heart/Health symbol -->
-    <path d="M0-60 C-30-90 -80-80 -80-45 C-80-10 -40 30 0 70 C40 30 80-10 80-45 C80-80 30-90 0-60Z" fill="white" opacity="0.9"/>
-    <!-- Pulse line -->
-    <path d="M-120 0 L-60 0 L-40-35 L-15 40 L10-50 L35 25 L50 0 L120 0" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+  <g transform="translate(256, 220)">
+    <!-- Lightning bolt / Action symbol -->
+    <path d="M15-100 L-35 10 L5 10 L-15 100 L55-15 L15-15 Z" fill="white" opacity="0.9"/>
+    <!-- Circular track/progress arc -->
+    <circle cx="0" cy="0" r="85" stroke="white" stroke-width="5" fill="none" opacity="0.15"/>
+    <path d="M0-85 A85 85 0 1 1-60 60" stroke="white" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.5"/>
   </g>
   <!-- Text -->
-  <text x="256" y="420" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="64" fill="white" opacity="0.8">HEALTH</text>
+  <text x="256" y="430" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="56" fill="white" opacity="0.8">TrAction</text>
 </svg>

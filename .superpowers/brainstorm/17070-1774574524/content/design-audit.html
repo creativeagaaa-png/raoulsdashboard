@@ -1,0 +1,117 @@
+<h2>Design Audit: Trainingsbereich</h2>
+<p class="subtitle">Analyse der gefundenen Inkonsistenzen und Redesign-Bereiche</p>
+
+<div class="section">
+  <h3>🔍 Identifizierte Probleme</h3>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="color" onclick="toggleSelect(this)">
+    <div class="letter" style="background: #10b981; color: white;">1</div>
+    <div class="content">
+      <h3>Farbinkonsistenz: Emerald vs Blue</h3>
+      <p>Training-Modal nutzt <span style="color:#10b981; font-weight:bold">Emerald/Grün</span> für Akzente, aber der Training-Tab und <code>--accent-training</code> definieren <span style="color:#0a84ff; font-weight:bold">Blue (#0a84ff)</span> als Trainingsfarbe. Das erzeugt einen visuellen Bruch.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="inputs" onclick="toggleSelect(this)">
+    <div class="letter" style="background: #f59e0b; color: white;">2</div>
+    <div class="content">
+      <h3>Input-Größen: Cramped vs Standard</h3>
+      <p>Inline-Übungsfelder im Training-Modal nutzen <code>text-[11px] w-10 py-0.5</code> — viel kleiner als der Standard (<code>px-4 py-3 rounded-xl</code>). Schwer zu bedienen auf Touch-Geräten.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="settings" onclick="toggleSelect(this)">
+    <div class="letter" style="background: #ef4444; color: white;">3</div>
+    <div class="content">
+      <h3>Settings-Modal: Zu minimalistisch</h3>
+      <p>Enthält nur eine "Gefahrenzone" mit Lösch-Buttons. Kein Zugang zum Trainingsplan. Kein visueller Unterschied zu einem Confirm-Dialog.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="tokens" onclick="toggleSelect(this)">
+    <div class="letter" style="background: #8b5cf6; color: white;">4</div>
+    <div class="content">
+      <h3>Hardcoded vs Design Tokens</h3>
+      <p>Manche Modals nutzen <code>bg-[#050505]/90</code> und <code>border-white/10</code>, andere nutzen <code>var(--backdrop)</code> und <code>var(--glass-border)</code>. Inkonsistente Token-Nutzung über alle Templates.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="lang" onclick="toggleSelect(this)">
+    <div class="letter" style="background: #06b6d4; color: white;">5</div>
+    <div class="content">
+      <h3>Sprache: Englisch-Reste</h3>
+      <p>Übung-hinzufügen Buttons zeigen "Add" statt "Hinzufügen". Inkonsistent mit der komplett deutschen UI.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="exercise-icons" onclick="toggleSelect(this)">
+    <div class="letter" style="background: #f97316; color: white;">6</div>
+    <div class="content">
+      <h3>Icon-Farben: Orange vs Blue</h3>
+      <p>Übungsliste im Training-Tab nutzt <code>orange-500</code> für Icons, obwohl Training-Akzent blue ist. Workout-Picker nutzt emerald. Drei verschiedene Farben für denselben Kontext.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <h3>📊 Konsistenz-Matrix (Alle Modals)</h3>
+  <table style="width:100%; border-collapse: collapse; font-size: 13px; margin-top: 1rem;">
+    <thead>
+      <tr style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+        <th style="text-align:left; padding: 8px; color: #888;">Modal</th>
+        <th style="text-align:center; padding: 8px; color: #888;">Backdrop</th>
+        <th style="text-align:center; padding: 8px; color: #888;">Border</th>
+        <th style="text-align:center; padding: 8px; color: #888;">Akzent</th>
+        <th style="text-align:center; padding: 8px; color: #888;">z-index</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 8px;">Weight Entry</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">Hardcoded</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">white/10</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">White ✓</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">z-50</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 8px;">Training</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">Hardcoded</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">white/10</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">Emerald ✗</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">z-[60] ✓</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 8px;">Workout Picker</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">var(--backdrop) ✓</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">var(--glass) ✓</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">Emerald ✗</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">z-[60] ✓</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 8px;">Profil</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">Hardcoded</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">white/10</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">White ✓</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">z-[60] ✓</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 8px;">Settings</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">Hardcoded</td>
+        <td style="padding: 8px; text-align:center; color: #f87171;">white/10</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">Rose ✓</td>
+        <td style="padding: 8px; text-align:center; color: #4ade80;">z-[60] ✓</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px;">Confirm</td>
+        <td style="padding: 8px; text-align:center; color: #888;">—</td>
+        <td style="padding: 8px; text-align:center; color: #888;">—</td>
+        <td style="padding: 8px; text-align:center; color: #888;">—</td>
+        <td style="padding: 8px; text-align:center; color: #888;">—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="subtitle" style="margin-top: 2rem; font-style: italic;">Klicke auf die Probleme, die dir am wichtigsten sind. Oder antworte im Terminal mit deinem Feedback.</p>

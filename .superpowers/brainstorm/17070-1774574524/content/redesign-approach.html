@@ -1,0 +1,108 @@
+<h2>Redesign-Ansatz: 2 Optionen</h2>
+<p class="subtitle">Welcher Umfang passt? Klicke auf deinen Favoriten.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Token-Alignment + Polish</h3>
+      <p><strong>Scope:</strong> Bestehende Struktur beibehalten, nur Design-Tokens korrigieren</p>
+      <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px; color: #aaa; line-height: 1.8;">
+        <li>Emerald → Blue (<code>#0a84ff</code>) im gesamten Training-Kontext</li>
+        <li>Hardcoded Werte → CSS Variables (<code>var(--backdrop)</code>, <code>var(--glass-border)</code>)</li>
+        <li>"Add" → "Hinzufügen", alle englischen Reste entfernen</li>
+        <li>Inline-Inputs etwas größer: <code>py-1 px-2</code> statt <code>py-0.5 px-1.5</code></li>
+        <li>Orange Icons → Blue im Training-Tab</li>
+        <li>z-index Weight Modal: z-50 → z-[60]</li>
+        <li>Settings bleibt wie es ist (Danger Zone only)</li>
+      </ul>
+      <div style="margin-top: 12px; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 12px; color: #888;">
+        ⏱ ~30 Min · 6 Dateien · Geringes Risiko · Keine UX-Änderungen
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Full Redesign + Consistency Audit</h3>
+      <p><strong>Scope:</strong> Alles aus Option A, PLUS strukturelle UX-Verbesserungen und voller Audit</p>
+      <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px; color: #aaa; line-height: 1.8;">
+        <li><strong>Training-Modal:</strong> Inline-Inputs durch card-basiertes Layout ersetzen — jede Übung als expandierbare Card mit komfortablen Touch-Feldern</li>
+        <li><strong>Settings-Modal:</strong> Aufwerten mit Sektionen: Konto-Info, App-Einstellungen (Dark/Light Mode Toggle, Sprache), Quick-Links (Trainingsplan, Profil), Danger Zone</li>
+        <li><strong>Workout-Picker:</strong> Start-Button Farbe von Emerald → Blue, konsistent mit Training-Akzent</li>
+        <li><strong>Full Audit:</strong> Alle 11 Templates + index.html + styles.css auf Token-Konsistenz prüfen und fixen</li>
+        <li><strong>Animationen:</strong> Training-Modal Übungsliste mit staggered list animation</li>
+        <li><strong>Empty States:</strong> Konsistentes Pattern über alle Bereiche</li>
+      </ul>
+      <div style="margin-top: 12px; padding: 8px 12px; background: rgba(10, 132, 255, 0.08); border: 1px solid rgba(10, 132, 255, 0.15); border-radius: 8px; font-size: 12px; color: #0a84ff;">
+        ⭐ Empfohlen · ~90 Min · 10+ Dateien · Mittleres Risiko · Spürbarer UX-Uplift
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <h3>Vorschau: Training-Modal (Option B)</h3>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Aktuell: Cramped Inline-Inputs</div>
+    <div class="mockup-body" style="background: #0a0a0a; padding: 16px; font-family: -apple-system, sans-serif;">
+      <!-- Current exercise card -->
+      <div style="padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width: 24px; height: 24px; border-radius: 6px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.2); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 10px; font-weight: bold;">1</span>
+          <span style="font-size: 13px; font-weight: bold; color: white;">Bankdrücken</span>
+          <span style="font-size: 9px; color: #888; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">KRAFT</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px; margin-top: 6px; margin-left: 32px;">
+          <input type="text" value="4" readonly style="width: 32px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 2px 4px; font-size: 10px; color: white; text-align: center;">
+          <span style="font-size: 9px; color: #666;">Sätze</span>
+          <span style="color: rgba(255,255,255,0.1); font-size: 10px;">×</span>
+          <input type="text" value="8-10" readonly style="width: 44px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 2px 4px; font-size: 10px; color: white; text-align: center;">
+          <span style="font-size: 9px; color: #666;">Wdh.</span>
+          <input type="text" value="80" readonly style="width: 44px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 2px 4px; font-size: 10px; color: white; text-align: center;">
+          <span style="font-size: 9px; color: #666;">kg</span>
+        </div>
+      </div>
+      <div style="text-align: center; color: #444; font-size: 11px; padding: 8px;">
+        Winzige Touch-Targets · Emerald statt Blue · 10px Font
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Redesign: Card-basiertes Layout</div>
+    <div class="mockup-body" style="background: #0a0a0a; padding: 16px; font-family: -apple-system, sans-serif;">
+      <!-- Redesigned exercise card -->
+      <div style="padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="width: 32px; height: 32px; border-radius: 10px; background: rgba(10,132,255,0.12); border: 1px solid rgba(10,132,255,0.2); display: flex; align-items: center; justify-content: center; color: #0a84ff; font-size: 12px; font-weight: bold;">1</span>
+          <span style="font-size: 14px; font-weight: bold; color: white; flex: 1;">Bankdrücken</span>
+          <span style="font-size: 9px; color: #0a84ff; background: rgba(10,132,255,0.1); padding: 3px 8px; border-radius: 6px; font-weight: bold;">KRAFT</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; text-align: center;">
+            <div style="font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Sätze</div>
+            <div style="font-size: 16px; font-weight: bold; color: white; font-family: 'JetBrains Mono', monospace;">4</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; text-align: center;">
+            <div style="font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Wdh.</div>
+            <div style="font-size: 16px; font-weight: bold; color: white; font-family: 'JetBrains Mono', monospace;">8-10</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 10px; text-align: center;">
+            <div style="font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Gewicht</div>
+            <div style="font-size: 16px; font-weight: bold; color: white; font-family: 'JetBrains Mono', monospace;">80<span style="font-size: 10px; color: #666; font-weight: normal;"> kg</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align: center; color: #0a84ff; font-size: 11px; padding: 8px;">
+        Touch-freundlich · Blue Accent · Klare Hierarchie
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 2rem;">Klicke A oder B, oder antworte im Terminal.</p>

@@ -53,7 +53,20 @@
       "Bash(git commit:*)",
       "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard diff HEAD~1 HEAD -- index.html)",
       "Bash(git status:*)",
-      "Bash(/Users/raoulagachi/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.6/skills/brainstorming/scripts/start-server.sh --project-dir /Users/raoulagachi/Codes/AGAsDashboard)"
+      "Bash(/Users/raoulagachi/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.6/skills/brainstorming/scripts/start-server.sh --project-dir /Users/raoulagachi/Codes/AGAsDashboard)",
+      "Bash(npx --yes sharp-cli --version)",
+      "Bash(npx --yes sharp-cli -i icons/icon.svg -o icons/icon-512.png --width 512 --height 512)",
+      "Bash(npx --yes sharp-cli -i icons/icon.svg -o icons/icon-192.png --width 192 --height 192)",
+      "Bash(npx --yes sharp-cli --help)",
+      "Bash(npx --yes sharp-cli -i icons/icon.svg -o icons/icon-512.png resize 512 512)",
+      "Bash(npx --yes sharp-cli -i icons/icon.svg -o icons/icon-192.png resize 192 192)",
+      "Bash(find /Users/raoulagachi/Codes/AGAsDashboard -not -path */node_modules/* -not -path */dist/* -not -path */.git/* -type f)",
+      "Bash(xargs ls:*)",
+      "Bash(ls -la .env*)",
+      "Bash(npx web-push:*)",
+      "Bash(brew install:*)",
+      "Bash(supabase projects:*)",
+      "Bash(supabase functions:*)"
     ]
   }
 }

@@ -1,7 +1,7 @@
 {
-    "name": "Health OS - Raoul Agachi",
-    "short_name": "Health OS",
-    "description": "Personal weight tracking dashboard",
+    "name": "TrAction",
+    "short_name": "TrAction",
+    "description": "Track your health, fitness and daily habits",
     "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#050505",
@@ -24,9 +24,9 @@
     ],
     "shortcuts": [
         {
-            "name": "Log Weight",
-            "short_name": "Log Weight",
-            "description": "Quickly log your current weight",
+            "name": "Gewicht eintragen",
+            "short_name": "Gewicht",
+            "description": "Schnell dein aktuelles Gewicht eintragen",
             "url": "/index.html?action=log-weight",
             "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
         }

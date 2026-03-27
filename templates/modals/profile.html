@@ -33,18 +33,10 @@
             <!-- Anzeigename -->
             <div class="space-y-2">
                 <label class="text-[10px] text-muted uppercase font-bold">Anzeigename</label>
-                <div class="relative">
-                    <input type="text" x-model="profileForm.displayName"
-                           :disabled="!!displayName"
-                           :class="displayName ? 'opacity-50 cursor-not-allowed' : ''"
-                           @input="markProfileDirty()"
-                           class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/10"
-                           placeholder="Dein Name">
-                    <span x-show="!!displayName" class="absolute right-4 top-3.5 text-[10px] text-muted">
-                        <i class="ph ph-lock-simple mr-0.5"></i> Festgelegt
-                    </span>
-                </div>
-                <p x-show="!!displayName" class="text-[10px] text-muted">Der Anzeigename kann nicht mehr geändert werden</p>
+                <input type="text" x-model="profileForm.displayName"
+                       @input="markProfileDirty()"
+                       class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/10"
+                       placeholder="Dein Name">
             </div>
 
             <!-- Geschlecht -->

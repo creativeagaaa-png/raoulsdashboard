@@ -37,17 +37,10 @@
             <!-- Display Name -->
             <div class="space-y-2">
                 <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Anzeigename</label>
-                <div class="relative">
-                    <input type="text" x-model="onboardingForm.displayName"
-                           :disabled="_isGoogleUser()"
-                           :class="_isGoogleUser() ? 'opacity-50 cursor-not-allowed' : ''"
-                           class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
-                           placeholder="Dein Name" minlength="2">
-                    <span x-show="_isGoogleUser()" class="absolute right-4 top-3.5 text-[10px] text-muted">
-                        <i class="ph ph-google-logo mr-0.5"></i> Google
-                    </span>
-                </div>
-                <p x-show="_isGoogleUser()" class="text-[10px] text-muted">Automatisch von deinem Google-Konto</p>
+                <input type="text" x-model="onboardingForm.displayName"
+                       class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
+                       placeholder="Dein Name" minlength="2">
+                <p x-show="_isGoogleUser()" class="text-[10px] text-muted">Vorausgefüllt von deinem Google-Konto — du kannst es ändern</p>
             </div>
 
             <!-- Full onboarding fields -->
