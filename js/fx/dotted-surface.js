@@ -45,7 +45,8 @@ export const DottedSurface = {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 4,
+      size: 3,
+      sizeAttenuation: false,
       color: isDark ? 0xffffff : 0x000000,
       transparent: true,
       opacity: isDark ? 0.15 : 0.1,
