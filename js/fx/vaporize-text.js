@@ -46,6 +46,7 @@ export const VaporizeText = {
     }
 
     let rafId = null;
+    let waitTimeoutId = null;
     let startTime = null;
     let completed = false;
     let destroyed = false;
@@ -86,9 +87,10 @@ export const VaporizeText = {
 
       ctx.globalAlpha = 1;
 
+      // Handles empty-particle case (e.g. font not loaded) — gracefully fires onComplete
       if (!anyVisible && !completed) {
         completed = true;
-        setTimeout(() => {
+        waitTimeoutId = setTimeout(() => {
           if (!destroyed) onComplete();
         }, WAIT_DURATION);
         return;
@@ -106,6 +108,7 @@ export const VaporizeText = {
         if (destroyed) return;
         destroyed = true;
         cancelAnimationFrame(rafId);
+        clearTimeout(waitTimeoutId);
         ctx.clearRect(0, 0, W, H);
       },
     };
