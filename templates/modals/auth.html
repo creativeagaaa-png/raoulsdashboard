@@ -25,12 +25,12 @@
 
             <!-- Tab Toggle -->
             <div class="flex gap-1 bg-white/5 rounded-xl p-1">
-                <button @click="authMode = 'login'"
+                <button type="button" @click="authMode = 'login'"
                         class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
                         :class="authMode === 'login' ? 'bg-white/10 text-white' : 'text-muted'">
                     Anmelden
                 </button>
-                <button @click="authMode = 'register'"
+                <button type="button" @click="authMode = 'register'"
                         class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
                         :class="authMode === 'register' ? 'bg-white/10 text-white' : 'text-muted'">
                     Registrieren
@@ -51,10 +51,10 @@
 
             <!-- Email -->
             <div>
-                <label class="text-[10px] text-muted font-bold uppercase tracking-widest ml-1">E-Mail</label>
+                <label for="auth-email" class="text-[10px] text-muted font-bold uppercase tracking-widest ml-1">E-Mail</label>
                 <div class="mt-1 bg-black/20 rounded-xl px-4 py-3 flex items-center gap-3 border border-white/5 focus-within:border-white/20 transition-all">
                     <i class="ph ph-envelope text-muted"></i>
-                    <input type="email" x-model="authEmail"
+                    <input id="auth-email" type="email" x-model="authEmail"
                            @keydown.enter="authMode === 'login' ? handleLogin() : handleRegister()"
                            class="bg-transparent border-none focus:outline-none text-white w-full text-sm"
                            placeholder="deine@email.de"
@@ -64,15 +64,15 @@
 
             <!-- Password -->
             <div>
-                <label class="text-[10px] text-muted font-bold uppercase tracking-widest ml-1">Passwort</label>
+                <label for="auth-password" class="text-[10px] text-muted font-bold uppercase tracking-widest ml-1">Passwort</label>
                 <div class="mt-1 bg-black/20 rounded-xl px-4 py-3 flex items-center gap-3 border border-white/5 focus-within:border-white/20 transition-all">
                     <i class="ph ph-lock text-muted"></i>
-                    <input :type="authShowPassword ? 'text' : 'password'" x-model="authPassword"
+                    <input id="auth-password" :type="authShowPassword ? 'text' : 'password'" x-model="authPassword"
                            @keydown.enter="authMode === 'login' ? handleLogin() : handleRegister()"
                            class="bg-transparent border-none focus:outline-none text-white w-full text-sm"
                            placeholder="••••••••"
                            :autocomplete="authMode === 'login' ? 'current-password' : 'new-password'">
-                    <button @click="authShowPassword = !authShowPassword" class="text-muted hover:text-white transition-colors" type="button">
+                    <button type="button" @click="authShowPassword = !authShowPassword" :aria-label="authShowPassword ? 'Passwort verbergen' : 'Passwort anzeigen'" class="text-muted hover:text-white transition-colors">
                         <i class="ph text-sm" :class="authShowPassword ? 'ph-eye-slash' : 'ph-eye'"></i>
                     </button>
                 </div>
@@ -89,7 +89,7 @@
 
             <!-- Forgot Password -->
             <div x-show="authMode === 'login'" class="text-center">
-                <button @click="handleResetPassword()" class="text-[11px] text-muted hover:text-white transition-colors">
+                <button type="button" @click="handleResetPassword()" class="text-[11px] text-muted hover:text-white transition-colors">
                     Passwort vergessen?
                 </button>
             </div>
