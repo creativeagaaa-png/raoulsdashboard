@@ -253,7 +253,7 @@ describe('Settings: getSettings', () => {
     });
 });
 
-describe('Settings: saveSettings (CRITICAL — settings_pkey fix)', () => {
+describe('Settings: saveSettings (UPDATE-first strategy)', () => {
     const profile = {
         displayName: 'Test User',
         startWeight: 80,
@@ -266,7 +266,18 @@ describe('Settings: saveSettings (CRITICAL — settings_pkey fix)', () => {
         checklistItems: [{ key: 'training', label: 'Training' }]
     };
 
-    // Helper: build a properly chained mock for from('settings').select().eq().maybeSingle()
+    // Helper: mock UPDATE chain that returns updated rows
+    function mockUpdateChain(updatedRows) {
+        return {
+            update: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                    select: vi.fn().mockResolvedValue({ data: updatedRows, error: null })
+                })
+            })
+        };
+    }
+
+    // Helper: mock SELECT chain for maybeSingle
     function mockSelectChain(existingData) {
         return {
             select: vi.fn().mockReturnValue({
@@ -281,30 +292,24 @@ describe('Settings: saveSettings (CRITICAL — settings_pkey fix)', () => {
         let callCount = 0;
         mockFrom.mockImplementation(() => {
             callCount++;
-            if (callCount === 1) {
-                // SELECT check → existing row found
-                return mockSelectChain({ id: 1 });
-            }
-            // UPDATE
-            return {
-                update: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockResolvedValue({ error: null })
-                })
-            };
+            // First call: UPDATE → returns 1 row (success)
+            return mockUpdateChain([{ id: 1 }]);
         });
 
         await Supa.saveSettings(profile);
-        expect(callCount).toBe(2); // select + update
+        expect(callCount).toBe(1); // only UPDATE needed
     });
 
-    it('INSERTS new settings row for new user', async () => {
+    it('INSERTS new settings row when UPDATE finds no row', async () => {
         let callCount = 0;
         let insertedRow = null;
         mockFrom.mockImplementation(() => {
             callCount++;
             if (callCount === 1) {
-                return mockSelectChain(null); // no existing row
+                // UPDATE → returns 0 rows (new user)
+                return mockUpdateChain([]);
             }
+            // INSERT → succeeds
             return {
                 insert: vi.fn((row) => {
                     insertedRow = row;
@@ -314,56 +319,63 @@ describe('Settings: saveSettings (CRITICAL — settings_pkey fix)', () => {
         });
 
         await Supa.saveSettings(profile);
-        expect(callCount).toBe(2); // select + insert
+        expect(callCount).toBe(2); // update(0 rows) + insert
         expect(insertedRow.user_id).toBe('test-user-uuid');
     });
 
-    it('falls back to UPSERT when INSERT hits PK conflict (settings_pkey)', async () => {
+    it('falls back to UPDATE after INSERT conflict + row found', async () => {
         let callCount = 0;
-        let upsertCalled = false;
+        let finalUpdateCalled = false;
         mockFrom.mockImplementation(() => {
             callCount++;
             if (callCount === 1) {
-                return mockSelectChain(null); // no existing row
+                // UPDATE → 0 rows (new user)
+                return mockUpdateChain([]);
             }
             if (callCount === 2) {
-                // INSERT → fails with 23505 (PK collision)
+                // INSERT → fails with 409 (PK conflict)
                 return {
                     insert: vi.fn(() => Promise.resolve({
-                        error: { code: '23505', message: 'duplicate key value violates unique constraint "settings_pkey"' }
+                        error: { code: '23505', message: 'settings_pkey violation' }
                     }))
                 };
             }
-            // UPSERT fallback
+            if (callCount === 3) {
+                // SELECT → row now exists (concurrent creation)
+                return mockSelectChain({ id: 1 });
+            }
+            // Final UPDATE → succeeds
             return {
-                upsert: vi.fn(() => {
-                    upsertCalled = true;
-                    return Promise.resolve({ error: null });
-                })
+                update: vi.fn().mockReturnValue({
+                    eq: vi.fn().mockResolvedValue({ error: null })
+                }),
+                _track: (() => { finalUpdateCalled = true; })()
             };
         });
 
         await Supa.saveSettings(profile);
-        expect(callCount).toBe(3); // select + insert(fail) + upsert
-        expect(upsertCalled).toBe(true);
+        expect(callCount).toBe(4); // update(0) + insert(fail) + select + update
     });
 
-    it('throws on non-constraint INSERT errors', async () => {
+    it('throws clear error when INSERT fails and no row exists (no RPC)', async () => {
         let callCount = 0;
         mockFrom.mockImplementation(() => {
             callCount++;
-            if (callCount === 1) return mockSelectChain(null);
-            return {
-                insert: vi.fn(() => Promise.resolve({
-                    error: { code: '42501', message: 'RLS policy violation' }
-                }))
-            };
+            if (callCount === 1) return mockUpdateChain([]); // UPDATE → 0 rows
+            if (callCount === 2) {
+                return {
+                    insert: vi.fn(() => Promise.resolve({
+                        error: { code: '23505', message: 'settings_pkey' }
+                    }))
+                };
+            }
+            // SELECT → still no row
+            return mockSelectChain(null);
         });
 
-        await expect(Supa.saveSettings(profile)).rejects.toEqual({
-            code: '42501',
-            message: 'RLS policy violation'
-        });
+        await expect(Supa.saveSettings(profile)).rejects.toThrow(
+            'Profil konnte nicht erstellt werden'
+        );
     });
 
     it('includes all profile fields in saved row', async () => {
@@ -371,7 +383,7 @@ describe('Settings: saveSettings (CRITICAL — settings_pkey fix)', () => {
         let callCount = 0;
         mockFrom.mockImplementation(() => {
             callCount++;
-            if (callCount === 1) return mockSelectChain(null);
+            if (callCount === 1) return mockUpdateChain([]); // no existing row
             return {
                 insert: vi.fn((row) => {
                     insertedRow = row;
@@ -401,7 +413,7 @@ describe('Settings: saveSettings (CRITICAL — settings_pkey fix)', () => {
         let callCount = 0;
         mockFrom.mockImplementation(() => {
             callCount++;
-            if (callCount === 1) return mockSelectChain(null);
+            if (callCount === 1) return mockUpdateChain([]);
             return {
                 insert: vi.fn((row) => {
                     insertedRow = row;

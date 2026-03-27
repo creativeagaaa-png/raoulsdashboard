@@ -153,39 +153,67 @@ export async function saveSettings(profile) {
         fields.display_name = profile.displayName;
     }
 
-    // Check if settings row already exists for this user
-    const { data: existing } = await requireDb()
+    // Strategy: UPDATE-first — never relies on the id sequence.
+    // 1) Try UPDATE (works for existing users, no PK generation)
+    const { data: updated, error: updateErr } = await requireDb()
+        .from('settings')
+        .update(fields)
+        .eq('user_id', userId)
+        .select('id');
+
+    if (updateErr) throw updateErr;
+    if (updated && updated.length > 0) return; // Row existed → updated → done
+
+    // 2) No existing row — new user. Try INSERT.
+    const row = { user_id: userId, ...fields };
+    const { error: insertErr } = await requireDb()
+        .from('settings')
+        .insert(row);
+
+    if (!insertErr) return; // INSERT succeeded → done
+
+    // 3) INSERT failed (broken id sequence or race condition).
+    //    Check if row was created by a concurrent request, then UPDATE.
+    const { data: nowExists } = await requireDb()
         .from('settings')
         .select('id')
         .eq('user_id', userId)
         .maybeSingle();
 
-    if (existing) {
-        // UPDATE existing row — avoids PK/sequence issues entirely
-        const { error } = await requireDb()
+    if (nowExists) {
+        const { error: retryErr } = await requireDb()
             .from('settings')
             .update(fields)
             .eq('user_id', userId);
-        if (error) throw error;
-    } else {
-        // INSERT new row with user_id
-        const row = { user_id: userId, ...fields };
-        const { error } = await requireDb()
-            .from('settings')
-            .insert(row);
-        if (error) {
-            // Fallback: if INSERT fails due to PK sequence conflict (settings_pkey),
-            // retry as upsert — the row doesn't exist for this user_id yet but
-            // the auto-generated id collides with an orphaned row
-            if (error.code === '23505') {
-                const { error: upsertErr } = await requireDb()
-                    .from('settings')
-                    .upsert(row, { onConflict: 'user_id' });
-                if (upsertErr) throw upsertErr;
-            } else {
-                throw error;
-            }
-        }
+        if (retryErr) throw retryErr;
+        return;
+    }
+
+    // 4) Row still doesn't exist and INSERT failed — id sequence is broken.
+    //    Last resort: call RPC to create row server-side, bypassing the sequence.
+    //    If RPC doesn't exist, throw with clear instructions.
+    try {
+        const { error: rpcErr } = await requireDb().rpc('upsert_user_settings', {
+            p_user_id: userId,
+            p_start_weight: fields.start_weight,
+            p_goal_weight: fields.goal_weight,
+            p_user_height: fields.user_height,
+            p_user_age: fields.user_age,
+            p_goal_date: fields.goal_date || null,
+            p_gender: fields.gender || null,
+            p_activity_level: fields.activity_level || 'moderately_active',
+            p_weekly_goal_rate: fields.weekly_goal_rate ?? 0,
+            p_checklist_items: fields.checklist_items || null,
+            p_display_name: fields.display_name || null
+        });
+        if (rpcErr) throw rpcErr;
+    } catch (rpcError) {
+        // RPC not available — throw the original INSERT error with context
+        throw new Error(
+            'Profil konnte nicht erstellt werden. ' +
+            'Bitte führe die SQL-Migration "supabase-fix-settings-pkey.sql" aus. ' +
+            'Original: ' + (insertErr.message || insertErr.code)
+        );
     }
 }
 
