@@ -1,16 +1,16 @@
 <!-- Weight Entry Modal -->
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-mobile-sheet"
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-mobile-sheet"
      x-show="modalOpen" x-cloak
      @keydown.tab.window="modalOpen && trapFocus($event, $el)"
      role="dialog" aria-modal="true" aria-label="Gewicht eintragen">
 
-    <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
+    <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
          x-show="modalOpen"
          x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
          @click="closeModal()"></div>
 
-    <div class="bg-surface border border-white/10 rounded-3xl w-full max-w-sm p-8 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+    <div class="bg-surface border border-[var(--glass-border)] rounded-3xl w-full max-w-sm p-8 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
          x-show="modalOpen"
          x-swipe-dismiss="closeModal()"
          x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"

@@ -3,12 +3,12 @@
      :class="settingsOpen ? 'pointer-events-auto' : 'pointer-events-none'"
      role="dialog" aria-modal="true" aria-label="Einstellungen">
 
-    <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
+    <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
          x-show="settingsOpen"
          x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
          @click="closeSettings()"></div>
-    <div class="bg-surface border border-white/10 rounded-3xl w-full max-w-md max-h-[85vh] flex flex-col relative z-10 shadow-2xl overflow-hidden"
+    <div class="bg-surface border border-[var(--glass-border)] rounded-3xl w-full max-w-md max-h-[85vh] flex flex-col relative z-10 shadow-2xl overflow-hidden"
          x-show="settingsOpen"
          x-swipe-dismiss="closeSettings()"
          x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
@@ -29,9 +29,65 @@
             </button>
         </div>
 
-        <div class="overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <div class="overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            <!-- Konto -->
             <section>
-                <h3 class="text-xs font-bold text-rose-400/80 uppercase tracking-widest mb-4">Gefahrenzone</h3>
+                <h3 class="text-[10px] font-bold text-muted uppercase tracking-widest mb-3">Konto</h3>
+                <div class="rounded-2xl border border-[var(--glass-border)] overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--glass-border)]">
+                        <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-muted border border-white/5">
+                            <i class="ph ph-envelope text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-white truncate" x-text="authUser?.email || '–'"></p>
+                            <p class="text-[10px] text-muted">Angemeldet als</p>
+                        </div>
+                    </div>
+                    <button type="button" @click="handleLogout(); closeSettings()"
+                            class="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-all text-left">
+                        <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20">
+                            <i class="ph ph-sign-out text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-white">Abmelden</p>
+                        </div>
+                        <i class="ph ph-caret-right text-white/20"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Schnellzugriff -->
+            <section>
+                <h3 class="text-[10px] font-bold text-muted uppercase tracking-widest mb-3">Schnellzugriff</h3>
+                <div class="rounded-2xl border border-[var(--glass-border)] overflow-hidden">
+                    <button type="button" @click="openTraining(); closeSettings()"
+                            class="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-all text-left border-b border-[var(--glass-border)]">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/12 flex items-center justify-center text-blue-400 border border-blue-500/20">
+                            <i class="ph ph-barbell text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-white">Trainingsplan</p>
+                            <p class="text-[10px] text-muted">7-Tage Plan bearbeiten</p>
+                        </div>
+                        <i class="ph ph-caret-right text-white/20"></i>
+                    </button>
+                    <button type="button" @click="openProfile(); closeSettings()"
+                            class="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-all text-left">
+                        <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-muted border border-white/5">
+                            <i class="ph ph-user text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-white">Profil bearbeiten</p>
+                            <p class="text-[10px] text-muted">Gewicht, Größe, Ziele</p>
+                        </div>
+                        <i class="ph ph-caret-right text-white/20"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Gefahrenzone -->
+            <section>
+                <h3 class="text-[10px] font-bold text-rose-400/80 uppercase tracking-widest mb-3">Gefahrenzone</h3>
                 <div class="space-y-3">
                     <button type="button" @click="clearAllEntries()"
                             class="w-full py-3.5 rounded-xl border border-rose-500/20 text-rose-400 font-bold text-xs hover:bg-rose-500/10 hover:border-rose-500/40 active:scale-[0.97] transition-all flex items-center justify-center gap-2">

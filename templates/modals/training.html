@@ -3,13 +3,13 @@
      :class="trainingOpen ? 'pointer-events-auto' : 'pointer-events-none'"
      role="dialog" aria-modal="true" aria-label="Trainingsplan">
 
-    <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
+    <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"
          x-show="trainingOpen"
          x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
          @click="closeTraining()"></div>
 
-    <div class="bg-surface border border-white/10 rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col relative z-10 shadow-2xl overflow-hidden"
+    <div class="bg-surface border border-[var(--glass-border)] rounded-3xl w-full max-w-lg max-h-[85vh] flex flex-col relative z-10 shadow-2xl overflow-hidden"
          x-show="trainingOpen"
          x-swipe-dismiss="closeTraining()"
          x-transition:enter="transition ease-out duration-400" x-transition:enter-start="translate-y-12 opacity-0 scale-90" x-transition:enter-end="translate-y-0 opacity-100 scale-100"
@@ -20,7 +20,7 @@
 
         <div class="p-6 border-b border-white/5 flex justify-between items-center bg-surface z-20 shrink-0">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                <div class="w-9 h-9 rounded-xl bg-blue-500/12 flex items-center justify-center text-blue-400 border border-blue-500/20">
                     <i class="ph-bold ph-barbell text-lg"></i>
                 </div>
                 <div>
@@ -40,7 +40,7 @@
                         :class="trainingSelectedDay === idx
                             ? 'bg-white text-black border-white shadow-lg shadow-white/10 scale-105'
                             : idx === getTodayWeekdayIndex()
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                                ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20'
                                 : 'bg-white/5 text-muted border-white/5 hover:bg-white/10 hover:text-white'">
                     <span x-text="day"></span>
                     <span x-show="trainingForm[idx].length > 0"
@@ -58,7 +58,7 @@
                          :style="'--item-delay: ' + (exIdx * 0.05) + 's'">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex items-center gap-3 flex-1 min-w-0">
-                                <span class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs font-bold tabular-nums shrink-0" x-text="exIdx + 1"></span>
+                                <span class="w-7 h-7 rounded-lg bg-blue-500/12 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold tabular-nums shrink-0" x-text="exIdx + 1"></span>
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2">
                                         <input type="text" x-model="ex.name" @input="markTrainingDirty()"
@@ -72,74 +72,73 @@
                                         </select>
                                     </div>
                                     <!-- Strength: Sets x Reps + Weight -->
-                                    <div x-show="(ex.type || 'strength') === 'strength'" class="flex items-center gap-2 mt-1.5 flex-wrap">
-                                        <div class="flex items-center gap-1">
+                                    <div x-show="(ex.type || 'strength') === 'strength'" class="grid grid-cols-3 gap-2 mt-2.5">
+                                        <div class="bg-black/20 rounded-xl p-2.5 text-center border border-white/5">
+                                            <div class="text-[9px] text-muted uppercase tracking-wider mb-1">Sätze</div>
                                             <input type="number" x-model="ex.sets" @input="markTrainingDirty()"
-                                                   class="w-10 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="0">
-                                            <span class="text-[10px] text-muted">Sätze</span>
+                                                   class="w-full bg-transparent border-none text-center text-base font-bold text-white font-mono focus:outline-none placeholder-white/15" placeholder="0">
                                         </div>
-                                        <span class="text-white/10">x</span>
-                                        <div class="flex items-center gap-1">
+                                        <div class="bg-black/20 rounded-xl p-2.5 text-center border border-white/5">
+                                            <div class="text-[9px] text-muted uppercase tracking-wider mb-1">Wdh.</div>
                                             <input type="text" x-model="ex.reps" @input="markTrainingDirty()"
-                                                   class="w-14 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="0">
-                                            <span class="text-[10px] text-muted">Wdh.</span>
+                                                   class="w-full bg-transparent border-none text-center text-base font-bold text-white font-mono focus:outline-none placeholder-white/15" placeholder="0">
                                         </div>
-                                        <div class="flex items-center gap-1">
+                                        <div class="bg-black/20 rounded-xl p-2.5 text-center border border-white/5">
+                                            <div class="text-[9px] text-muted uppercase tracking-wider mb-1">Gewicht</div>
                                             <input type="number" inputmode="decimal" step="0.5" x-model="ex.weight" @input="markTrainingDirty()"
-                                                   class="w-14 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="–">
-                                            <span class="text-[10px] text-muted">kg</span>
+                                                   class="w-full bg-transparent border-none text-center text-base font-bold text-white font-mono focus:outline-none placeholder-white/15" placeholder="–">
                                         </div>
                                     </div>
                                     <!-- Cardio: Duration -->
-                                    <div x-show="ex.type === 'cardio'" class="flex items-center gap-3 mt-1.5">
-                                        <div class="flex items-center gap-1">
+                                    <div x-show="ex.type === 'cardio'" class="mt-2.5">
+                                        <div class="bg-black/20 rounded-xl p-2.5 text-center border border-white/5">
+                                            <div class="text-[9px] text-muted uppercase tracking-wider mb-1">Dauer</div>
                                             <input type="text" x-model="ex.duration" @input="markTrainingDirty()"
-                                                   class="w-20 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="30 min">
-                                            <span class="text-[10px] text-muted">Dauer</span>
+                                                   class="w-full bg-transparent border-none text-center text-base font-bold text-white font-mono focus:outline-none placeholder-white/15" placeholder="30 min">
                                         </div>
                                     </div>
                                     <!-- Distance: Distance + Duration -->
-                                    <div x-show="ex.type === 'distance'" class="flex items-center gap-3 mt-1.5">
-                                        <div class="flex items-center gap-1">
+                                    <div x-show="ex.type === 'distance'" class="grid grid-cols-2 gap-2 mt-2.5">
+                                        <div class="bg-black/20 rounded-xl p-2.5 text-center border border-white/5">
+                                            <div class="text-[9px] text-muted uppercase tracking-wider mb-1">Distanz</div>
                                             <input type="text" x-model="ex.distance" @input="markTrainingDirty()"
-                                                   class="w-14 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="5">
-                                            <span class="text-[10px] text-muted">km</span>
+                                                   class="w-full bg-transparent border-none text-center text-base font-bold text-white font-mono focus:outline-none placeholder-white/15" placeholder="5 km">
                                         </div>
-                                        <div class="flex items-center gap-1">
+                                        <div class="bg-black/20 rounded-xl p-2.5 text-center border border-white/5">
+                                            <div class="text-[9px] text-muted uppercase tracking-wider mb-1">Dauer</div>
                                             <input type="text" x-model="ex.duration" @input="markTrainingDirty()"
-                                                   class="w-20 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="30 min">
-                                            <span class="text-[10px] text-muted">Dauer</span>
+                                                   class="w-full bg-transparent border-none text-center text-base font-bold text-white font-mono focus:outline-none placeholder-white/15" placeholder="30 min">
                                         </div>
                                     </div>
                                     <!-- Circuit: Rounds + Exercises list (editable) -->
-                                    <div x-show="ex.type === 'circuit'" class="mt-1.5">
-                                        <div class="flex items-center gap-1 mb-1.5">
+                                    <div x-show="ex.type === 'circuit'" class="mt-2.5">
+                                        <div class="bg-black/20 rounded-xl p-2.5 text-center border border-white/5 mb-2">
+                                            <div class="text-[9px] text-muted uppercase tracking-wider mb-1">Runden</div>
                                             <input type="number" x-model="ex.rounds" @input="markTrainingDirty()"
-                                                   class="w-10 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[11px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="3">
-                                            <span class="text-[10px] text-muted">Runden</span>
+                                                   class="w-full bg-transparent border-none text-center text-base font-bold text-white font-mono focus:outline-none placeholder-white/15" placeholder="3">
                                         </div>
-                                        <div x-show="ex.circuitExercises && ex.circuitExercises.length > 0" class="space-y-1 mt-1">
+                                        <div x-show="ex.circuitExercises && ex.circuitExercises.length > 0" class="space-y-1.5 mt-2">
                                             <template x-for="(ce, ceIdx) in (ex.circuitExercises || [])" :key="ceIdx">
-                                                <div class="flex items-center gap-1">
-                                                    <span class="w-3 text-center text-white/30 text-[10px] shrink-0" x-text="ceIdx + 1"></span>
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="w-4 text-center text-white/30 text-[10px] shrink-0" x-text="ceIdx + 1"></span>
                                                     <input type="text" x-model="ce.name" @input="markTrainingDirty()"
-                                                           class="flex-1 bg-white/5 border border-white/5 rounded-md px-1.5 py-0.5 text-[10px] text-white focus:outline-none focus:border-white/20 min-w-0" placeholder="Exercise">
+                                                           class="flex-1 bg-black/20 border border-white/5 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-white/20 min-w-0 transition-colors" placeholder="Übung">
                                                     <input type="text" x-model="ce.reps" @input="markTrainingDirty()"
-                                                           class="w-10 bg-white/5 border border-white/5 rounded-md px-1 py-0.5 text-[10px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="Reps">
+                                                           class="w-12 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-center text-white font-mono focus:outline-none focus:border-white/20 transition-colors" placeholder="Wdh.">
                                                     <input type="number" inputmode="decimal" step="0.5" x-model="ce.weight" @input="markTrainingDirty()"
-                                                           class="w-10 bg-white/5 border border-white/5 rounded-md px-1 py-0.5 text-[10px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="kg">
+                                                           class="w-12 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-center text-white font-mono focus:outline-none focus:border-white/20 transition-colors" placeholder="kg">
                                                     <input type="text" x-model="ce.duration" @input="markTrainingDirty()"
-                                                           class="w-12 bg-white/5 border border-white/5 rounded-md px-1 py-0.5 text-[10px] text-center text-white font-mono focus:outline-none focus:border-white/20" placeholder="Time">
+                                                           class="w-14 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-center text-white font-mono focus:outline-none focus:border-white/20 transition-colors" placeholder="Zeit">
                                                     <button @click="ex.circuitExercises.splice(ceIdx, 1); markTrainingDirty()" x-show="ex.circuitExercises.length > 1"
-                                                            class="p-0.5 text-muted hover:text-rose-400 transition-colors shrink-0">
-                                                        <i class="ph ph-x text-[10px]"></i>
+                                                            class="p-1 text-muted hover:text-rose-400 transition-colors shrink-0">
+                                                        <i class="ph ph-x text-xs"></i>
                                                     </button>
                                                 </div>
                                             </template>
                                         </div>
                                         <button type="button" @click="ex.circuitExercises.push({name:'',reps:'',duration:'',weight:''}); markTrainingDirty()"
-                                                class="mt-1 w-full py-1 rounded-md border border-dashed border-white/10 text-[9px] text-muted hover:text-white hover:border-white/20 transition-all">
-                                            <i class="ph ph-plus text-[9px]"></i> Übung
+                                                class="mt-2 w-full py-1.5 rounded-lg border border-dashed border-white/10 text-[10px] text-muted hover:text-white hover:border-white/20 transition-all">
+                                            <i class="ph ph-plus text-xs"></i> Übung hinzufügen
                                         </button>
                                     </div>
                                 </div>
@@ -176,7 +175,7 @@
             <!-- Add Exercise Toggle Button -->
             <button type="button" @click="trainingShowAddForm = !trainingShowAddForm"
                     class="w-full mt-2 mb-2 py-3 rounded-2xl border border-dashed transition-all duration-300 flex items-center justify-center gap-2 text-xs font-bold"
-                    :class="trainingShowAddForm ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400' : 'border-white/10 bg-white/[0.02] text-muted hover:border-white/20 hover:text-white'">
+                    :class="trainingShowAddForm ? 'border-blue-500/30 bg-blue-500/5 text-blue-400' : 'border-white/10 bg-white/[0.02] text-muted hover:border-white/20 hover:text-white'">
                 <i class="ph-bold ph-plus text-sm transition-transform duration-300" :class="trainingShowAddForm && 'rotate-45'"></i>
                 <span x-text="trainingShowAddForm ? 'Abbrechen' : 'Übung hinzufügen'"></span>
             </button>
@@ -185,8 +184,8 @@
             <div x-show="trainingShowAddForm"
                  x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                  x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
-                 class="p-4 rounded-2xl border border-dashed border-emerald-500/20 bg-emerald-500/[0.02] transition-all duration-300 mb-4">
-                <p class="text-[10px] text-emerald-400 uppercase tracking-widest font-bold mb-3">Neue Übung</p>
+                 class="p-4 rounded-2xl border border-dashed border-blue-500/20 bg-blue-500/[0.02] transition-all duration-300 mb-4">
+                <p class="text-[10px] text-blue-400 uppercase tracking-widest font-bold mb-3">Neue Übung</p>
                 <div class="space-y-3">
                     <input type="text" x-model="trainingNewExercise.name" @keydown.enter="addExercise()"
                            class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-sm text-white font-medium focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Übungsname">
@@ -194,7 +193,7 @@
                         <template x-for="t in [{id:'strength',label:'Kraft'},{id:'cardio',label:'Cardio'},{id:'distance',label:'Distanz'},{id:'circuit',label:'Zirkel'}]" :key="t.id">
                             <button type="button" @click="trainingNewExercise.type = t.id"
                                     class="flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border"
-                                    :class="trainingNewExercise.type === t.id ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-white/5 text-muted border-white/5 hover:bg-white/10'"
+                                    :class="trainingNewExercise.type === t.id ? 'bg-blue-500/15 text-blue-400 border-blue-500/30' : 'bg-white/5 text-muted border-white/5 hover:bg-white/10'"
                                     x-text="t.label"></button>
                         </template>
                     </div>
@@ -209,8 +208,8 @@
                                    class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="kg">
                         </div>
                         <button @click="addExercise()"
-                                class="w-full py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
-                            <i class="ph ph-plus"></i> Add
+                                class="w-full py-2.5 rounded-xl bg-blue-500/15 text-blue-400 font-bold text-xs border border-blue-500/20 hover:bg-blue-500/25 hover:border-blue-500/40 active:scale-95 transition-all">
+                            <i class="ph ph-plus"></i> Hinzufügen
                         </button>
                     </div>
                     <!-- Cardio fields -->
@@ -218,8 +217,8 @@
                         <input type="text" x-model="trainingNewExercise.reps" @keydown.enter="addExercise()"
                                class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Dauer (z.B. 30 min)">
                         <button @click="addExercise()"
-                                class="py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
-                            <i class="ph ph-plus"></i> Add
+                                class="py-2.5 rounded-xl bg-blue-500/15 text-blue-400 font-bold text-xs border border-blue-500/20 hover:bg-blue-500/25 hover:border-blue-500/40 active:scale-95 transition-all">
+                            <i class="ph ph-plus"></i> Hinzufügen
                         </button>
                     </div>
                     <!-- Distance fields -->
@@ -229,8 +228,8 @@
                         <input type="text" x-model="trainingNewExercise.reps" @keydown.enter="addExercise()"
                                class="w-full bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Dauer">
                         <button @click="addExercise()"
-                                class="py-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
-                            <i class="ph ph-plus"></i> Add
+                                class="py-2.5 rounded-xl bg-blue-500/15 text-blue-400 font-bold text-xs border border-blue-500/20 hover:bg-blue-500/25 hover:border-blue-500/40 active:scale-95 transition-all">
+                            <i class="ph ph-plus"></i> Hinzufügen
                         </button>
                     </div>
                     <!-- Circuit fields -->
@@ -240,18 +239,18 @@
                                    class="w-16 bg-black/20 border border-white/5 rounded-xl px-3 py-2.5 text-sm text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="3">
                             <span class="text-[10px] text-muted uppercase font-bold">Runden</span>
                         </div>
-                        <p class="text-[10px] text-emerald-400/70 uppercase tracking-wider font-bold">Übungen im Zirkel:</p>
+                        <p class="text-[10px] text-blue-400/70 uppercase tracking-wider font-bold">Übungen im Zirkel:</p>
                         <template x-for="(ce, ceIdx) in trainingNewExercise.circuitExercises" :key="ceIdx">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-[10px] text-muted w-4 text-center shrink-0" x-text="ceIdx + 1"></span>
                                 <input type="text" x-model="ce.name"
                                        class="flex-1 bg-black/20 border border-white/5 rounded-lg px-2.5 py-2 text-xs text-white focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Übung">
                                 <input type="text" x-model="ce.reps"
-                                       class="w-12 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Reps">
+                                       class="w-12 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Wdh.">
                                 <input type="number" inputmode="decimal" step="0.5" x-model="ce.weight"
                                        class="w-12 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="kg">
                                 <input type="text" x-model="ce.duration"
-                                       class="w-14 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Time">
+                                       class="w-14 bg-black/20 border border-white/5 rounded-lg px-2 py-2 text-xs text-white font-mono text-center focus:border-white/20 outline-none transition-colors placeholder-white/15" placeholder="Zeit">
                                 <button x-show="trainingNewExercise.circuitExercises.length > 1" @click="removeCircuitExerciseField(ceIdx)" class="p-1 text-muted hover:text-rose-400 transition-colors shrink-0">
                                     <i class="ph ph-x text-xs"></i>
                                 </button>
@@ -263,8 +262,8 @@
                                 <i class="ph ph-plus text-xs"></i> Übung hinzufügen
                             </button>
                             <button @click="addExercise()"
-                                    class="px-4 py-2 rounded-lg bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/20 hover:bg-emerald-500/25 hover:border-emerald-500/40 active:scale-95 transition-all">
-                                <i class="ph ph-plus"></i> Add
+                                    class="px-4 py-2 rounded-lg bg-blue-500/15 text-blue-400 font-bold text-xs border border-blue-500/20 hover:bg-blue-500/25 hover:border-blue-500/40 active:scale-95 transition-all">
+                                <i class="ph ph-plus"></i> Hinzufügen
                             </button>
                         </div>
                     </div>
