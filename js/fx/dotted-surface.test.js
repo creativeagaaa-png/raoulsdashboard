@@ -1,32 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock Three.js — WebGL is not available in jsdom
-const mockMaterial = {
-  color: { setHex: vi.fn() },
-  opacity: 0.15,
-  dispose: vi.fn(),
-};
-const mockPositions = new Float32Array(40 * 60 * 3);
-const mockGeometry = {
-  setAttribute: vi.fn(),
-  attributes: { position: { array: mockPositions, needsUpdate: false } },
-  dispose: vi.fn(),
-};
-const mockRenderer = {
-  setPixelRatio: vi.fn(),
-  setSize: vi.fn(),
-  render: vi.fn(),
-  dispose: vi.fn(),
-};
-const mockScene = { add: vi.fn() };
-const mockCamera = {
-  position: { set: vi.fn() },
-  lookAt: vi.fn(),
-  aspect: 1,
-  updateProjectionMatrix: vi.fn(),
-};
-const mockPoints = { geometry: mockGeometry };
+let mockMaterial, mockGeometry, mockRenderer, mockScene, mockCamera, mockPoints;
 
 vi.mock('three', () => ({
   WebGLRenderer: vi.fn(function() { return mockRenderer; }),
@@ -44,6 +19,30 @@ describe('DottedSurface', () => {
   let surface;
 
   beforeEach(() => {
+    // Recreate mock objects fresh for each test
+    mockMaterial = { color: { setHex: vi.fn() }, opacity: 0.15, dispose: vi.fn() };
+    const mockPositions = new Float32Array(40 * 60 * 3);
+    mockGeometry = {
+      setAttribute: vi.fn(),
+      attributes: { position: { array: mockPositions, needsUpdate: false } },
+      dispose: vi.fn(),
+    };
+    mockRenderer = { setPixelRatio: vi.fn(), setSize: vi.fn(), render: vi.fn(), dispose: vi.fn() };
+    mockScene = { add: vi.fn() };
+    mockCamera = { position: { set: vi.fn() }, lookAt: vi.fn(), aspect: 1, updateProjectionMatrix: vi.fn() };
+    mockPoints = { geometry: mockGeometry };
+
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+
+    global.ResizeObserver = vi.fn(function() {
+      this.observe = vi.fn();
+      this.disconnect = vi.fn();
+    });
+
     vi.useFakeTimers();
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
       setTimeout(cb, 16);
@@ -59,7 +58,6 @@ describe('DottedSurface', () => {
     if (surface) surface.destroy();
     vi.restoreAllMocks();
     vi.useRealTimers();
-    // clean up any appended canvas elements
     document.querySelectorAll('canvas[data-dotted-surface]').forEach(el => el.remove());
   });
 

@@ -6,7 +6,7 @@ const SEPARATION = 150;
 
 export const DottedSurface = {
   init() {
-    const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : { matches: false, addEventListener: () => {}, removeEventListener: () => {} };
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
     const isDark = !mq.matches;
 
     const canvas = document.createElement('canvas');
@@ -85,9 +85,7 @@ export const DottedSurface = {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
-    const resizeObserver = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(onResize)
-      : { observe: () => {}, disconnect: () => {} };
+    const resizeObserver = new ResizeObserver(onResize);
     resizeObserver.observe(document.documentElement);
 
     function onTheme(e) {
