@@ -28,6 +28,7 @@ import workoutModal from '../templates/modals/workout.html?raw';
 import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
 import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
 import authScreen from '../templates/modals/auth.html?raw';
+import onboardingModal from '../templates/modals/onboarding.html?raw';
 
 Chart.register(...registerables);
 
@@ -36,6 +37,7 @@ const modalsContainer = document.getElementById('modals');
 if (modalsContainer) {
     modalsContainer.innerHTML = [
         authScreen,
+        onboardingModal,
         bmiDetailModal,
         settingsModal,
         trainingModal,
@@ -81,6 +83,22 @@ function app() {
         authLoading: false,
         authError: '',
         authSuccess: '',
+
+        // Display Name
+        displayName: '',
+
+        // Onboarding
+        onboardingOpen: false,
+        onboardingMode: 'full', // 'full' = new user, 'name_only' = existing user missing name
+        onboardingForm: {
+            displayName: '',
+            gender: '',
+            startWeight: '',
+            goalWeight: '',
+            userHeight: '',
+            userAge: ''
+        },
+        onboardingLoading: false,
 
         // UI State
         activeTab: 'health',
@@ -372,6 +390,92 @@ function app() {
             }
         },
 
+        // --- ONBOARDING ---
+        _getGoogleFirstName() {
+            const meta = this.authUser?.user_metadata;
+            if (!meta) return '';
+            const fullName = meta.full_name || meta.name || '';
+            return fullName.split(' ')[0] || '';
+        },
+
+        _isGoogleUser() {
+            return this.authUser?.app_metadata?.provider === 'google';
+        },
+
+        async completeOnboarding() {
+            const f = this.onboardingForm;
+            const name = (f.displayName || '').trim();
+            if (name.length < 2) {
+                this.showToast('Bitte gib einen Namen ein (mind. 2 Zeichen)');
+                return;
+            }
+
+            if (this.onboardingMode === 'full') {
+                const sw = parseFloat(String(f.startWeight).replace(',', '.'));
+                const gw = parseFloat(String(f.goalWeight).replace(',', '.'));
+                const h = parseInt(f.userHeight);
+                if (!sw || sw <= 0 || !gw || gw <= 0 || !h || h <= 0) {
+                    this.showToast('Bitte alle Pflichtfelder korrekt ausfüllen');
+                    return;
+                }
+
+                this.onboardingLoading = true;
+                try {
+                    this.displayName = name;
+                    this.startWeight = sw;
+                    this.goalWeight = gw;
+                    this.userHeight = h;
+                    this.userAge = parseInt(f.userAge) || 0;
+                    this.gender = f.gender || null;
+
+                    await Supa.saveSettings({
+                        displayName: name,
+                        startWeight: sw,
+                        goalWeight: gw,
+                        userHeight: h,
+                        userAge: parseInt(f.userAge) || 0,
+                        gender: f.gender || null,
+                        activityLevel: 'moderately_active',
+                        weeklyGoalRate: 0,
+                        checklistItems: [...DEFAULT_PROFILE.checklistItems]
+                    });
+
+                    if (this.recalculateCalories) this.recalculateCalories();
+                    this.onboardingOpen = false;
+                    this.showToast('Willkommen, ' + name + '!');
+                } catch (e) {
+                    console.error('Onboarding save failed:', e);
+                    this.showToast('Fehler beim Speichern');
+                } finally {
+                    this.onboardingLoading = false;
+                }
+            } else {
+                // name_only mode
+                this.onboardingLoading = true;
+                try {
+                    this.displayName = name;
+                    await Supa.saveSettings({
+                        displayName: name,
+                        startWeight: this.startWeight,
+                        goalWeight: this.goalWeight,
+                        userHeight: this.userHeight,
+                        userAge: this.userAge,
+                        gender: this.gender,
+                        activityLevel: this.activityLevel,
+                        weeklyGoalRate: this.weeklyGoalRate,
+                        checklistItems: this.checklistItems
+                    });
+                    this.onboardingOpen = false;
+                    this.showToast('Willkommen zurück, ' + name + '!');
+                } catch (e) {
+                    console.error('Onboarding save failed:', e);
+                    this.showToast('Fehler beim Speichern');
+                } finally {
+                    this.onboardingLoading = false;
+                }
+            }
+        },
+
         // --- INIT ---
         async initApp() {
             // Check auth state first
@@ -439,6 +543,32 @@ function app() {
                     this.activityLevel = settings.activity_level || 'moderately_active';
                     this.weeklyGoalRate = settings.weekly_goal_rate != null ? Number(settings.weekly_goal_rate) : 0;
                     this.checklistItems = settings.checklist_items || [...DEFAULT_PROFILE.checklistItems];
+                    this.displayName = settings.display_name || '';
+                }
+
+                // Onboarding check: no settings = new user, no display_name = existing user
+                if (!settings) {
+                    this.onboardingMode = 'full';
+                    this.onboardingForm = {
+                        displayName: this._getGoogleFirstName() || '',
+                        gender: '',
+                        startWeight: '',
+                        goalWeight: '',
+                        userHeight: '',
+                        userAge: ''
+                    };
+                    this.onboardingOpen = true;
+                } else if (!settings.display_name) {
+                    this.onboardingMode = 'name_only';
+                    this.onboardingForm = {
+                        displayName: this._getGoogleFirstName() || '',
+                        gender: this.gender || '',
+                        startWeight: this.startWeight || '',
+                        goalWeight: this.goalWeight || '',
+                        userHeight: this.userHeight || '',
+                        userAge: this.userAge || ''
+                    };
+                    this.onboardingOpen = true;
                 }
 
                 // Apply training plan

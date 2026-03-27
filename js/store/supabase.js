@@ -156,6 +156,9 @@ export async function saveSettings(profile) {
     if (profile.checklistItems !== undefined) {
         row.checklist_items = profile.checklistItems;
     }
+    if (profile.displayName !== undefined) {
+        row.display_name = profile.displayName;
+    }
     const { error } = await requireDb()
         .from('settings')
         .upsert(row, { onConflict: 'user_id' });

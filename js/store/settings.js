@@ -15,6 +15,7 @@ export const settingsMixin = () => ({
     async saveSettings() {
         try {
             await Supa.saveSettings({
+                displayName: this.displayName,
                 startWeight: this.startWeight,
                 goalWeight: this.goalWeight,
                 goalDate: this.goalDate,
@@ -36,6 +37,7 @@ export const settingsMixin = () => ({
 
     openProfile() {
         this.profileForm = {
+            displayName: this.displayName || '',
             startWeight: this.startWeight,
             goalWeight: this.goalWeight,
             goalDate: this.goalDate || '',
