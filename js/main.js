@@ -30,6 +30,8 @@ import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
 import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
 import authScreen from '../templates/modals/auth.html?raw';
 import onboardingModal from '../templates/modals/onboarding.html?raw';
+import { DottedSurface } from './fx/dotted-surface.js';
+import { VaporizeText } from './fx/vaporize-text.js';
 
 Chart.register(...registerables);
 
@@ -84,6 +86,8 @@ function app() {
         authLoading: false,
         authError: '',
         authSuccess: '',
+        authAnimationPending: false,
+        dottedSurface: null,
 
         // Display Name
         displayName: '',
@@ -323,7 +327,15 @@ function app() {
                 return;
             }
             this.authLoading = true;
+            const isMock = import.meta.env.DEV && new URLSearchParams(location.search).has('dev');
+            const isErrorMock = isMock && new URLSearchParams(location.search).has('error');
             try {
+                if (isMock) {
+                    await new Promise(r => setTimeout(r, 800));
+                    if (isErrorMock) throw new Error('Mock-Fehler: Ungültige Zugangsdaten.');
+                    this.authAnimationPending = true;
+                    return;
+                }
                 await Supa.signIn(this.authEmail, this.authPassword);
             } catch (e) {
                 this.authError = e.message === 'Invalid login credentials'
@@ -346,7 +358,15 @@ function app() {
                 return;
             }
             this.authLoading = true;
+            const isMock = import.meta.env.DEV && new URLSearchParams(location.search).has('dev');
+            const isErrorMock = isMock && new URLSearchParams(location.search).has('error');
             try {
+                if (isMock) {
+                    await new Promise(r => setTimeout(r, 800));
+                    if (isErrorMock) throw new Error('Mock-Fehler: Registrierung fehlgeschlagen.');
+                    this.authAnimationPending = true;
+                    return;
+                }
                 const data = await Supa.signUp(this.authEmail, this.authPassword);
                 if (data.user && !data.session) {
                     this.authSuccess = 'Registrierung erfolgreich! Bitte bestätige deine E-Mail.';
@@ -384,6 +404,25 @@ function app() {
                 this.authError = e.message || 'Anmeldung fehlgeschlagen.';
                 this.authLoading = false;
             }
+        },
+
+        initDottedSurface() {
+            if (this.dottedSurface) return;
+            this.dottedSurface = DottedSurface.init();
+        },
+
+        destroyDottedSurface() {
+            if (this.dottedSurface) {
+                this.dottedSurface.destroy();
+                this.dottedSurface = null;
+            }
+        },
+
+        triggerVaporizeAnimation(canvas) {
+            VaporizeText.play(canvas, 'TrAction', () => {
+                this.authAnimationPending = false;
+                this.loadAppData();
+            });
         },
 
         async handleLogout() {
@@ -585,6 +624,18 @@ function app() {
             }
             this.authReady = true;
 
+            // DottedSurface: start when auth screen is visible, stop when user logs in
+            this.$watch('authUser', (newUser) => {
+                if (!newUser) {
+                    this.$nextTick(() => this.initDottedSurface());
+                } else {
+                    this.destroyDottedSurface();
+                }
+            });
+            if (!this.authUser) {
+                this.$nextTick(() => this.initDottedSurface());
+            }
+
             // Listen for auth changes (login/logout)
             Supa.onAuthStateChange((session) => {
                 const wasLoggedIn = !!this.authUser;
@@ -594,7 +645,7 @@ function app() {
                     this.authEmail = '';
                     this.authPassword = '';
                     this.authError = '';
-                    this.loadAppData();
+                    this.authAnimationPending = true;
                 }
                 // If just logged out, show auth screen
                 if (wasLoggedIn && !this.authUser) {
