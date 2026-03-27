@@ -248,7 +248,42 @@ Bei Fehler
 
 ---
 
-## 9. Nicht im Scope
+## 9. Dev-Mock-Mode (Test-Hilfsmittel)
+
+Da Supabase in der Entwicklungsumgebung nicht ohne echte Credentials funktioniert, wird ein **Mock-Mode** implementiert, der den vollständigen Auth-Flow lokal simulierbar macht.
+
+**Aktivierung:** URL-Parameter `?dev=true` (z.B. `http://localhost:5173/?dev=true`)
+
+**Verhalten im Mock-Mode:**
+- `handleLogin()` und `handleRegister()` rufen Supabase **nicht** auf
+- Stattdessen: 800ms simulierter Delay (loading state sichtbar), dann sofort `authAnimationPending = true`
+- Alle anderen UI-States (Loading-Spinner, Button-Disable) laufen normal durch
+- Error-States können mit `?dev=true&error=true` getestet werden (simuliert Auth-Fehler)
+- Mock-Mode ist **ausschließlich im Dev-Build aktiv** — `import.meta.env.DEV` Guard
+
+**Implementierung:**
+```js
+// In handleLogin() / handleRegister() — minimale Änderung
+const isMock = new URLSearchParams(location.search).has('dev') && import.meta.env.DEV;
+if (isMock) {
+  await new Promise(r => setTimeout(r, 800));
+  this.authAnimationPending = true;
+  return;
+}
+// ... normaler Supabase-Flow
+```
+
+**Neue Datei:** Keine — der Mock wird direkt in die 2-Zeilen-Änderung in `main.js` eingebettet.
+
+**Testszenarien mit Mock-Mode:**
+1. `?dev=true` — Erfolgreicher Login → DottedSurface sichtbar, Wordmark vaporisiert, App lädt (mit Dummy-State)
+2. `?dev=true&error=true` — Fehler-State → Error-Message, keine Animation
+3. Mobil (375px) im Browser-DevTools — Layout-Check
+4. Light-Mode (DevTools `prefers-color-scheme: light`) — Theme-Anpassung der Dots + Wordmark
+
+---
+
+## 11. Nicht im Scope
 
 - Änderungen am Onboarding-Modal
 - Änderungen an anderen Screens (Health, Training, Habits)
@@ -258,7 +293,7 @@ Bei Fehler
 
 ---
 
-## 10. Abhängigkeiten
+## 12. Abhängigkeiten
 
 - `three` (npm) — für DottedSurface
 - Plus Jakarta Sans — bereits geladen (kein neuer Font)
