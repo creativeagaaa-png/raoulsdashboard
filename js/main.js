@@ -596,6 +596,10 @@ function app() {
                     this.authError = '';
                     this.loadAppData();
                 }
+                // If just logged out, show auth screen
+                if (wasLoggedIn && !this.authUser) {
+                    this.appLoaded = true;
+                }
             });
 
             // If already logged in, load data
