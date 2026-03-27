@@ -11,6 +11,8 @@ import { workoutMixin } from './features/workout.js';
 import { restTimerMixin } from './features/rest-timer.js';
 import { caloriesMixin } from './features/calories.js';
 import { checkinMixin } from './features/checkin.js';
+import { weightAnalysisMixin } from './features/weight-analysis.js';
+import { weeklyReportMixin } from './features/weekly-report.js';
 import { hapticLight, hapticMedium, hapticSuccess, hapticWarning, hapticSelection } from './utils/haptics.js';
 import { registerSwipeDismiss } from './utils/swipe-dismiss.js';
 
@@ -132,6 +134,8 @@ function app() {
         ...restTimerMixin(),
         ...caloriesMixin(),
         ...checkinMixin(),
+        ...weightAnalysisMixin(),
+        ...weeklyReportMixin(),
 
         // --- MIXIN GETTERS (must be defined here, not in mixins, because spread destroys getters) ---
 
@@ -167,11 +171,41 @@ function app() {
 
         prevTrainingDay() {
             this.trainingDayOffset--;
-            this.trainingExpanded = false;
         },
         nextTrainingDay() {
             this.trainingDayOffset++;
-            this.trainingExpanded = false;
+        },
+
+        selectTrainingDay(dayIndex) {
+            const todayIdx = getTodayWeekdayIndex();
+            this.trainingDayOffset = dayIndex - todayIdx;
+        },
+
+        getWeekDates() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+            const dates = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                dates.push(d.getDate());
+            }
+            return dates;
+        },
+
+        getWeekTrainingStats() {
+            let trainingDays = 0;
+            let totalExercises = 0;
+            for (let i = 0; i < 7; i++) {
+                const exercises = this.trainingPlan[i] || [];
+                if (exercises.length > 0) {
+                    trainingDays++;
+                    totalExercises += exercises.length;
+                }
+            }
+            return { trainingDays, totalExercises, restDays: 7 - trainingDays };
         },
 
         // Workout getters

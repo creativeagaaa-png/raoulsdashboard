@@ -1,0 +1,9 @@
+{"type":"server-started","port":60538,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:60538","screen_dir":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/8383-1774563977/content","state_dir":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/8383-1774563977/state"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/8383-1774563977/content/training-redesign-options.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/8383-1774563977/content/training-redesign-v2.html"}
+{"source":"user-event","type":"click","text":"✓\n    \n      Sieht gut aus, weiter!\n      Dieses Layout übernehmen und mit der Spec weitermachen.","choice":"approve","id":null,"timestamp":1774564238479}
+{"source":"user-event","type":"click","text":"✓\n    \n      Sieht gut aus, weiter!\n      Dieses Layout übernehmen und mit der Spec weitermachen.","choice":"approve","id":null,"timestamp":1774564391438}
+{"source":"user-event","type":"click","text":"✓\n    \n      Sieht gut aus, weiter!\n      Dieses Layout übernehmen und mit der Spec weitermachen.","choice":"approve","id":null,"timestamp":1774564391542}
+{"source":"user-event","type":"click","text":"✓\n    \n      Sieht gut aus, weiter!\n      Dieses Layout übernehmen und mit der Spec weitermachen.","choice":"approve","id":null,"timestamp":1774564392239}
+{"source":"user-event","type":"click","text":"✓\n    \n      Sieht gut aus, weiter!\n      Dieses Layout übernehmen und mit der Spec weitermachen.","choice":"approve","id":null,"timestamp":1774564393288}
+{"type":"server-stopped","reason":"idle timeout"}

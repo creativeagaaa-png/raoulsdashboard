@@ -2,6 +2,17 @@ import * as Supa from '../store/supabase.js';
 import { getLocalDateString } from '../utils/formatting.js';
 import { DEFAULT_PROFILE } from '../utils/constants.js';
 
+// Migrate old boolean checked format to new status format
+function migrateItem(item) {
+    if ('status' in item) return item;
+    return {
+        key: item.key,
+        label: item.label,
+        status: item.checked ? 'done' : 'none',
+        reason: null
+    };
+}
+
 export const checkinMixin = () => ({
     todayCheckin: [],
     checkinHistory: [],
@@ -12,35 +23,62 @@ export const checkinMixin = () => ({
     checkinWeekData: [],
     checkinEditMode: false,
     newCheckinLabel: '',
+    checkinSelectedDate: null,
+
+    getCheckinItems() {
+        const items = [...(this.checklistItems || DEFAULT_PROFILE.checklistItems)];
+        // Auto-add calorie goal if profile is complete
+        if (this.gender && this.userHeight && this.userAge && this.calorieData) {
+            const hasAutoCalories = items.some(i => i.key === 'auto_calories');
+            if (!hasAutoCalories) {
+                const target = this.calorieData.target ? this.calorieData.target.toLocaleString('de-DE') : '—';
+                items.push({ key: 'auto_calories', label: 'Kalorien im Ziel: ' + target + ' kcal' });
+            } else {
+                // Update label with current target
+                const idx = items.findIndex(i => i.key === 'auto_calories');
+                if (idx >= 0) {
+                    const target = this.calorieData.target ? this.calorieData.target.toLocaleString('de-DE') : '—';
+                    items[idx] = { ...items[idx], label: 'Kalorien im Ziel: ' + target + ' kcal' };
+                }
+            }
+        }
+        return items;
+    },
 
     initTodayCheckin() {
-        const items = this.checklistItems || DEFAULT_PROFILE.checklistItems;
+        const items = this.getCheckinItems();
         this.todayCheckin = items.map(item => ({
             key: item.key,
             label: item.label,
-            checked: false
+            status: 'none',
+            reason: null
         }));
     },
 
     async loadCheckins() {
         try {
             const today = getLocalDateString();
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const fromDate = thirtyDaysAgo.toISOString().split('T')[0];
+            const sixtyDaysAgo = new Date();
+            sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+            const fromDate = sixtyDaysAgo.toISOString().split('T')[0];
 
             const data = await Supa.getCheckins(fromDate, today);
-            this.checkinHistory = data || [];
+            // Migrate all history items
+            this.checkinHistory = (data || []).map(entry => ({
+                ...entry,
+                items: (entry.items || []).map(migrateItem)
+            }));
 
             const todayEntry = this.checkinHistory.find(c => c.date === today);
             if (todayEntry) {
-                const items = this.checklistItems || DEFAULT_PROFILE.checklistItems;
+                const items = this.getCheckinItems();
                 this.todayCheckin = items.map(item => {
                     const existing = todayEntry.items.find(i => i.key === item.key);
                     return {
                         key: item.key,
                         label: item.label,
-                        checked: existing ? existing.checked : false
+                        status: existing ? existing.status : 'none',
+                        reason: existing ? existing.reason : null
                     };
                 });
             } else {
@@ -59,31 +97,67 @@ export const checkinMixin = () => ({
         }
     },
 
-    async toggleCheckinItem(key) {
+    async setCheckinStatus(key, newStatus) {
         const item = this.todayCheckin.find(i => i.key === key);
         if (!item) return;
-        item.checked = !item.checked;
+        const oldStatus = item.status;
+        const oldReason = item.reason;
+        item.status = newStatus;
+        if (newStatus !== 'missed') item.reason = null;
 
         try {
-            const today = getLocalDateString();
-            await Supa.upsertCheckin(today, this.todayCheckin);
+            const activeDate = this.checkinGetActiveDate();
+            await Supa.upsertCheckin(activeDate, this.todayCheckin);
 
-            const todayIdx = this.checkinHistory.findIndex(c => c.date === today);
-            if (todayIdx >= 0) {
-                this.checkinHistory[todayIdx].items = [...this.todayCheckin];
+            const idx = this.checkinHistory.findIndex(c => c.date === activeDate);
+            if (idx >= 0) {
+                this.checkinHistory[idx].items = [...this.todayCheckin];
             } else {
-                this.checkinHistory.unshift({ date: today, items: [...this.todayCheckin] });
+                this.checkinHistory.unshift({ date: activeDate, items: [...this.todayCheckin] });
             }
             this.checkinStreak = this.calculateCheckinStreak();
             this.checkinWeekData = this.getCheckinWeekData();
         } catch (e) {
             console.error('Failed to save checkin:', e);
-            item.checked = !item.checked;
+            item.status = oldStatus;
+            item.reason = oldReason;
         }
     },
 
+    cycleCheckinStatus(key) {
+        const item = this.todayCheckin.find(i => i.key === key);
+        if (!item) return;
+        const next = item.status === 'none' ? 'done' : item.status === 'done' ? 'missed' : 'none';
+        this.setCheckinStatus(key, next);
+    },
+
+    async saveCheckinReason(key, reason) {
+        const item = this.todayCheckin.find(i => i.key === key);
+        if (!item || item.status !== 'missed') return;
+        item.reason = reason || null;
+
+        try {
+            const activeDate = this.checkinGetActiveDate();
+            await Supa.upsertCheckin(activeDate, this.todayCheckin);
+            const idx = this.checkinHistory.findIndex(c => c.date === activeDate);
+            if (idx >= 0) {
+                this.checkinHistory[idx].items = [...this.todayCheckin];
+            }
+        } catch (e) {
+            console.error('Failed to save reason:', e);
+        }
+    },
+
+    // Keep backward compat for old toggleCheckinItem calls
+    async toggleCheckinItem(key) {
+        const item = this.todayCheckin.find(i => i.key === key);
+        if (!item) return;
+        const next = item.status === 'done' ? 'none' : 'done';
+        this.setCheckinStatus(key, next);
+    },
+
     getCheckinCompletedCount() {
-        return this.todayCheckin.filter(i => i.checked).length;
+        return this.todayCheckin.filter(i => i.status === 'done').length;
     },
 
     calculateCheckinStreak() {
@@ -91,7 +165,7 @@ export const checkinMixin = () => ({
 
         const today = getLocalDateString();
         const activeDates = this.checkinHistory
-            .filter(c => c.items && c.items.some(i => i.checked))
+            .filter(c => c.items && c.items.some(i => i.status === 'done' || i.checked === true))
             .map(c => c.date)
             .sort()
             .reverse();
@@ -118,25 +192,25 @@ export const checkinMixin = () => ({
     calculateCheckinStats() {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const monthStr = monthStart.toISOString().split('T')[0];
+        const monthStr = getLocalDateString(monthStart);
 
         const monthEntries = this.checkinHistory.filter(c => c.date >= monthStr);
 
         let activeDays = 0;
-        let totalChecked = 0;
+        let totalDone = 0;
         let totalItems = 0;
 
         for (const entry of monthEntries) {
-            const checked = entry.items.filter(i => i.checked).length;
-            if (checked > 0) activeDays++;
-            totalChecked += checked;
+            const done = entry.items.filter(i => i.status === 'done' || i.checked === true).length;
+            if (done > 0) activeDays++;
+            totalDone += done;
             totalItems += entry.items.length;
         }
 
-        const completionRate = totalItems > 0 ? Math.round((totalChecked / totalItems) * 100) : 0;
+        const completionRate = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
         const allDates = this.checkinHistory
-            .filter(c => c.items && c.items.some(i => i.checked))
+            .filter(c => c.items && c.items.some(i => i.status === 'done' || i.checked === true))
             .map(c => c.date)
             .sort();
 
@@ -164,15 +238,15 @@ export const checkinMixin = () => ({
         monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
         monday.setHours(0, 0, 0, 0);
 
-        const totalItems = (this.checklistItems || DEFAULT_PROFILE.checklistItems).length;
+        const totalItems = this.getCheckinItems().length;
         const week = [];
 
         for (let i = 0; i < 7; i++) {
             const d = new Date(monday);
             d.setDate(monday.getDate() + i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = getLocalDateString(d);
             const entry = this.checkinHistory.find(c => c.date === dateStr);
-            const checked = entry ? entry.items.filter(i => i.checked).length : 0;
+            const checked = entry ? entry.items.filter(i => i.status === 'done' || i.checked === true).length : 0;
             week.push({ date: dateStr, total: totalItems, checked });
         }
         return week;
@@ -182,14 +256,67 @@ export const checkinMixin = () => ({
         if (!label || !label.trim()) return;
         const key = 'custom_' + Date.now();
         this.checklistItems.push({ key, label: label.trim() });
-        this.todayCheckin.push({ key, label: label.trim(), checked: false });
+        this.todayCheckin.push({ key, label: label.trim(), status: 'none', reason: null });
         this.newCheckinLabel = '';
         this.saveSettings();
     },
 
     removeCheckinItem(key) {
+        if (key === 'auto_calories') return; // Can't remove auto-calorie item
         this.checklistItems = this.checklistItems.filter(i => i.key !== key);
         this.todayCheckin = this.todayCheckin.filter(i => i.key !== key);
         this.saveSettings();
+    },
+
+    checkinIsToday() {
+        return !this.checkinSelectedDate || this.checkinSelectedDate === getLocalDateString();
+    },
+
+    checkinGetActiveDate() {
+        return this.checkinSelectedDate || getLocalDateString();
+    },
+
+    selectCheckinDate(dateStr) {
+        const today = getLocalDateString();
+        if (dateStr === today) {
+            this.checkinSelectedDate = null;
+            // Reload today's checkin from history
+            const todayEntry = this.checkinHistory.find(c => c.date === today);
+            if (todayEntry) {
+                const items = this.getCheckinItems();
+                this.todayCheckin = items.map(item => {
+                    const existing = todayEntry.items.find(i => i.key === item.key);
+                    return {
+                        key: item.key,
+                        label: item.label,
+                        status: existing ? existing.status : 'none',
+                        reason: existing ? existing.reason : null
+                    };
+                });
+            } else {
+                this.initTodayCheckin();
+            }
+        } else {
+            this.checkinSelectedDate = dateStr;
+            // Load that day's checkin
+            const entry = this.checkinHistory.find(c => c.date === dateStr);
+            const items = this.getCheckinItems();
+            this.todayCheckin = items.map(item => {
+                const existing = entry ? entry.items.find(i => i.key === item.key) : null;
+                return {
+                    key: item.key,
+                    label: item.label,
+                    status: existing ? existing.status : 'none',
+                    reason: existing ? existing.reason : null
+                };
+            });
+        }
+    },
+
+    checkinSelectedLabel() {
+        if (this.checkinIsToday()) return 'Heute';
+        const d = new Date(this.checkinSelectedDate + 'T12:00:00');
+        const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+        return days[d.getDay()] + ', ' + d.getDate() + '.' + (d.getMonth() + 1) + '.';
     }
 });

@@ -44,7 +44,16 @@
       "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard diff --stat HEAD~5..HEAD)",
       "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard log --all --name-only --oneline)",
       "Bash(find /Users/raoulagachi/Codes/AGAsDashboard/js -name \"*.js\" ! -name \"*.test.js\" -type f -exec grep \"^import\" {} +)",
-      "Bash(find /Users/raoulagachi/Codes/AGAsDashboard -name sw.js -o -name service-worker* -o -name *cache*)"
+      "Bash(find /Users/raoulagachi/Codes/AGAsDashboard -name sw.js -o -name service-worker* -o -name *cache*)",
+      "Bash(lsof -ti:5173)",
+      "Bash(xargs kill:*)",
+      "Bash(bash /Users/raoulagachi/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.6/skills/brainstorming/scripts/start-server.sh --project-dir /Users/raoulagachi/Codes/AGAsDashboard)",
+      "Bash(find /Users/raoulagachi/Codes/AGAsDashboard -type f \\\\\\(-name *.sql -o -name migrations -o -name schema \\\\\\))",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git -C /Users/raoulagachi/Codes/AGAsDashboard diff HEAD~1 HEAD -- index.html)",
+      "Bash(git status:*)",
+      "Bash(/Users/raoulagachi/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.6/skills/brainstorming/scripts/start-server.sh --project-dir /Users/raoulagachi/Codes/AGAsDashboard)"
     ]
   }
 }

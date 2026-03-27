@@ -1,0 +1,214 @@
+<h2>Gewohnheiten-Tab: Tägliches Check-In</h2>
+<p class="subtitle">Tägliche Checkliste mit Streak-Anzeige und Wochenübersicht</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Light Mode</div>
+    <div class="mockup-body" style="background: #f5f5f7; padding: 16px;">
+      <div style="max-width: 360px; margin: 0 auto; font-family: -apple-system, system-ui, sans-serif;">
+
+        <!-- Streak Hero -->
+        <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center;">
+          <div style="font-size: 12px; font-weight: 600; color: #f59e0b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Aktuelle Serie</div>
+          <div style="font-size: 52px; font-weight: 800; color: #1d1d1f; line-height: 1;">12</div>
+          <div style="font-size: 14px; color: #86868b; margin-top: 2px;">Tage in Folge</div>
+          <div style="display: flex; justify-content: center; gap: 4px; margin-top: 12px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+          </div>
+        </div>
+
+        <!-- Today's Checklist -->
+        <div style="background: white; border-radius: 16px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+          <div style="padding: 14px 16px; font-size: 14px; font-weight: 600; color: #1d1d1f; border-bottom: 1px solid #f5f5f7;">Heute · 3 von 5</div>
+
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid #f5f5f7;">
+            <div style="width: 24px; height: 24px; border-radius: 8px; background: #f59e0b; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">&#10003;</div>
+            <span style="font-size: 15px; color: #1d1d1f; text-decoration: line-through; opacity: 0.5;">Training absolviert</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid #f5f5f7;">
+            <div style="width: 24px; height: 24px; border-radius: 8px; background: #f59e0b; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">&#10003;</div>
+            <span style="font-size: 15px; color: #1d1d1f; text-decoration: line-through; opacity: 0.5;">Schritte-Ziel erreicht</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid #f5f5f7;">
+            <div style="width: 24px; height: 24px; border-radius: 8px; border: 2px solid #d1d1d6; margin-right: 12px; flex-shrink: 0;"></div>
+            <span style="font-size: 15px; color: #1d1d1f;">Kalorien im Ziel</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid #f5f5f7;">
+            <div style="width: 24px; height: 24px; border-radius: 8px; background: #f59e0b; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">&#10003;</div>
+            <span style="font-size: 15px; color: #1d1d1f; text-decoration: line-through; opacity: 0.5;">Genug getrunken</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center;">
+            <div style="width: 24px; height: 24px; border-radius: 8px; border: 2px solid #d1d1d6; margin-right: 12px; flex-shrink: 0;"></div>
+            <span style="font-size: 15px; color: #1d1d1f;">7+ Stunden Schlaf</span>
+          </div>
+        </div>
+
+        <!-- Weekly Overview -->
+        <div style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+          <div style="font-size: 14px; font-weight: 600; color: #1d1d1f; margin-bottom: 12px;">Diese Woche</div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Mo</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600;">5/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Di</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600;">4/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Mi</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600;">5/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Do</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(245,158,11,0.2); display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 11px; font-weight: 600;">3/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Fr</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">—</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Sa</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">—</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">So</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Stats -->
+        <div style="background: white; border-radius: 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+          <div style="font-size: 14px; font-weight: 600; color: #1d1d1f; margin-bottom: 12px;">Monatsübersicht</div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1; background: #f5f5f7; border-radius: 10px; padding: 10px; text-align: center;">
+              <div style="font-size: 22px; font-weight: 700; color: #1d1d1f;">87%</div>
+              <div style="font-size: 11px; color: #86868b;">Abschlussrate</div>
+            </div>
+            <div style="flex: 1; background: #f5f5f7; border-radius: 10px; padding: 10px; text-align: center;">
+              <div style="font-size: 22px; font-weight: 700; color: #1d1d1f;">12</div>
+              <div style="font-size: 11px; color: #86868b;">Beste Serie</div>
+            </div>
+            <div style="flex: 1; background: #f5f5f7; border-radius: 10px; padding: 10px; text-align: center;">
+              <div style="font-size: 22px; font-weight: 700; color: #1d1d1f;">22</div>
+              <div style="font-size: 11px; color: #86868b;">Aktive Tage</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Dark Mode</div>
+    <div class="mockup-body" style="background: #050505; padding: 16px;">
+      <div style="max-width: 360px; margin: 0 auto; font-family: -apple-system, system-ui, sans-serif;">
+
+        <!-- Streak Hero -->
+        <div style="background: #1c1c1e; border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.06); text-align: center;">
+          <div style="font-size: 12px; font-weight: 600; color: #f59e0b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Aktuelle Serie</div>
+          <div style="font-size: 52px; font-weight: 800; color: #f5f5f7; line-height: 1;">12</div>
+          <div style="font-size: 14px; color: #86868b; margin-top: 2px;">Tage in Folge</div>
+          <div style="display: flex; justify-content: center; gap: 4px; margin-top: 12px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></div>
+          </div>
+        </div>
+
+        <!-- Today's Checklist -->
+        <div style="background: #1c1c1e; border-radius: 16px; overflow: hidden; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="padding: 14px 16px; font-size: 14px; font-weight: 600; color: #f5f5f7; border-bottom: 1px solid rgba(255,255,255,0.06);">Heute · 3 von 5</div>
+
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div style="width: 24px; height: 24px; border-radius: 8px; background: #f59e0b; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">&#10003;</div>
+            <span style="font-size: 15px; color: #f5f5f7; text-decoration: line-through; opacity: 0.5;">Training absolviert</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div style="width: 24px; height: 24px; border-radius: 8px; background: #f59e0b; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">&#10003;</div>
+            <span style="font-size: 15px; color: #f5f5f7; text-decoration: line-through; opacity: 0.5;">Schritte-Ziel erreicht</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div style="width: 24px; height: 24px; border-radius: 8px; border: 2px solid #48484a; margin-right: 12px; flex-shrink: 0;"></div>
+            <span style="font-size: 15px; color: #f5f5f7;">Kalorien im Ziel</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div style="width: 24px; height: 24px; border-radius: 8px; background: #f59e0b; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0;">&#10003;</div>
+            <span style="font-size: 15px; color: #f5f5f7; text-decoration: line-through; opacity: 0.5;">Genug getrunken</span>
+          </div>
+          <div style="padding: 14px 16px; display: flex; align-items: center;">
+            <div style="width: 24px; height: 24px; border-radius: 8px; border: 2px solid #48484a; margin-right: 12px; flex-shrink: 0;"></div>
+            <span style="font-size: 15px; color: #f5f5f7;">7+ Stunden Schlaf</span>
+          </div>
+        </div>
+
+        <!-- Weekly Overview -->
+        <div style="background: #1c1c1e; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-size: 14px; font-weight: 600; color: #f5f5f7; margin-bottom: 12px;">Diese Woche</div>
+          <div style="display: flex; justify-content: space-between;">
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Mo</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600;">5/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Di</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600;">4/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Mi</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600;">5/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Do</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(245,158,11,0.2); display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 11px; font-weight: 600;">3/5</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Fr</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; border: 2px solid #48484a; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">—</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">Sa</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; border: 2px solid #48484a; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">—</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 11px; color: #86868b; margin-bottom: 4px;">So</div>
+              <div style="width: 32px; height: 32px; border-radius: 10px; border: 2px solid #48484a; display: flex; align-items: center; justify-content: center; color: #86868b; font-size: 11px;">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Stats -->
+        <div style="background: #1c1c1e; border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.06);">
+          <div style="font-size: 14px; font-weight: 600; color: #f5f5f7; margin-bottom: 12px;">Monatsübersicht</div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px; text-align: center;">
+              <div style="font-size: 22px; font-weight: 700; color: #f5f5f7;">87%</div>
+              <div style="font-size: 11px; color: #86868b;">Abschlussrate</div>
+            </div>
+            <div style="flex: 1; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px; text-align: center;">
+              <div style="font-size: 22px; font-weight: 700; color: #f5f5f7;">12</div>
+              <div style="font-size: 11px; color: #86868b;">Beste Serie</div>
+            </div>
+            <div style="flex: 1; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px; text-align: center;">
+              <div style="font-size: 22px; font-weight: 700; color: #f5f5f7;">22</div>
+              <div style="font-size: 11px; color: #86868b;">Aktive Tage</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

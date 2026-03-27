@@ -1,0 +1,5 @@
+{"type":"server-started","port":61049,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:61049","screen_dir":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/3564-1774558217/content","state_dir":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/3564-1774558217/state"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/3564-1774558217/content/layout-direction.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/3564-1774558217/content/plan-tab-layout.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/3564-1774558217/content/habits-tab-layout.html"}
+{"type":"server-stopped","reason":"idle timeout"}

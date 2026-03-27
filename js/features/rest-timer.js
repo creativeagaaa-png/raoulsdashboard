@@ -54,6 +54,7 @@ export const restTimerMixin = () => ({
                 gain2.gain.value = 0.3;
                 osc2.start();
                 osc2.stop(ctx.currentTime + 0.3);
+                setTimeout(() => ctx.close().catch(() => {}), 500);
             }, 300);
         } catch (e) { /* Audio not available */ }
     },
