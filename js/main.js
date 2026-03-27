@@ -327,8 +327,9 @@ function app() {
                 return;
             }
             this.authLoading = true;
-            const isMock = import.meta.env.DEV && new URLSearchParams(location.search).has('dev');
-            const isErrorMock = isMock && new URLSearchParams(location.search).has('error');
+            const mockParams = import.meta.env.DEV ? new URLSearchParams(location.search) : null;
+            const isMock = !!mockParams?.has('dev');
+            const isErrorMock = isMock && mockParams.has('error');
             try {
                 if (isMock) {
                     await new Promise(r => setTimeout(r, 800));
@@ -358,8 +359,9 @@ function app() {
                 return;
             }
             this.authLoading = true;
-            const isMock = import.meta.env.DEV && new URLSearchParams(location.search).has('dev');
-            const isErrorMock = isMock && new URLSearchParams(location.search).has('error');
+            const mockParams = import.meta.env.DEV ? new URLSearchParams(location.search) : null;
+            const isMock = !!mockParams?.has('dev');
+            const isErrorMock = isMock && mockParams.has('error');
             try {
                 if (isMock) {
                     await new Promise(r => setTimeout(r, 800));
