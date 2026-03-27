@@ -21,55 +21,121 @@ function requireDb() {
     return db;
 }
 
+function getUserId() {
+    const session = db?.supabaseUrl ? null : null; // placeholder
+    // We'll get user_id from the current session
+    return null;
+}
+
+// ── Auth ────────────────────────────────────────────────
+
+export async function signUp(email, password) {
+    const { data, error } = await requireDb().auth.signUp({ email, password });
+    if (error) throw error;
+    return data;
+}
+
+export async function signIn(email, password) {
+    const { data, error } = await requireDb().auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+}
+
+export async function signOut() {
+    const { error } = await requireDb().auth.signOut();
+    if (error) throw error;
+}
+
+export async function getSession() {
+    const { data, error } = await requireDb().auth.getSession();
+    if (error) throw error;
+    return data.session;
+}
+
+export function onAuthStateChange(callback) {
+    return requireDb().auth.onAuthStateChange((_event, session) => {
+        callback(session);
+    });
+}
+
+export async function resetPassword(email) {
+    const { error } = await requireDb().auth.resetPasswordForEmail(email);
+    if (error) throw error;
+}
+
+export async function signInWithProvider(provider) {
+    const { error } = await requireDb().auth.signInWithOAuth({
+        provider,
+        options: {
+            redirectTo: window.location.origin
+        }
+    });
+    if (error) throw error;
+}
+
+async function requireUserId() {
+    const { data } = await requireDb().auth.getUser();
+    if (!data?.user?.id) throw new Error('Nicht angemeldet');
+    return data.user.id;
+}
+
 // ── Weight Entries ──────────────────────────────────────
 
 export async function getWeightEntries() {
+    const userId = await requireUserId();
     const { data, error } = await requireDb()
         .from('weight_entries')
         .select('date, weight')
+        .eq('user_id', userId)
         .order('date', { ascending: true });
     if (error) throw error;
     return (data || []).map(e => ({ date: e.date, weight: Number(e.weight) }));
 }
 
 export async function upsertWeightEntry(date, weight) {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('weight_entries')
-        .upsert({ date, weight }, { onConflict: 'date' });
+        .upsert({ date, weight, user_id: userId }, { onConflict: 'user_id,date' });
     if (error) throw error;
 }
 
 export async function deleteWeightEntry(date) {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('weight_entries')
         .delete()
+        .eq('user_id', userId)
         .eq('date', date);
     if (error) throw error;
 }
 
 export async function clearAllWeightEntries() {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('weight_entries')
         .delete()
-        .gte('id', 0);
+        .eq('user_id', userId);
     if (error) throw error;
 }
 
-// ── Settings (single-row, id=1) ─────────────────────────
+// ── Settings (one row per user) ─────────────────────────
 
 export async function getSettings() {
+    const userId = await requireUserId();
     const { data, error } = await requireDb()
         .from('settings')
         .select('*')
-        .eq('id', 1)
+        .eq('user_id', userId)
         .single();
     if (error && error.code !== 'PGRST116') throw error;
     return data;
 }
 
 export async function saveSettings(profile) {
+    const userId = await requireUserId();
     const row = {
-        id: 1,
+        user_id: userId,
         start_weight: profile.startWeight,
         goal_weight: profile.goalWeight,
         user_height: profile.userHeight,
@@ -92,16 +158,18 @@ export async function saveSettings(profile) {
     }
     const { error } = await requireDb()
         .from('settings')
-        .upsert(row);
+        .upsert(row, { onConflict: 'user_id' });
     if (error) throw error;
 }
 
 // ── Training Plan ───────────────────────────────────────
 
 export async function getTrainingPlan() {
+    const userId = await requireUserId();
     const { data, error } = await requireDb()
         .from('training_plan')
         .select('*')
+        .eq('user_id', userId)
         .order('day_index')
         .order('exercise_order');
     if (error) throw error;
@@ -141,6 +209,7 @@ export async function getTrainingPlan() {
 }
 
 export async function saveTrainingPlan(plan) {
+    const userId = await requireUserId();
     const rows = [];
     for (let day = 0; day < 7; day++) {
         const exercises = plan[day] || [];
@@ -148,6 +217,7 @@ export async function saveTrainingPlan(plan) {
             const ex = exercises[i];
             const type = ex.type || 'strength';
             const row = {
+                user_id: userId,
                 day_index: day,
                 exercise_order: i,
                 name: ex.name,
@@ -178,7 +248,7 @@ export async function saveTrainingPlan(plan) {
     const { error: delErr } = await requireDb()
         .from('training_plan')
         .delete()
-        .gte('id', 0);
+        .eq('user_id', userId);
     if (delErr) throw delErr;
 
     if (rows.length > 0) {
@@ -192,9 +262,11 @@ export async function saveTrainingPlan(plan) {
 // ── Workout Logs ────────────────────────────────────────
 
 export async function getWorkoutLogs() {
+    const userId = await requireUserId();
     const { data, error } = await requireDb()
         .from('workout_logs')
         .select('*')
+        .eq('user_id', userId)
         .order('date', { ascending: false })
         .limit(50);
     if (error) throw error;
@@ -210,7 +282,9 @@ export async function getWorkoutLogs() {
 }
 
 export async function saveWorkoutLog(session) {
+    const userId = await requireUserId();
     const row = {
+        user_id: userId,
         date: session.date,
         day_index: session.dayIndex,
         started_at: session.startedAt,
@@ -228,27 +302,32 @@ export async function saveWorkoutLog(session) {
 }
 
 export async function deleteWorkoutLog(id) {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('workout_logs')
         .delete()
+        .eq('user_id', userId)
         .eq('id', id);
     if (error) throw error;
 }
 
 export async function clearAllWorkoutLogs() {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('workout_logs')
         .delete()
-        .gte('id', 0);
+        .eq('user_id', userId);
     if (error) throw error;
 }
 
 // ── Daily Check-Ins ─────────────────────────────────────
 
 export async function getCheckins(fromDate, toDate) {
+    const userId = await requireUserId();
     const { data, error } = await requireDb()
         .from('daily_checkins')
         .select('date, items')
+        .eq('user_id', userId)
         .gte('date', fromDate)
         .lte('date', toDate)
         .order('date', { ascending: false });
@@ -257,24 +336,28 @@ export async function getCheckins(fromDate, toDate) {
 }
 
 export async function upsertCheckin(date, items) {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('daily_checkins')
-        .upsert({ date, items }, { onConflict: 'date' });
+        .upsert({ date, items, user_id: userId }, { onConflict: 'user_id,date' });
     if (error) throw error;
 }
 
 export async function deleteCheckin(date) {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('daily_checkins')
         .delete()
+        .eq('user_id', userId)
         .eq('date', date);
     if (error) throw error;
 }
 
 export async function clearAllCheckins() {
+    const userId = await requireUserId();
     const { error } = await requireDb()
         .from('daily_checkins')
         .delete()
-        .gte('id', 0);
+        .eq('user_id', userId);
     if (error) throw error;
 }

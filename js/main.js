@@ -27,6 +27,7 @@ import toastComponent from '../templates/modals/toast.html?raw';
 import workoutModal from '../templates/modals/workout.html?raw';
 import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
 import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
+import authScreen from '../templates/modals/auth.html?raw';
 
 Chart.register(...registerables);
 
@@ -34,6 +35,7 @@ Chart.register(...registerables);
 const modalsContainer = document.getElementById('modals');
 if (modalsContainer) {
     modalsContainer.innerHTML = [
+        authScreen,
         bmiDetailModal,
         settingsModal,
         trainingModal,
@@ -68,6 +70,17 @@ function app() {
 
         history: [],
         chartFilter: '1M',
+
+        // Auth State
+        authReady: false,
+        authUser: null,
+        authMode: 'login',
+        authEmail: '',
+        authPassword: '',
+        authShowPassword: false,
+        authLoading: false,
+        authError: '',
+        authSuccess: '',
 
         // UI State
         activeTab: 'health',
@@ -276,8 +289,136 @@ function app() {
             return `${mins}:${String(secs).padStart(2, '0')}`;
         },
 
+        // --- AUTH ---
+        async handleLogin() {
+            this.authError = '';
+            this.authSuccess = '';
+            if (!this.authEmail || !this.authPassword) {
+                this.authError = 'Bitte E-Mail und Passwort eingeben.';
+                return;
+            }
+            this.authLoading = true;
+            try {
+                await Supa.signIn(this.authEmail, this.authPassword);
+            } catch (e) {
+                this.authError = e.message === 'Invalid login credentials'
+                    ? 'E-Mail oder Passwort falsch.'
+                    : (e.message || 'Anmeldung fehlgeschlagen.');
+            } finally {
+                this.authLoading = false;
+            }
+        },
+
+        async handleRegister() {
+            this.authError = '';
+            this.authSuccess = '';
+            if (!this.authEmail || !this.authPassword) {
+                this.authError = 'Bitte E-Mail und Passwort eingeben.';
+                return;
+            }
+            if (this.authPassword.length < 6) {
+                this.authError = 'Passwort muss mindestens 6 Zeichen lang sein.';
+                return;
+            }
+            this.authLoading = true;
+            try {
+                const data = await Supa.signUp(this.authEmail, this.authPassword);
+                if (data.user && !data.session) {
+                    this.authSuccess = 'Registrierung erfolgreich! Bitte bestätige deine E-Mail.';
+                    this.authMode = 'login';
+                }
+            } catch (e) {
+                this.authError = e.message || 'Registrierung fehlgeschlagen.';
+            } finally {
+                this.authLoading = false;
+            }
+        },
+
+        async handleResetPassword() {
+            this.authError = '';
+            this.authSuccess = '';
+            if (!this.authEmail) {
+                this.authError = 'Bitte gib deine E-Mail-Adresse ein.';
+                return;
+            }
+            try {
+                await Supa.resetPassword(this.authEmail);
+                this.authSuccess = 'Link zum Zurücksetzen wurde gesendet. Prüfe dein Postfach.';
+            } catch (e) {
+                this.authError = e.message || 'Fehler beim Zurücksetzen.';
+            }
+        },
+
+        async handleSocialLogin(provider) {
+            this.authError = '';
+            this.authSuccess = '';
+            this.authLoading = true;
+            try {
+                await Supa.signInWithProvider(provider);
+            } catch (e) {
+                this.authError = e.message || 'Anmeldung fehlgeschlagen.';
+                this.authLoading = false;
+            }
+        },
+
+        async handleLogout() {
+            try {
+                await Supa.signOut();
+                this.authUser = null;
+                this.appLoaded = false;
+                this.profileDropdownOpen = false;
+            } catch (e) {
+                console.error('Logout failed:', e);
+            }
+        },
+
         // --- INIT ---
         async initApp() {
+            // Check auth state first
+            try {
+                const session = await Supa.getSession();
+                this.authUser = session?.user || null;
+            } catch (e) {
+                console.error('Auth check failed:', e);
+            }
+            this.authReady = true;
+
+            // Listen for auth changes (login/logout)
+            Supa.onAuthStateChange((session) => {
+                const wasLoggedIn = !!this.authUser;
+                this.authUser = session?.user || null;
+                // If just logged in, load the app
+                if (!wasLoggedIn && this.authUser) {
+                    this.authEmail = '';
+                    this.authPassword = '';
+                    this.authError = '';
+                    this.loadAppData();
+                }
+            });
+
+            // If already logged in, load data
+            if (this.authUser) {
+                await this.loadAppData();
+            } else {
+                this.appLoaded = true; // Show auth screen
+            }
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            }
+
+            // Offline detection
+            window.addEventListener('online', () => { this.isOffline = false; });
+            window.addEventListener('offline', () => { this.isOffline = true; });
+
+            // Re-render chart when OS theme changes
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+                this.updateChart();
+                this.updateThemeColor();
+            });
+        },
+
+        async loadAppData() {
             try {
                 const [settings, trainingPlan, weightEntries, workoutLogs] =
                     await Promise.all([
@@ -335,19 +476,6 @@ function app() {
                 this.initPullToRefresh();
                 this.handleShortcutAction();
                 this.updateThemeColor();
-            });
-
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js').catch(() => {});
-            }
-
-            // Offline detection
-            window.addEventListener('online', () => { this.isOffline = false; });
-            window.addEventListener('offline', () => { this.isOffline = true; });
-
-            // Re-render chart when OS theme changes
-            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
-                this.renderChart();
             });
         },
 
