@@ -818,9 +818,6 @@ input[type="number"] {
 
 /* Light mode card */
 @media (prefers-color-scheme: light) {
-    .auth-screen {
-        background: var(--bg);
-    }
     .auth-card {
         background: rgba(0, 0, 0, 0.03);
         border-color: rgba(0, 0, 0, 0.08);
