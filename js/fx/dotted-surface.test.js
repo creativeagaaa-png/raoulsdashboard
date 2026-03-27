@@ -29,13 +29,13 @@ const mockCamera = {
 const mockPoints = { geometry: mockGeometry };
 
 vi.mock('three', () => ({
-  WebGLRenderer: vi.fn(() => mockRenderer),
-  Scene: vi.fn(() => mockScene),
-  PerspectiveCamera: vi.fn(() => mockCamera),
-  BufferGeometry: vi.fn(() => mockGeometry),
-  BufferAttribute: vi.fn((arr, itemSize) => ({ array: arr, itemSize })),
-  PointsMaterial: vi.fn(() => mockMaterial),
-  Points: vi.fn(() => mockPoints),
+  WebGLRenderer: vi.fn(function() { return mockRenderer; }),
+  Scene: vi.fn(function() { return mockScene; }),
+  PerspectiveCamera: vi.fn(function() { return mockCamera; }),
+  BufferGeometry: vi.fn(function() { return mockGeometry; }),
+  BufferAttribute: vi.fn(function(arr, itemSize) { return { array: arr, itemSize }; }),
+  PointsMaterial: vi.fn(function() { return mockMaterial; }),
+  Points: vi.fn(function() { return mockPoints; }),
 }));
 
 import { DottedSurface } from './dotted-surface.js';
