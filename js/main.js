@@ -340,9 +340,14 @@ function app() {
                 }
                 await Supa.signIn(this.authEmail, this.authPassword);
             } catch (e) {
-                this.authError = e.message === 'Invalid login credentials'
-                    ? 'E-Mail oder Passwort falsch.'
-                    : (e.message || 'Anmeldung fehlgeschlagen.');
+                const msg = e.message || '';
+                if (msg === 'Invalid login credentials') {
+                    this.authError = 'E-Mail oder Passwort falsch.';
+                } else if (msg.includes('Email not confirmed') || msg.includes('email_not_confirmed')) {
+                    this.authError = 'Bitte bestätige zuerst deine E-Mail-Adresse (prüfe dein Postfach).';
+                } else {
+                    this.authError = msg || 'Anmeldung fehlgeschlagen.';
+                }
             } finally {
                 this.authLoading = false;
             }
@@ -372,12 +377,25 @@ function app() {
                     return;
                 }
                 const data = await Supa.signUp(this.authEmail, this.authPassword);
-                if (data.user && !data.session) {
-                    this.authSuccess = 'Registrierung erfolgreich! Bitte bestätige deine E-Mail.';
+                if (data.user && data.session) {
+                    // Auto-Confirm aktiv: Session existiert sofort → direkt einloggen
+                    // onAuthStateChange wird den Rest übernehmen (Animation + loadAppData)
+                } else if (data.user && !data.session) {
+                    // Email-Bestätigung erforderlich
+                    this.authSuccess = 'Registrierung erfolgreich! Prüfe dein Postfach und klicke den Bestätigungslink.';
                     this.authMode = 'login';
                 }
             } catch (e) {
-                this.authError = e.message || 'Registrierung fehlgeschlagen.';
+                const msg = e.message || '';
+                if (msg.includes('already registered') || msg.includes('already been registered')) {
+                    this.authError = 'Diese E-Mail ist bereits registriert. Versuche dich anzumelden.';
+                } else if (msg.includes('valid email')) {
+                    this.authError = 'Bitte eine gültige E-Mail-Adresse eingeben.';
+                } else if (msg.includes('password')) {
+                    this.authError = 'Passwort zu schwach — mind. 6 Zeichen.';
+                } else {
+                    this.authError = msg || 'Registrierung fehlgeschlagen.';
+                }
             } finally {
                 this.authLoading = false;
             }
@@ -412,7 +430,11 @@ function app() {
 
         initDottedSurface() {
             if (this.dottedSurface) return;
-            this.dottedSurface = DottedSurface.init();
+            try {
+                this.dottedSurface = DottedSurface.init();
+            } catch (e) {
+                console.error('DottedSurface init failed:', e);
+            }
         },
 
         destroyDottedSurface() {
@@ -469,8 +491,16 @@ function app() {
                 const sw = parseFloat(String(f.startWeight).replace(',', '.'));
                 const gw = parseFloat(String(f.goalWeight).replace(',', '.'));
                 const h = parseInt(f.userHeight);
-                if (!sw || sw <= 0 || !gw || gw <= 0 || !h || h <= 0) {
-                    this.showToast('Bitte alle Pflichtfelder korrekt ausfüllen');
+                if (!sw || sw <= 0) {
+                    this.showToast('Bitte ein gültiges Startgewicht eingeben');
+                    return;
+                }
+                if (!gw || gw <= 0) {
+                    this.showToast('Bitte ein gültiges Zielgewicht eingeben');
+                    return;
+                }
+                if (!h || h <= 0) {
+                    this.showToast('Bitte eine gültige Körpergröße eingeben');
                     return;
                 }
 
@@ -495,12 +525,22 @@ function app() {
                         checklistItems: [...DEFAULT_PROFILE.checklistItems]
                     });
 
+                    // Initialen Gewichtseintrag erstellen
+                    const today = new Date().toISOString().slice(0, 10);
+                    try {
+                        await Supa.upsertWeightEntry(today, sw);
+                        this.history = [{ date: today, weight: sw }];
+                    } catch (weightErr) {
+                        console.error('Initial weight entry failed:', weightErr);
+                    }
+
                     if (this.recalculateCalories) this.recalculateCalories();
                     this.onboardingOpen = false;
                     this.showToast('Willkommen, ' + name + '!');
                 } catch (e) {
                     console.error('Onboarding save failed:', e);
-                    this.showToast('Fehler beim Speichern');
+                    const msg = e?.message || 'Unbekannter Fehler';
+                    this.showToast('Speichern fehlgeschlagen: ' + msg);
                 } finally {
                     this.onboardingLoading = false;
                 }
@@ -524,7 +564,8 @@ function app() {
                     this.showToast('Willkommen zurück, ' + name + '!');
                 } catch (e) {
                     console.error('Onboarding save failed:', e);
-                    this.showToast('Fehler beim Speichern');
+                    const msg = e?.message || 'Unbekannter Fehler';
+                    this.showToast('Speichern fehlgeschlagen: ' + msg);
                 } finally {
                     this.onboardingLoading = false;
                 }
@@ -686,13 +727,22 @@ function app() {
 
         async loadAppData() {
             try {
-                const [settings, trainingPlan, weightEntries, workoutLogs] =
-                    await Promise.all([
-                        Supa.getSettings(),
-                        Supa.getTrainingPlan(),
-                        Supa.getWeightEntries(),
-                        Supa.getWorkoutLogs()
-                    ]);
+                // Einzeln laden mit Fallbacks, damit ein Fehler nicht alles blockiert
+                const results = await Promise.allSettled([
+                    Supa.getSettings(),
+                    Supa.getTrainingPlan(),
+                    Supa.getWeightEntries(),
+                    Supa.getWorkoutLogs()
+                ]);
+                const settings = results[0].status === 'fulfilled' ? results[0].value : null;
+                const trainingPlan = results[1].status === 'fulfilled' ? results[1].value : null;
+                const weightEntries = results[2].status === 'fulfilled' ? results[2].value : [];
+                const workoutLogs = results[3].status === 'fulfilled' ? results[3].value : [];
+                const anyFailed = results.some(r => r.status === 'rejected');
+                if (anyFailed) {
+                    const errors = results.filter(r => r.status === 'rejected').map(r => r.reason?.message || 'Unbekannt');
+                    console.error('Partial load failures:', errors);
+                }
 
                 // Apply settings
                 if (settings) {

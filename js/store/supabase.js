@@ -21,12 +21,6 @@ function requireDb() {
     return db;
 }
 
-function getUserId() {
-    const session = db?.supabaseUrl ? null : null; // placeholder
-    // We'll get user_id from the current session
-    return null;
-}
-
 // ── Auth ────────────────────────────────────────────────
 
 export async function signUp(email, password) {

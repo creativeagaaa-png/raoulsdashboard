@@ -1,36 +1,19 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-let mockMaterial, mockGeometry, mockRenderer, mockScene, mockCamera, mockPoints;
-
-vi.mock('three', () => ({
-  WebGLRenderer: vi.fn(function() { return mockRenderer; }),
-  Scene: vi.fn(function() { return mockScene; }),
-  PerspectiveCamera: vi.fn(function() { return mockCamera; }),
-  BufferGeometry: vi.fn(function() { return mockGeometry; }),
-  BufferAttribute: vi.fn(function(arr, itemSize) { return { array: arr, itemSize }; }),
-  PointsMaterial: vi.fn(function() { return mockMaterial; }),
-  Points: vi.fn(function() { return mockPoints; }),
-}));
-
 import { DottedSurface } from './dotted-surface.js';
 
 describe('DottedSurface', () => {
   let surface;
 
   beforeEach(() => {
-    // Recreate mock objects fresh for each test
-    mockMaterial = { color: { setHex: vi.fn() }, opacity: 0.15, dispose: vi.fn() };
-    const mockPositions = new Float32Array(40 * 60 * 3);
-    mockGeometry = {
-      setAttribute: vi.fn(),
-      attributes: { position: { array: mockPositions, needsUpdate: false } },
-      dispose: vi.fn(),
+    // Mock canvas getContext to return a fake 2D context
+    const fakeCtx = {
+      clearRect: vi.fn(),
+      fillRect: vi.fn(),
+      fillStyle: '',
+      getImageData: vi.fn().mockReturnValue({ data: [255, 255, 255, 255] }),
     };
-    mockRenderer = { setPixelRatio: vi.fn(), setSize: vi.fn(), render: vi.fn(), dispose: vi.fn() };
-    mockScene = { add: vi.fn() };
-    mockCamera = { position: { set: vi.fn() }, lookAt: vi.fn(), aspect: 1, updateProjectionMatrix: vi.fn() };
-    mockPoints = { geometry: mockGeometry };
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue(fakeCtx);
 
     window.matchMedia = vi.fn().mockReturnValue({
       matches: false,
@@ -94,15 +77,6 @@ describe('DottedSurface', () => {
     surface = null;
     const canvas = document.querySelector('canvas[data-dotted-surface]');
     expect(canvas).toBeNull();
-  });
-
-  it('destroy() calls renderer.dispose() and geometry.dispose()', () => {
-    surface = DottedSurface.init();
-    surface.destroy();
-    surface = null;
-    expect(mockRenderer.dispose).toHaveBeenCalled();
-    expect(mockGeometry.dispose).toHaveBeenCalled();
-    expect(mockMaterial.dispose).toHaveBeenCalled();
   });
 
   it('calling destroy() twice does not throw', () => {

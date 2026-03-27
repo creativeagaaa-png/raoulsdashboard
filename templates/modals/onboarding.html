@@ -33,90 +33,96 @@
         </div>
 
         <!-- Form -->
-        <div class="overflow-y-auto p-6 space-y-5 custom-scrollbar">
-            <!-- Display Name -->
-            <div class="space-y-2">
-                <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Anzeigename</label>
-                <input type="text" x-model="onboardingForm.displayName"
-                       class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
-                       placeholder="Dein Name" minlength="2">
-                <p x-show="_isGoogleUser()" class="text-[10px] text-muted">Vorausgefüllt von deinem Google-Konto — du kannst es ändern</p>
+        <form @submit.prevent="completeOnboarding()" class="flex flex-col flex-1 min-h-0">
+            <div class="overflow-y-auto p-6 space-y-5 custom-scrollbar">
+                <!-- Display Name -->
+                <div class="space-y-2">
+                    <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Anzeigename</label>
+                    <input type="text" x-model="onboardingForm.displayName"
+                           class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
+                           placeholder="Dein Name" minlength="2" required>
+                    <p x-show="_isGoogleUser()" class="text-[10px] text-muted">Vorausgefüllt von deinem Google-Konto — du kannst es ändern</p>
+                </div>
+
+                <!-- Full onboarding fields -->
+                <template x-if="onboardingMode === 'full'">
+                    <div class="space-y-5">
+                        <!-- Gender -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Geschlecht</label>
+                            <div class="flex gap-2">
+                                <button type="button" @click="onboardingForm.gender = 'male'"
+                                        :class="onboardingForm.gender === 'male' ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'"
+                                        class="flex-1 py-3 rounded-xl font-bold text-xs transition-all active:scale-[0.97]">
+                                    Männlich
+                                </button>
+                                <button type="button" @click="onboardingForm.gender = 'female'"
+                                        :class="onboardingForm.gender === 'female' ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'"
+                                        class="flex-1 py-3 rounded-xl font-bold text-xs transition-all active:scale-[0.97]">
+                                    Weiblich
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Height + Age -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Größe</label>
+                                <div class="relative">
+                                    <input type="number" x-model="onboardingForm.userHeight"
+                                           min="100" max="250" inputmode="numeric"
+                                           class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
+                                           placeholder="175">
+                                    <span class="absolute right-4 top-3.5 text-xs text-muted">cm</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Alter</label>
+                                <input type="number" x-model="onboardingForm.userAge"
+                                       min="10" max="120" inputmode="numeric"
+                                       class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
+                                       placeholder="25">
+                            </div>
+                        </div>
+
+                        <!-- Start + Goal Weight -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Startgewicht</label>
+                                <div class="relative">
+                                    <input type="number" step="0.1" x-model="onboardingForm.startWeight"
+                                           min="30" max="300" inputmode="decimal"
+                                           class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
+                                           placeholder="80.0">
+                                    <span class="absolute right-4 top-3.5 text-xs text-muted">kg</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Zielgewicht</label>
+                                <div class="relative">
+                                    <input type="number" step="0.1" x-model="onboardingForm.goalWeight"
+                                           min="30" max="300" inputmode="decimal"
+                                           class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
+                                           placeholder="75.0">
+                                    <span class="absolute right-4 top-3.5 text-xs text-muted">kg</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
 
-            <!-- Full onboarding fields -->
-            <template x-if="onboardingMode === 'full'">
-                <div class="space-y-5">
-                    <!-- Gender -->
-                    <div class="space-y-2">
-                        <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Geschlecht</label>
-                        <div class="flex gap-2">
-                            <button type="button" @click="onboardingForm.gender = 'male'"
-                                    :class="onboardingForm.gender === 'male' ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'"
-                                    class="flex-1 py-3 rounded-xl font-bold text-xs transition-all active:scale-[0.97]">
-                                Männlich
-                            </button>
-                            <button type="button" @click="onboardingForm.gender = 'female'"
-                                    :class="onboardingForm.gender === 'female' ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'"
-                                    class="flex-1 py-3 rounded-xl font-bold text-xs transition-all active:scale-[0.97]">
-                                Weiblich
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Height + Age -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Größe</label>
-                            <div class="relative">
-                                <input type="number" x-model="onboardingForm.userHeight"
-                                       class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
-                                       placeholder="175">
-                                <span class="absolute right-4 top-3.5 text-xs text-muted">cm</span>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Alter</label>
-                            <input type="number" x-model="onboardingForm.userAge"
-                                   class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
-                                   placeholder="25">
-                        </div>
-                    </div>
-
-                    <!-- Start + Goal Weight -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Startgewicht</label>
-                            <div class="relative">
-                                <input type="number" step="0.1" x-model="onboardingForm.startWeight"
-                                       class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
-                                       placeholder="80.0">
-                                <span class="absolute right-4 top-3.5 text-xs text-muted">kg</span>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Zielgewicht</label>
-                            <div class="relative">
-                                <input type="number" step="0.1" x-model="onboardingForm.goalWeight"
-                                       class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-white/20 outline-none transition-colors placeholder-white/15"
-                                       placeholder="75.0">
-                                <span class="absolute right-4 top-3.5 text-xs text-muted">kg</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </div>
-
-        <!-- Footer -->
-        <div class="p-6 border-t border-[var(--glass-border)] bg-surface z-20 shrink-0">
-            <button type="button" @click="completeOnboarding()"
-                    :disabled="onboardingLoading"
-                    class="w-full py-3.5 rounded-xl bg-white text-black font-bold text-sm hover:bg-gray-200 active:scale-[0.97] transition-all shadow-lg shadow-white/5 disabled:opacity-50 disabled:pointer-events-none">
-                <span x-show="!onboardingLoading">Los geht's</span>
-                <span x-show="onboardingLoading" class="flex items-center justify-center gap-2">
-                    <i class="ph-bold ph-spinner animate-spin"></i> Wird gespeichert...
-                </span>
-            </button>
-        </div>
+            <!-- Footer -->
+            <div class="p-6 border-t border-[var(--glass-border)] bg-surface z-20 shrink-0">
+                <button type="submit"
+                        :disabled="onboardingLoading"
+                        class="w-full py-3.5 rounded-xl bg-white text-black font-bold text-sm hover:bg-gray-200 active:scale-[0.97] transition-all shadow-lg shadow-white/5 disabled:opacity-50 disabled:pointer-events-none">
+                    <span x-show="!onboardingLoading">Los geht's</span>
+                    <span x-show="onboardingLoading" class="flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-spinner animate-spin"></i> Wird gespeichert...
+                    </span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>

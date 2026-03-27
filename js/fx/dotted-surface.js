@@ -1,97 +1,103 @@
-import * as THREE from 'three';
+const SQUARE_SIZE = 4;
+const GRID_GAP = 6;
+const FLICKER_CHANCE = 0.3;
+const MAX_OPACITY = 0.3;
 
-const AMOUNTX = 40;
-const AMOUNTY = 60;
-const SEPARATION = 150;
+function toRGBA(color) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 1;
+  const ctx = c.getContext('2d');
+  if (!ctx) return 'rgba(0,0,0,';
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return `rgba(${r},${g},${b},`;
+}
 
 export const DottedSurface = {
   init() {
     const mq = window.matchMedia('(prefers-color-scheme: light)');
     const isDark = !mq.matches;
 
+    let colorBase = toRGBA(isDark ? 'rgb(255,255,255)' : 'rgb(0,0,0)');
+
     const canvas = document.createElement('canvas');
     canvas.setAttribute('data-dotted-surface', '');
-    canvas.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%;';
+    canvas.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
     document.body.appendChild(canvas);
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return { destroy() { canvas.remove(); } };
 
-    const scene = new THREE.Scene();
+    let cols = 0;
+    let rows = 0;
+    let squares = new Float32Array(0);
+    let dpr = window.devicePixelRatio || 1;
+    let destroyed = false;
+    let rafId = null;
 
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      1,
-      10000
-    );
-    camera.position.set(0, 800, 0);
-    camera.lookAt(0, 0, 0);
-
-    const numParticles = AMOUNTX * AMOUNTY;
-    const positions = new Float32Array(numParticles * 3);
-    let idx = 0;
-    for (let ix = 0; ix < AMOUNTX; ix++) {
-      for (let iy = 0; iy < AMOUNTY; iy++) {
-        positions[idx]     = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2;
-        positions[idx + 1] = 0;
-        positions[idx + 2] = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2;
-        idx += 3;
+    function setupGrid() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      dpr = window.devicePixelRatio || 1;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      cols = Math.ceil(w / (SQUARE_SIZE + GRID_GAP));
+      rows = Math.ceil(h / (SQUARE_SIZE + GRID_GAP));
+      squares = new Float32Array(cols * rows);
+      for (let i = 0; i < squares.length; i++) {
+        squares[i] = Math.random() * MAX_OPACITY;
       }
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    function updateSquares(dt) {
+      for (let i = 0; i < squares.length; i++) {
+        if (Math.random() < FLICKER_CHANCE * dt) {
+          squares[i] = Math.random() * MAX_OPACITY;
+        }
+      }
+    }
 
-    const material = new THREE.PointsMaterial({
-      size: 3,
-      sizeAttenuation: false,
-      color: isDark ? 0xffffff : 0x000000,
-      transparent: true,
-      opacity: isDark ? 0.15 : 0.1,
-    });
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          const opacity = squares[i * rows + j];
+          ctx.fillStyle = `${colorBase}${opacity})`;
+          ctx.fillRect(
+            i * (SQUARE_SIZE + GRID_GAP) * dpr,
+            j * (SQUARE_SIZE + GRID_GAP) * dpr,
+            SQUARE_SIZE * dpr,
+            SQUARE_SIZE * dpr
+          );
+        }
+      }
+    }
 
-    const particles = new THREE.Points(geometry, material);
-    scene.add(particles);
+    setupGrid();
 
-    let count = 0;
-    let rafId = null;
-    let destroyed = false;
-
-    function animate() {
+    let lastTime = 0;
+    function animate(time) {
       if (destroyed) return;
       rafId = requestAnimationFrame(animate);
       if (document.hidden) return;
 
-      const pos = particles.geometry.attributes.position.array;
-      let i = 0;
-      for (let ix = 0; ix < AMOUNTX; ix++) {
-        for (let iy = 0; iy < AMOUNTY; iy++) {
-          pos[i + 1] =
-            Math.sin((ix + count) * 0.3) * 50 +
-            Math.sin((iy + count) * 0.5) * 50;
-          i += 3;
-        }
-      }
-      particles.geometry.attributes.position.needsUpdate = true;
-      count += 0.05;
-      renderer.render(scene, camera);
+      const dt = lastTime ? (time - lastTime) / 1000 : 0.016;
+      lastTime = time;
+
+      updateSquares(dt);
+      drawGrid();
     }
 
-    animate();
+    rafId = requestAnimationFrame(animate);
 
-    function onResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-    const resizeObserver = new ResizeObserver(onResize);
+    const resizeObserver = new ResizeObserver(setupGrid);
     resizeObserver.observe(document.documentElement);
 
     function onTheme(e) {
-      material.color.setHex(e.matches ? 0x000000 : 0xffffff);
-      material.opacity = e.matches ? 0.1 : 0.15;
+      colorBase = toRGBA(e.matches ? 'rgb(0,0,0)' : 'rgb(255,255,255)');
     }
     mq.addEventListener('change', onTheme);
 
@@ -102,9 +108,6 @@ export const DottedSurface = {
         cancelAnimationFrame(rafId);
         resizeObserver.disconnect();
         mq.removeEventListener('change', onTheme);
-        geometry.dispose();
-        material.dispose();
-        renderer.dispose();
         canvas.remove();
       },
     };

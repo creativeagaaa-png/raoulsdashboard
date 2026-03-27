@@ -910,7 +910,7 @@
     <button @click="openModal()"
             class="mobile-fab md:hidden transition-transform duration-150"
             aria-label="Gewicht eintragen"
-            x-show="appLoaded && activeTab === 'health' && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !bmiDetailOpen && !workoutOpen && !workoutHistoryOpen && !workoutPickerOpen && !profileDropdownOpen"
+            x-show="authUser && appLoaded && activeTab === 'health' && !modalOpen && !settingsOpen && !profileOpen && !trainingOpen && !bmiDetailOpen && !workoutOpen && !workoutHistoryOpen && !workoutPickerOpen && !profileDropdownOpen"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-75"
             x-transition:enter-end="opacity-100 scale-100">

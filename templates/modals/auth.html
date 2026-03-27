@@ -19,96 +19,100 @@
                 <h1 class="auth-wordmark__title">
                     <span class="auth-wordmark__tr">Tr</span><span class="auth-wordmark__action">Action</span>
                 </h1>
-                <div class="auth-wordmark__divider"></div>
                 <p class="auth-wordmark__tagline">TRAIN · TRACK · ACT</p>
             </div>
 
-            <!-- Tab Toggle -->
-            <div class="flex gap-1 bg-white/5 rounded-xl p-1">
+            <!-- Divider -->
+            <div class="auth-divider"></div>
+
+            <!-- Tab Toggle — Underline Style -->
+            <div class="auth-tabs">
                 <button type="button" @click="authMode = 'login'"
-                        class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
-                        :class="authMode === 'login' ? 'bg-white/10 text-white' : 'text-muted'">
+                        class="auth-tab"
+                        :class="authMode === 'login' ? 'auth-tab--active' : ''">
                     Anmelden
                 </button>
                 <button type="button" @click="authMode = 'register'"
-                        class="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
-                        :class="authMode === 'register' ? 'bg-white/10 text-white' : 'text-muted'">
+                        class="auth-tab"
+                        :class="authMode === 'register' ? 'auth-tab--active' : ''">
                     Registrieren
                 </button>
             </div>
 
             <!-- Error Message -->
-            <div x-show="authError" x-cloak
-                 class="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2.5 text-xs text-rose-400">
+            <div x-show="authError" x-cloak class="auth-message auth-message--error">
                 <span x-text="authError"></span>
             </div>
 
             <!-- Success Message -->
-            <div x-show="authSuccess" x-cloak
-                 class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-2.5 text-xs text-emerald-400">
+            <div x-show="authSuccess" x-cloak class="auth-message auth-message--success">
                 <span x-text="authSuccess"></span>
             </div>
 
-            <!-- Email -->
-            <div>
-                <label for="auth-email" class="text-[10px] text-muted font-bold uppercase tracking-widest ml-1">E-Mail</label>
-                <div class="mt-1 bg-black/20 rounded-xl px-4 py-3 flex items-center gap-3 border border-white/5 focus-within:border-white/20 transition-all">
-                    <i class="ph ph-envelope text-muted"></i>
-                    <input id="auth-email" type="email" x-model="authEmail"
-                           @keydown.enter="authMode === 'login' ? handleLogin() : handleRegister()"
-                           class="bg-transparent border-none focus:outline-none text-white w-full text-sm"
-                           placeholder="deine@email.de"
-                           autocomplete="email">
+            <!-- Fields -->
+            <div class="auth-fields">
+                <!-- Email -->
+                <div class="auth-field">
+                    <label for="auth-email" class="auth-field__label">E-Mail</label>
+                    <div class="auth-field__input">
+                        <i class="ph ph-envelope auth-field__icon"></i>
+                        <input id="auth-email" type="email" x-model="authEmail"
+                               @keydown.enter="authMode === 'login' ? handleLogin() : handleRegister()"
+                               class="auth-field__control"
+                               placeholder="deine@email.de"
+                               autocomplete="email">
+                    </div>
                 </div>
-            </div>
 
-            <!-- Password -->
-            <div>
-                <label for="auth-password" class="text-[10px] text-muted font-bold uppercase tracking-widest ml-1">Passwort</label>
-                <div class="mt-1 bg-black/20 rounded-xl px-4 py-3 flex items-center gap-3 border border-white/5 focus-within:border-white/20 transition-all">
-                    <i class="ph ph-lock text-muted"></i>
-                    <input id="auth-password" :type="authShowPassword ? 'text' : 'password'" x-model="authPassword"
-                           @keydown.enter="authMode === 'login' ? handleLogin() : handleRegister()"
-                           class="bg-transparent border-none focus:outline-none text-white w-full text-sm"
-                           placeholder="••••••••"
-                           :autocomplete="authMode === 'login' ? 'current-password' : 'new-password'">
-                    <button type="button" @click="authShowPassword = !authShowPassword" :aria-label="authShowPassword ? 'Passwort verbergen' : 'Passwort anzeigen'" class="text-muted hover:text-white transition-colors">
-                        <i class="ph text-sm" :class="authShowPassword ? 'ph-eye-slash' : 'ph-eye'"></i>
-                    </button>
+                <!-- Password -->
+                <div class="auth-field">
+                    <label for="auth-password" class="auth-field__label">Passwort</label>
+                    <div class="auth-field__input">
+                        <i class="ph ph-lock auth-field__icon"></i>
+                        <input id="auth-password" :type="authShowPassword ? 'text' : 'password'" x-model="authPassword"
+                               @keydown.enter="authMode === 'login' ? handleLogin() : handleRegister()"
+                               class="auth-field__control"
+                               placeholder="••••••••"
+                               :autocomplete="authMode === 'login' ? 'current-password' : 'new-password'">
+                        <button type="button" @click="authShowPassword = !authShowPassword"
+                                :aria-label="authShowPassword ? 'Passwort verbergen' : 'Passwort anzeigen'"
+                                class="auth-field__toggle">
+                            <i class="ph text-sm" :class="authShowPassword ? 'ph-eye-slash' : 'ph-eye'"></i>
+                        </button>
+                    </div>
+                    <p x-show="authMode === 'register'" class="auth-field__hint">Mindestens 6 Zeichen</p>
                 </div>
-                <p x-show="authMode === 'register'" class="text-[10px] text-muted mt-1 ml-1">Mindestens 6 Zeichen</p>
             </div>
 
             <!-- Submit Button -->
             <button @click="authMode === 'login' ? handleLogin() : handleRegister()"
                     :disabled="authLoading"
-                    class="w-full py-3.5 rounded-xl bg-white text-black font-bold text-sm hover:bg-gray-200 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    class="auth-submit">
                 <i x-show="authLoading" class="ph ph-spinner animate-spin text-sm"></i>
                 <span x-text="authLoading ? 'Laden...' : (authMode === 'login' ? 'Anmelden' : 'Registrieren')"></span>
             </button>
 
             <!-- Forgot Password -->
-            <div x-show="authMode === 'login'" class="text-center">
-                <button type="button" @click="handleResetPassword()" class="text-[11px] text-muted hover:text-white transition-colors">
+            <div x-show="authMode === 'login'" class="auth-forgot">
+                <button type="button" @click="handleResetPassword()" class="auth-forgot__link">
                     Passwort vergessen?
                 </button>
             </div>
 
-            <!-- Social Login -->
-            <div class="flex items-center gap-3 pt-1">
-                <div class="flex-1 h-px bg-white/10"></div>
-                <span class="text-[10px] text-muted font-bold uppercase tracking-widest">oder</span>
-                <div class="flex-1 h-px bg-white/10"></div>
+            <!-- Or Divider -->
+            <div class="auth-or">
+                <div class="auth-or__line"></div>
+                <span class="auth-or__text">oder</span>
+                <div class="auth-or__line"></div>
             </div>
 
-            <div class="space-y-2.5">
-                <button @click="handleSocialLogin('google')"
-                        :disabled="authLoading"
-                        class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-semibold hover:bg-white/10 active:scale-[0.97] transition-all disabled:opacity-50 flex items-center justify-center gap-3">
-                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                    Mit Google fortfahren
-                </button>
-            </div>
+            <!-- Social Login -->
+            <button @click="handleSocialLogin('google')"
+                    :disabled="authLoading"
+                    class="auth-google">
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Mit Google fortfahren
+            </button>
 
         </div>
     </div>
