@@ -1,19 +1,28 @@
 <!-- Auth Screen -->
-<div class="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-background"
-     x-show="!authReady || !authUser" x-cloak>
+<div class="auth-screen"
+     x-show="!authReady || !authUser || authAnimationPending"
+     x-cloak
+     x-init="
+       $watch('authAnimationPending', function(pending) {
+         if (pending) triggerVaporizeAnimation($refs.vaporizeCanvas);
+       })
+     ">
 
-    <div class="w-full max-w-sm">
-        <!-- Logo -->
-        <div class="text-center mb-10">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <i class="ph-bold ph-lightning text-2xl text-white"></i>
+    <!-- Layer 0: Dotted Surface background (managed by initDottedSurface in main.js) -->
+
+    <!-- Layer 1: Auth Glass-Card -->
+    <div class="auth-card-wrapper">
+        <div class="auth-card">
+
+            <!-- Wordmark -->
+            <div class="auth-wordmark">
+                <h1 class="auth-wordmark__title">
+                    <span class="auth-wordmark__tr">Tr</span><span class="auth-wordmark__action">Action</span>
+                </h1>
+                <div class="auth-wordmark__divider"></div>
+                <p class="auth-wordmark__tagline">TRAIN · TRACK · ACT</p>
             </div>
-            <h1 class="text-2xl font-extrabold text-white tracking-tight">TrAction</h1>
-            <p class="text-xs text-muted mt-1">Melde dich an, um fortzufahren</p>
-        </div>
 
-        <!-- Auth Form -->
-        <div class="bento-card p-6 space-y-4">
             <!-- Tab Toggle -->
             <div class="flex gap-1 bg-white/5 rounded-xl p-1">
                 <button @click="authMode = 'login'"
@@ -100,6 +109,14 @@
                     Mit Google fortfahren
                 </button>
             </div>
+
         </div>
     </div>
+
+    <!-- Layer 2: Vaporize canvas (active only during auth animation) -->
+    <canvas x-ref="vaporizeCanvas"
+            x-show="authAnimationPending"
+            style="position:fixed;inset:0;z-index:20;pointer-events:none;"
+            aria-hidden="true"></canvas>
+
 </div>
