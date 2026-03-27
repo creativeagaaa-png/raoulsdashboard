@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrAction – Card-Stil Auswahl</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0a;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  h2 {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 40px;
+  }
+  .cards {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .card-wrap {
+    flex: 1;
+    min-width: 280px;
+    max-width: 320px;
+    cursor: pointer;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    padding: 3px;
+    position: relative;
+  }
+  .card-wrap:hover { transform: translateY(-4px); }
+  .card-wrap.selected { border-color: #ffffff40; }
+  .card-wrap.selected::after {
+    content: '✓ Ausgewählt';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* ---- CARD A: Refined Glass ---- */
+  .card-a {
+    background: linear-gradient(160deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 18px;
+    backdrop-filter: blur(20px);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card-a .wordmark-title {
+    font-size: 44px; font-weight: 800; letter-spacing: -2px; line-height: 1;
+    text-align: center;
+  }
+  .card-a .wordmark-title .tr { color: #555; }
+  .card-a .wordmark-title .action { color: #fff; }
+  .card-a .tagline {
+    text-align: center; font-size: 8px; letter-spacing: 6px;
+    color: #444; font-weight: 600; text-transform: uppercase;
+    margin-top: -4px;
+  }
+  .card-a .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent); margin: 2px 0; }
+  .card-a .tab-toggle {
+    display: flex; gap: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px; padding: 4px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .card-a .tab-btn {
+    flex: 1; padding: 8px; border-radius: 9px;
+    font-size: 11px; font-weight: 700; text-align: center;
+  }
+  .card-a .tab-btn.active { background: rgba(255,255,255,0.12); color: #fff; }
+  .card-a .tab-btn.inactive { color: #555; }
+  .card-a .input-row {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card-a .input-icon { color: #444; font-size: 14px; }
+  .card-a .input-text { color: #333; font-size: 13px; }
+  .card-a .input-row.focused { border-color: rgba(255,255,255,0.2); }
+  .card-a .btn-primary {
+    width: 100%; padding: 14px;
+    background: #fff; color: #000;
+    border-radius: 12px; font-weight: 800;
+    font-size: 13px; text-align: center;
+    letter-spacing: 0.3px;
+  }
+  .card-a .label { font-size: 9px; color: #444; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; }
+  .card-a .google-btn {
+    width: 100%; padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 12px; font-size: 12px;
+    font-weight: 600; text-align: center; color: #888;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  /* ---- CARD B: Accent Edge ---- */
+  .card-b-wrap {
+    background: #0f0f0f;
+    border-radius: 18px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03), transparent);
+  }
+  .card-b {
+    background: #0d0d0d;
+    border-radius: 17px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-b::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  }
+  .card-b .wordmark-title {
+    font-size: 44px; font-weight: 800; letter-spacing: -2px; line-height: 1;
+    text-align: center;
+  }
+  .card-b .wordmark-title .tr { color: #444; }
+  .card-b .wordmark-title .action { color: #fff; }
+  .card-b .tagline {
+    text-align: center; font-size: 8px; letter-spacing: 6px;
+    color: #444; font-weight: 600; text-transform: uppercase;
+    margin-top: -4px;
+  }
+  .card-b .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); margin: 2px 0; }
+  .card-b .tab-toggle {
+    display: flex; gap: 0;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; overflow: hidden;
+  }
+  .card-b .tab-btn {
+    flex: 1; padding: 9px;
+    font-size: 11px; font-weight: 700; text-align: center;
+  }
+  .card-b .tab-btn.active {
+    background: rgba(255,255,255,0.08); color: #fff;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  .card-b .tab-btn.inactive { color: #444; }
+  .card-b .input-row {
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card-b .input-icon { color: #444; font-size: 14px; }
+  .card-b .input-text { color: #333; font-size: 13px; }
+  .card-b .btn-primary {
+    width: 100%; padding: 13px;
+    background: #fff; color: #000;
+    border-radius: 10px; font-weight: 800;
+    font-size: 13px; text-align: center;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .card-b .label { font-size: 9px; color: #3a3a3a; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; }
+  .card-b .google-btn {
+    width: 100%; padding: 12px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; font-size: 12px;
+    font-weight: 600; text-align: center; color: #555;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  /* ---- CARD C: Floating / Minimal ---- */
+  .card-c {
+    background: transparent;
+    border: none;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+  }
+  .card-c::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: radial-gradient(ellipse at top center, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.4) 70%);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .card-c > * { position: relative; z-index: 1; }
+  .card-c .wordmark-title {
+    font-size: 48px; font-weight: 800; letter-spacing: -3px; line-height: 1;
+    text-align: center;
+  }
+  .card-c .wordmark-title .tr { color: #404040; }
+  .card-c .wordmark-title .action { color: #fff; }
+  .card-c .tagline {
+    text-align: center; font-size: 8px; letter-spacing: 6px;
+    color: #383838; font-weight: 600; text-transform: uppercase;
+    margin-top: -6px;
+  }
+  .card-c .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); }
+  .card-c .tab-toggle {
+    display: flex; gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 0;
+  }
+  .card-c .tab-btn {
+    flex: 1; padding: 8px;
+    font-size: 11px; font-weight: 700; text-align: center;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: #444;
+  }
+  .card-c .tab-btn.active {
+    color: #fff;
+    border-bottom-color: #fff;
+  }
+  .card-c .input-row {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 13px 16px;
+    display: flex; align-items: center; gap: 10px;
+    transition: border-color 0.2s;
+  }
+  .card-c .input-icon { color: #383838; font-size: 14px; }
+  .card-c .input-text { color: #2a2a2a; font-size: 13px; }
+  .card-c .btn-primary {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+    color: #000;
+    border-radius: 14px; font-weight: 800;
+    font-size: 14px; text-align: center;
+  }
+  .card-c .label { font-size: 9px; color: #383838; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; }
+  .card-c .google-btn {
+    width: 100%; padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; font-size: 12px;
+    font-weight: 600; text-align: center; color: #555;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .option-label {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .option-desc {
+    text-align: center;
+    font-size: 11px;
+    color: #444;
+    margin-top: 4px;
+    padding: 0 8px;
+  }
+
+  .dot-icon { width: 16px; height: 16px; border-radius: 50%; background: #333; flex-shrink: 0; }
+  .g-icon { width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<h2>Welcher Card-Stil passt zu TrAction?</h2>
+<p class="subtitle">Klicke auf eine Option um sie auszuwählen</p>
+
+<div class="cards">
+
+  <!-- Option A: Refined Glass -->
+  <div class="card-wrap" onclick="selectCard(this, 'a')">
+    <div class="card-a">
+      <div>
+        <div class="wordmark-title"><span class="tr">Tr</span><span class="action">Action</span></div>
+        <div class="tagline">TRAIN · TRACK · ACT</div>
+      </div>
+      <div class="divider"></div>
+      <div class="tab-toggle">
+        <div class="tab-btn active">Anmelden</div>
+        <div class="tab-btn inactive">Registrieren</div>
+      </div>
+      <div>
+        <div class="label">E-Mail</div>
+        <div class="input-row focused" style="margin-top:6px">
+          <div class="dot-icon"></div>
+          <div class="input-text" style="color:#666">deine@email.de</div>
+        </div>
+      </div>
+      <div>
+        <div class="label">Passwort</div>
+        <div class="input-row" style="margin-top:6px">
+          <div class="dot-icon"></div>
+          <div class="input-text">••••••••</div>
+        </div>
+      </div>
+      <div class="btn-primary">Anmelden</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+        <div style="font-size:9px;color:#333;text-transform:uppercase;letter-spacing:3px">oder</div>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+      </div>
+      <div class="google-btn"><div class="g-icon"></div>Mit Google fortfahren</div>
+    </div>
+    <div class="option-label">A — Refined Glass</div>
+    <div class="option-desc">Subtile Transparenz, warme Glasur, weiche Kanten. Elegant und zugänglich.</div>
+  </div>
+
+  <!-- Option B: Dark Solid -->
+  <div class="card-wrap" onclick="selectCard(this, 'b')">
+    <div class="card-b-wrap">
+      <div class="card-b">
+        <div>
+          <div class="wordmark-title"><span class="tr">Tr</span><span class="action">Action</span></div>
+          <div class="tagline">TRAIN · TRACK · ACT</div>
+        </div>
+        <div class="divider"></div>
+        <div class="tab-toggle">
+          <div class="tab-btn active">Anmelden</div>
+          <div class="tab-btn inactive">Registrieren</div>
+        </div>
+        <div>
+          <div class="label">E-Mail</div>
+          <div class="input-row" style="margin-top:6px">
+            <div class="dot-icon"></div>
+            <div class="input-text" style="color:#555">deine@email.de</div>
+          </div>
+        </div>
+        <div>
+          <div class="label">Passwort</div>
+          <div class="input-row" style="margin-top:6px">
+            <div class="dot-icon"></div>
+            <div class="input-text">••••••••</div>
+          </div>
+        </div>
+        <div class="btn-primary">ANMELDEN</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.05)"></div>
+          <div style="font-size:9px;color:#333;text-transform:uppercase;letter-spacing:3px">oder</div>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.05)"></div>
+        </div>
+        <div class="google-btn"><div class="g-icon"></div>Mit Google fortfahren</div>
+      </div>
+    </div>
+    <div class="option-label">B — Dark Solid</div>
+    <div class="option-desc">Festes dunkles Panel, scharfe Kanten, sportlich-minimal. Selbstsicher und fokussiert.</div>
+  </div>
+
+  <!-- Option C: Floating Minimal -->
+  <div class="card-wrap" onclick="selectCard(this, 'c')">
+    <div class="card-c">
+      <div>
+        <div class="wordmark-title"><span class="tr">Tr</span><span class="action">Action</span></div>
+        <div class="tagline">TRAIN · TRACK · ACT</div>
+      </div>
+      <div class="divider"></div>
+      <div class="tab-toggle">
+        <div class="tab-btn active">Anmelden</div>
+        <div class="tab-btn inactive">Registrieren</div>
+      </div>
+      <div>
+        <div class="label">E-Mail</div>
+        <div class="input-row" style="margin-top:6px">
+          <div class="dot-icon"></div>
+          <div class="input-text" style="color:#555">deine@email.de</div>
+        </div>
+      </div>
+      <div>
+        <div class="label">Passwort</div>
+        <div class="input-row" style="margin-top:6px">
+          <div class="dot-icon"></div>
+          <div class="input-text">••••••••</div>
+        </div>
+      </div>
+      <div class="btn-primary">Anmelden</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+        <div style="font-size:9px;color:#333;text-transform:uppercase;letter-spacing:3px">oder</div>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>
+      </div>
+      <div class="google-btn"><div class="g-icon"></div>Mit Google fortfahren</div>
+    </div>
+    <div class="option-label">C — Floating Minimal</div>
+    <div class="option-desc">Tiefes Blur, fast kein Card-Rahmen, Elemente scheinen zu schweben. Immersiv.</div>
+  </div>
+
+</div>
+
+<script>
+function selectCard(el, choice) {
+  document.querySelectorAll('.card-wrap').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.recordChoice) window.recordChoice(choice, el.querySelector('.option-label').textContent.trim());
+}
+</script>
+
+</body>
+</html>

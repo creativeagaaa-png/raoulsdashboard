@@ -1,0 +1,52 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<h2>Auth-Screen Layout</h2>
+<p class="subtitle">Wie soll der gesamte Auth-Screen strukturiert sein? Der DottedSurface-Hintergrund füllt immer den kompletten Viewport.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="centered" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#080808;padding:0;min-height:240px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+      <!-- Dots hint -->
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03) 1px, transparent 1px),radial-gradient(circle at 60% 20%, rgba(255,255,255,0.03) 1px, transparent 1px),radial-gradient(circle at 80% 60%, rgba(255,255,255,0.03) 1px, transparent 1px);background-size:24px 24px;"></div>
+      <!-- Card -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:28px 32px;width:220px;display:flex;flex-direction:column;align-items:center;gap:16px;position:relative;z-index:1;backdrop-filter:blur(12px);">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1.5px;"><span style="color:#555;">Tr</span><span style="color:#fff;">Action</span></div>
+        <div style="width:120px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);"></div>
+        <div style="font-size:7px;color:#444;letter-spacing:4px;">TRAIN · TRACK · ACT</div>
+        <div style="width:100%;height:28px;background:rgba(255,255,255,0.06);border-radius:8px;"></div>
+        <div style="width:100%;height:28px;background:rgba(255,255,255,0.06);border-radius:8px;"></div>
+        <div style="width:100%;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Zentrierte Glass-Card</h3>
+      <p>Wordmark + Formular in einer einzigen Glass-Card, mittig im Viewport. Dots tanzen drum herum. Kompakt, fokussiert — passt zum bestehenden Glass-Morphism-Stil der App.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="split" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#080808;padding:0;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03) 1px, transparent 1px),radial-gradient(circle at 60% 20%, rgba(255,255,255,0.03) 1px, transparent 1px);background-size:24px 24px;"></div>
+      <!-- Wordmark oben, Formular unten -->
+      <div style="padding-top:32px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1;">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1.5px;"><span style="color:#555;">Tr</span><span style="color:#fff;">Action</span></div>
+        <div style="width:140px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);"></div>
+        <div style="font-size:7px;color:#444;letter-spacing:4px;">TRAIN · TRACK · ACT</div>
+      </div>
+      <div style="margin-top:24px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:20px 20px 0 0;padding:20px 28px;width:100%;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;flex:1;">
+        <div style="width:100%;height:24px;background:rgba(255,255,255,0.06);border-radius:6px;"></div>
+        <div style="width:100%;height:24px;background:rgba(255,255,255,0.06);border-radius:6px;"></div>
+        <div style="width:100%;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Wordmark oben, Form unten</h3>
+      <p>Wordmark schwebt frei im Dots-Hintergrund, darunter ein nach oben offenes Formular-Panel. Mehr Tiefe, dramatischer Effekt beim Vaporize.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:20px;">Beide Layouts sind mobile-first (375px). Der Dots-Hintergrund ist immer full-screen und non-interaktiv.</p>

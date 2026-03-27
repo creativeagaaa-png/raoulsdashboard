@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrAction – Layout Konzepte</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #080808;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+  }
+  h2 { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { text-align: center; font-size: 13px; color: #555; margin-bottom: 48px; }
+
+  .concepts {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .concept {
+    flex: 1;
+    min-width: 280px;
+    max-width: 320px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .concept-preview {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .concept:hover .concept-preview { transform: translateY(-4px); }
+  .concept.selected .concept-preview { border-color: rgba(255,255,255,0.4); }
+  .concept.selected .concept-preview::after {
+    content: '✓';
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 24px; height: 24px;
+    background: #fff;
+    color: #000;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    display: grid; place-items: center;
+  }
+
+  .concept-label {
+    font-size: 13px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: #777;
+  }
+  .concept-desc { font-size: 12px; color: #444; line-height: 1.6; }
+
+  /* =====================
+     OPTION A: Freistehend
+     ===================== */
+  .preview-a {
+    background: #0a0a0a;
+    /* Dot pattern */
+    background-image: radial-gradient(circle, #1f1f1f 1px, transparent 1px);
+    background-size: 20px 20px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 28px;
+    gap: 0;
+    position: relative;
+  }
+  .preview-a .wm { font-size: 52px; font-weight: 800; letter-spacing: -3px; line-height: 1; text-align: center; }
+  .preview-a .wm .tr { color: #404040; }
+  .preview-a .wm .ac { color: #fff; }
+  .preview-a .tl { font-size: 8px; letter-spacing: 6px; color: #333; text-transform: uppercase; font-weight: 600; margin-top: 4px; margin-bottom: 24px; }
+  .preview-a .tabs {
+    display: flex; gap: 24px; margin-bottom: 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    width: 100%;
+    justify-content: center;
+  }
+  .preview-a .tab { font-size: 12px; font-weight: 700; padding-bottom: 10px; color: #333; }
+  .preview-a .tab.on { color: #fff; border-bottom: 2px solid #fff; margin-bottom: -1px; }
+  .preview-a .field { width: 100%; margin-bottom: 12px; }
+  .preview-a .field-lbl { font-size: 8px; color: #333; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 6px; }
+  .preview-a .field-inp {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+    background: transparent;
+    padding: 8px 0;
+    font-size: 12px; color: #444;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .preview-a .field-inp.on { border-bottom-color: rgba(255,255,255,0.4); }
+  .preview-a .submit {
+    width: 100%; padding: 13px;
+    background: #fff; color: #000;
+    border-radius: 10px; font-weight: 800;
+    font-size: 12px; text-align: center;
+    margin-top: 8px; margin-bottom: 20px;
+  }
+  .preview-a .or { font-size: 8px; color: #2a2a2a; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 12px; }
+  .preview-a .google {
+    width: 100%; padding: 10px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    font-size: 11px; color: #444; text-align: center;
+  }
+
+  /* =====================
+     OPTION B: Asymmetrisch
+     ===================== */
+  .preview-b {
+    background: #0a0a0a;
+    background-image: radial-gradient(circle, #1a1a1a 1px, transparent 1px);
+    background-size: 20px 20px;
+    height: 500px;
+    position: relative;
+    overflow: hidden;
+  }
+  .preview-b .left-accent {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.6), transparent);
+  }
+  .preview-b .content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px 28px 32px 36px;
+    gap: 0;
+  }
+  .preview-b .wm { font-size: 48px; font-weight: 800; letter-spacing: -3px; line-height: 1; }
+  .preview-b .wm .tr { color: #3a3a3a; }
+  .preview-b .wm .ac { color: #fff; }
+  .preview-b .tl { font-size: 8px; letter-spacing: 6px; color: #333; text-transform: uppercase; font-weight: 600; margin-top: 4px; margin-bottom: 28px; }
+  .preview-b .mode-line {
+    font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+    color: #fff; font-weight: 800; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .preview-b .mode-line::before { content: ''; display: block; width: 20px; height: 1px; background: rgba(255,255,255,0.5); }
+  .preview-b .field { margin-bottom: 14px; }
+  .preview-b .field-lbl { font-size: 8px; color: #303030; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 5px; }
+  .preview-b .field-inp {
+    border-left: 2px solid rgba(255,255,255,0.12);
+    background: transparent;
+    padding: 8px 12px;
+    font-size: 12px; color: #444;
+  }
+  .preview-b .submit {
+    padding: 12px 28px;
+    background: #fff; color: #000;
+    border-radius: 8px; font-weight: 800;
+    font-size: 11px; display: inline-block;
+    margin-top: 4px; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .preview-b .google {
+    font-size: 10px; color: #333;
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .preview-b .g-dot { width: 12px; height: 12px; border-radius: 50%; background: conic-gradient(#4285F4 0deg 90deg, #EA4335 90deg 180deg, #FBBC05 180deg 270deg, #34A853 270deg); flex-shrink: 0; }
+
+  /* =====================
+     OPTION C: Roh / Direkt
+     ===================== */
+  .preview-c {
+    background: #0a0a0a;
+    background-image: radial-gradient(circle, #1a1a1a 1px, transparent 1px);
+    background-size: 20px 20px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 28px;
+    position: relative;
+  }
+  /* top rule */
+  .preview-c::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  }
+  .preview-c .wm { font-size: 56px; font-weight: 800; letter-spacing: -4px; line-height: 0.9; text-align: left; width: 100%; }
+  .preview-c .wm .tr { color: #2a2a2a; display: block; }
+  .preview-c .wm .ac { color: #fff; display: block; }
+  .preview-c .tl { font-size: 8px; letter-spacing: 6px; color: #2a2a2a; text-transform: uppercase; font-weight: 600; margin-top: 6px; margin-bottom: 24px; width: 100%; text-align: left; }
+  .preview-c .divider { width: 100%; height: 1px; background: rgba(255,255,255,0.07); margin-bottom: 20px; }
+  .preview-c .tabs { display: flex; gap: 0; width: 100%; margin-bottom: 20px; }
+  .preview-c .tab {
+    flex: 1; text-align: center;
+    font-size: 10px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 3px;
+    padding: 10px;
+    color: #2a2a2a;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .preview-c .tab:first-child { border-radius: 6px 0 0 6px; }
+  .preview-c .tab:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+  .preview-c .tab.on { background: rgba(255,255,255,0.08); color: #fff; }
+  .preview-c .field { width: 100%; margin-bottom: 12px; }
+  .preview-c .field-lbl { font-size: 8px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 5px; }
+  .preview-c .field-inp {
+    width: 100%; border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    padding: 10px 12px;
+    font-size: 12px; color: #444;
+  }
+  .preview-c .field-inp.on { border-color: rgba(255,255,255,0.25); color: #888; }
+  .preview-c .submit {
+    width: 100%; padding: 13px;
+    background: #fff; color: #000;
+    border-radius: 6px; font-weight: 900;
+    font-size: 11px; text-align: center;
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-top: 4px; margin-bottom: 16px;
+  }
+  .preview-c .google {
+    width: 100%; padding: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    font-size: 10px; color: #333; text-align: center;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .preview-c .g-dot { width: 12px; height: 12px; border-radius: 50%; background: conic-gradient(#4285F4 0deg 90deg, #EA4335 90deg 180deg, #FBBC05 180deg 270deg, #34A853 270deg); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<h2>Drei grundlegende Richtungen</h2>
+<p class="subtitle">Klick auf ein Konzept um es auszuwählen</p>
+
+<div class="concepts">
+
+  <!-- A: Freistehend -->
+  <div class="concept" onclick="pick(this,'a')">
+    <div class="concept-preview">
+      <div class="preview-a">
+        <div class="wm"><span class="tr">Tr</span><span class="ac">Action</span></div>
+        <div class="tl">TRAIN · TRACK · ACT</div>
+        <div class="tabs">
+          <div class="tab on">Anmelden</div>
+          <div class="tab">Registrieren</div>
+        </div>
+        <div class="field">
+          <div class="field-lbl">E-Mail</div>
+          <div class="field-inp on">deine@email.de</div>
+        </div>
+        <div class="field">
+          <div class="field-lbl">Passwort</div>
+          <div class="field-inp">••••••••</div>
+        </div>
+        <div class="submit">Anmelden</div>
+        <div class="or">— oder —</div>
+        <div class="google">Mit Google fortfahren</div>
+      </div>
+    </div>
+    <div class="concept-label">A — Kein Card</div>
+    <div class="concept-desc">Elemente schweben frei auf dem Dot-Background. Kein Rahmen, keine Box. Nur Linie als Trenner. Maximale Immersion mit dem Hintergrund.</div>
+  </div>
+
+  <!-- B: Asymmetrisch -->
+  <div class="concept" onclick="pick(this,'b')">
+    <div class="concept-preview">
+      <div class="preview-b">
+        <div class="left-accent"></div>
+        <div class="content">
+          <div class="wm"><span class="tr">Tr</span><span class="ac">Action</span></div>
+          <div class="tl">TRAIN · TRACK · ACT</div>
+          <div class="mode-line">Anmelden</div>
+          <div class="field">
+            <div class="field-lbl">E-Mail</div>
+            <div class="field-inp">deine@email.de</div>
+          </div>
+          <div class="field">
+            <div class="field-lbl">Passwort</div>
+            <div class="field-inp">••••••••</div>
+          </div>
+          <div class="submit">Anmelden →</div>
+          <div class="google"><div class="g-dot"></div>Mit Google fortfahren</div>
+        </div>
+      </div>
+    </div>
+    <div class="concept-label">B — Asymmetrisch</div>
+    <div class="concept-desc">Linksbündiger vertikaler Akzentstreifen. Formular linksbündig. Kein zentriertes Box-Denken — eher wie ein sportliches Interface-Panel.</div>
+  </div>
+
+  <!-- C: Roh / Direkt -->
+  <div class="concept" onclick="pick(this,'c')">
+    <div class="concept-preview">
+      <div class="preview-c">
+        <div class="wm"><span class="tr">Tr</span><span class="ac">Action</span></div>
+        <div class="tl">TRAIN · TRACK · ACT</div>
+        <div class="divider"></div>
+        <div class="tabs">
+          <div class="tab on">Anmelden</div>
+          <div class="tab">Registrieren</div>
+        </div>
+        <div class="field">
+          <div class="field-lbl">E-Mail</div>
+          <div class="field-inp on">deine@email.de</div>
+        </div>
+        <div class="field">
+          <div class="field-lbl">Passwort</div>
+          <div class="field-inp">••••••••</div>
+        </div>
+        <div class="submit">Anmelden</div>
+        <div class="google"><div class="g-dot"></div>Mit Google fortfahren</div>
+      </div>
+    </div>
+    <div class="concept-label">C — Roh / Direkt</div>
+    <div class="concept-desc">Kein Glaseffekt, keine Weichheit. Harte Kanten, scharfe Linien, uppercase Beschriftungen. Athletisch, direkt — wie ein HUD-Interface.</div>
+  </div>
+
+</div>
+
+<script>
+function pick(el, choice) {
+  document.querySelectorAll('.concept').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.recordChoice) window.recordChoice(choice, el.querySelector('.concept-label').textContent.trim());
+}
+</script>
+
+</body>
+</html>

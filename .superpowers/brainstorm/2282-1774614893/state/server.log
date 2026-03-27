@@ -1,0 +1,15 @@
+{"type":"server-started","port":56428,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:56428","screen_dir":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content","state_dir":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/state"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content/wordmark-styles.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content/wordmark-b-refined.html"}
+{"source":"user-event","type":"click","text":"TrAction\n      \n      \n      TRAIN · TRACK · ACT\n    \n    \n      C — Mit Divider\n      Wie B, aber mit feiner Trennlinie zwischen Wordmark und Tagline. Mehr Struktur, etwas edler.","choice":"c","id":null,"timestamp":1774615094566}
+{"source":"user-event","type":"click","text":"2\n    \n      Neue Schrift (z.B. Syne, Bebas Neue, Space Grotesk)\n      Mehr Charakter im Wordmark, aber ein weiterer Font-Load","choice":"neue","id":null,"timestamp":1774615096652}
+{"source":"user-event","type":"click","text":"TrAction\n      \n      \n      TRAIN · TRACK · ACT\n    \n    \n      C — Mit Divider\n      Wie B, aber mit feiner Trennlinie zwischen Wordmark und Tagline. Mehr Struktur, etwas edler.","choice":"c","id":null,"timestamp":1774615104391}
+{"source":"user-event","type":"click","text":"2\n    \n      Neue Schrift (z.B. Syne, Bebas Neue, Space Grotesk)\n      Mehr Charakter im Wordmark, aber ein weiterer Font-Load","choice":"neue","id":null,"timestamp":1774615105644}
+{"source":"user-event","type":"click","text":"2\n    \n      Neue Schrift (z.B. Syne, Bebas Neue, Space Grotesk)\n      Mehr Charakter im Wordmark, aber ein weiterer Font-Load","choice":"neue","id":null,"timestamp":1774615106203}
+{"source":"user-event","type":"click","text":"2\n    \n      Neue Schrift (z.B. Syne, Bebas Neue, Space Grotesk)\n      Mehr Charakter im Wordmark, aber ein weiterer Font-Load","choice":"neue","id":null,"timestamp":1774615106678}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content/font-options.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content/wordmark-final.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content/auth-layout.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content/waiting.html"}
+{"type":"screen-added","file":"/Users/raoulagachi/Codes/AGAsDashboard/.superpowers/brainstorm/2282-1774614893/content/full-design.html"}
+{"type":"server-stopped","reason":"idle timeout"}

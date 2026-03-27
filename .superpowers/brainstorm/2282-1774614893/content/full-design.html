@@ -1,0 +1,97 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+<h2>Vollständiges Auth-Screen Design</h2>
+<p class="subtitle">Finale Zusammenfassung aller Entscheidungen — bitte prüfen und bestätigen.</p>
+
+<div class="section">
+  <div class="label">1 · Screen-Aufbau (Ebenen, von hinten nach vorne)</div>
+
+  <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:12px;padding:20px;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#666;line-height:1.9;">
+    <div style="color:#333;">┌─────────────────────────────────────────┐</div>
+    <div><span style="color:#1a6b3c;">Layer 0</span> &nbsp;DottedSurface (Three.js, fixed, z-0)</div>
+    <div style="color:#1a1a1a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pointer-events: none · full-screen canvas</div>
+    <div style="color:#333;">├─────────────────────────────────────────┤</div>
+    <div><span style="color:#0a5a8a;">Layer 1</span> &nbsp;Auth Glass-Card (z-10, centered)</div>
+    <div style="color:#1a1a1a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; backdrop-filter: blur(12px)</div>
+    <div style="color:#333;">├─────────────────────────────────────────┤</div>
+    <div><span style="color:#8a5a0a;">Layer 2</span> &nbsp;Vaporize Canvas (z-20, über Card)</div>
+    <div style="color:#1a1a1a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nur aktiv nach Auth-Success · opacity:0 sonst</div>
+    <div style="color:#333;">└─────────────────────────────────────────┘</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">2 · Wordmark</div>
+  <div style="background:#050505;border:1px solid #1a1a1a;border-radius:12px;padding:28px;display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:12px;">
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:52px;font-weight:800;line-height:1;letter-spacing:-2px;">
+      <span style="color:#555;">Tr</span><span style="color:#ffffff;">Action</span>
+    </div>
+    <div style="width:200px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);margin:4px 0;"></div>
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;color:#4a4a4a;letter-spacing:6px;text-transform:uppercase;">TRAIN · TRACK · ACT</div>
+  </div>
+  <p style="font-size:13px;color:#666;margin-top:8px;">Plus Jakarta Sans 800 · 52px · letter-spacing: -2px · "Tr" = #555 · "Action" = #fff</p>
+</div>
+
+<div class="section">
+  <div class="label">3 · Glass-Card Layout (mobile-first, 375px)</div>
+  <div style="background:#080808;border:1px solid #1a1a1a;border-radius:12px;padding:16px;margin-top:12px;display:flex;justify-content:center;">
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:28px 24px;width:280px;display:flex;flex-direction:column;align-items:center;gap:16px;backdrop-filter:blur(12px);">
+      <!-- Wordmark -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:44px;font-weight:800;letter-spacing:-2px;">
+          <span style="color:#555;">Tr</span><span style="color:#fff;">Action</span>
+        </div>
+        <div style="width:160px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);"></div>
+        <div style="font-size:8px;color:#3a3a3a;letter-spacing:5px;">TRAIN · TRACK · ACT</div>
+      </div>
+      <!-- Tabs -->
+      <div style="display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:10px;padding:3px;width:100%;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px;text-align:center;font-size:11px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;">Anmelden</div>
+        <div style="flex:1;padding:6px;text-align:center;font-size:11px;color:#555;font-family:'Plus Jakarta Sans',sans-serif;">Registrieren</div>
+      </div>
+      <!-- Fields -->
+      <div style="width:100%;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;font-size:11px;color:#555;font-family:'Plus Jakarta Sans',sans-serif;">E-Mail</div>
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;font-size:11px;color:#555;font-family:'Plus Jakarta Sans',sans-serif;">Passwort</div>
+      </div>
+      <!-- Button -->
+      <div style="width:100%;background:#fff;border-radius:10px;padding:10px;text-align:center;font-size:12px;font-weight:700;color:#000;font-family:'Plus Jakarta Sans',sans-serif;">Anmelden</div>
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:8px;width:100%;">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
+        <span style="font-size:10px;color:#333;">oder</span>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
+      </div>
+      <!-- Google -->
+      <div style="width:100%;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px;text-align:center;font-size:11px;color:#666;font-family:'Plus Jakarta Sans',sans-serif;">Mit Google fortfahren</div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:#666;margin-top:8px;">Bestehende Alpine.js-Logik (handleLogin, handleRegister, handleSocialLogin) bleibt 1:1 erhalten.</p>
+</div>
+
+<div class="section">
+  <div class="label">4 · Animation-Ablauf nach Auth-Success</div>
+  <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:12px;padding:20px;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;color:#666;">
+    <div><span style="color:#34c759;">①</span> API-Antwort OK → Alpine setzt <span style="color:#fff;">authSuccess = true</span></div>
+    <div><span style="color:#34c759;">②</span> Vaporize-Canvas wird eingeblendet (z-20, über der Card)</div>
+    <div><span style="color:#34c759;">③</span> "TrAction"-Wordmark vaporisiert links→rechts (~1.5s)</div>
+    <div><span style="color:#34c759;">④</span> waitDuration ~0.5s Pause nach Ende der Partikel</div>
+    <div><span style="color:#34c759;">⑤</span> <span style="color:#fff;">loadAppData()</span> wird aufgerufen → App lädt</div>
+    <div><span style="color:#34c759;">⑥</span> Canvas wird disposed (cancelAnimationFrame + ctx.clearRect)</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">5 · Neue Dateien / geänderte Dateien</div>
+  <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:12px;padding:20px;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;">
+    <div><span style="color:#34c759;">NEU</span> &nbsp;<span style="color:#ccc;">js/fx/dotted-surface.js</span></div>
+    <div><span style="color:#34c759;">NEU</span> &nbsp;<span style="color:#ccc;">js/fx/vaporize-text.js</span></div>
+    <div><span style="color:#0a84ff;">MOD</span> &nbsp;<span style="color:#ccc;">templates/modals/auth.html</span> &nbsp;<span style="color:#444;">← HTML-Redesign + Canvas-refs</span></div>
+    <div><span style="color:#0a84ff;">MOD</span> &nbsp;<span style="color:#ccc;">css/styles.css</span> &nbsp;<span style="color:#444;">← Wordmark-Styles + Auth-Card-Styles</span></div>
+    <div><span style="color:#0a84ff;">MOD</span> &nbsp;<span style="color:#ccc;">vite.config.js</span> &nbsp;<span style="color:#444;">← Three.js als Dependency</span></div>
+    <div><span style="color:#f59e0b;">UNBERÜHRT</span> &nbsp;<span style="color:#444;">js/main.js, js/store/supabase.js, alle anderen Templates</span></div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px;">Sieht das so aus wie du es dir vorstellst? Falls ja, schreibe ich den Spec-Doc und starte die Implementierungsplanung.</p>

@@ -66,7 +66,18 @@
       "Bash(npx web-push:*)",
       "Bash(brew install:*)",
       "Bash(supabase projects:*)",
-      "Bash(supabase functions:*)"
+      "Bash(supabase functions:*)",
+      "Read(//Users/raoulagachi/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.6/**)",
+      "Bash(bash scripts/start-server.sh --project-dir /Users/raoulagachi/Codes/AGAsDashboard)",
+      "Bash(ls /Users/raoulagachi/Codes/AGAsDashboard/vitest.config*)",
+      "Bash(ls /Users/raoulagachi/Codes/AGAsDashboard/vitest* /Users/raoulagachi/Codes/AGAsDashboard/vite.config*)",
+      "Bash(npm show:*)",
+      "Bash(node -e \"const jsdom = require\\(''''jsdom''''\\); console.log\\(jsdom.version || ''''no version export''''\\)\")",
+      "Bash(git stash:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(/Users/raoulagachi/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.6/scripts/start-server.sh --project-dir /Users/raoulagachi/Codes/AGAsDashboard)",
+      "WebSearch",
+      "Bash(git push:*)"
     ]
   }
 }
