@@ -32,7 +32,7 @@ export const settingsMixin = () => ({
                     });
                 } catch (e) {
                     console.error('Einstellungen konnten nicht gespeichert werden:', e);
-                    this.showToast('Fehler beim Speichern');
+                    this.showToast('Einstellungen konnten nicht gespeichert werden. Bitte erneut versuchen.');
                 }
             }, 500);
         }

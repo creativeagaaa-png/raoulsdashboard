@@ -128,35 +128,65 @@ export async function getSettings() {
 
 export async function saveSettings(profile) {
     const userId = await requireUserId();
-    const row = {
-        user_id: userId,
+    const fields = {
         start_weight: profile.startWeight,
         goal_weight: profile.goalWeight,
         user_height: profile.userHeight,
         user_age: profile.userAge
     };
     if (profile.goalDate !== undefined) {
-        row.goal_date = profile.goalDate || null;
+        fields.goal_date = profile.goalDate || null;
     }
     if (profile.gender !== undefined) {
-        row.gender = profile.gender;
+        fields.gender = profile.gender;
     }
     if (profile.activityLevel !== undefined) {
-        row.activity_level = profile.activityLevel;
+        fields.activity_level = profile.activityLevel;
     }
     if (profile.weeklyGoalRate !== undefined) {
-        row.weekly_goal_rate = profile.weeklyGoalRate;
+        fields.weekly_goal_rate = profile.weeklyGoalRate;
     }
     if (profile.checklistItems !== undefined) {
-        row.checklist_items = profile.checklistItems;
+        fields.checklist_items = profile.checklistItems;
     }
     if (profile.displayName !== undefined) {
-        row.display_name = profile.displayName;
+        fields.display_name = profile.displayName;
     }
-    const { error } = await requireDb()
+
+    // Check if settings row already exists for this user
+    const { data: existing } = await requireDb()
         .from('settings')
-        .upsert(row, { onConflict: 'user_id' });
-    if (error) throw error;
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (existing) {
+        // UPDATE existing row — avoids PK/sequence issues entirely
+        const { error } = await requireDb()
+            .from('settings')
+            .update(fields)
+            .eq('user_id', userId);
+        if (error) throw error;
+    } else {
+        // INSERT new row with user_id
+        const row = { user_id: userId, ...fields };
+        const { error } = await requireDb()
+            .from('settings')
+            .insert(row);
+        if (error) {
+            // Fallback: if INSERT fails due to PK sequence conflict (settings_pkey),
+            // retry as upsert — the row doesn't exist for this user_id yet but
+            // the auto-generated id collides with an orphaned row
+            if (error.code === '23505') {
+                const { error: upsertErr } = await requireDb()
+                    .from('settings')
+                    .upsert(row, { onConflict: 'user_id' });
+                if (upsertErr) throw upsertErr;
+            } else {
+                throw error;
+            }
+        }
+    }
 }
 
 // ── Training Plan ───────────────────────────────────────

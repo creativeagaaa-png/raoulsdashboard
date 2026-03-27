@@ -458,12 +458,12 @@ function app() {
 
         async handleLogout() {
             try {
-                await Supa.signOut();
-                this.authUser = null;
-                this.appLoaded = false;
                 this.profileDropdownOpen = false;
+                await Supa.signOut();
+                // onAuthStateChange listener handles state reset
             } catch (e) {
                 console.error('Logout failed:', e);
+                this.showToast('Abmeldung fehlgeschlagen — bitte erneut versuchen.');
             }
         },
 
@@ -539,8 +539,7 @@ function app() {
                     this.showToast('Willkommen, ' + name + '!');
                 } catch (e) {
                     console.error('Onboarding save failed:', e);
-                    const msg = e?.message || 'Unbekannter Fehler';
-                    this.showToast('Speichern fehlgeschlagen: ' + msg);
+                    this.showToast('Profil konnte nicht gespeichert werden. Bitte erneut versuchen.');
                 } finally {
                     this.onboardingLoading = false;
                 }
@@ -564,8 +563,7 @@ function app() {
                     this.showToast('Willkommen zurück, ' + name + '!');
                 } catch (e) {
                     console.error('Onboarding save failed:', e);
-                    const msg = e?.message || 'Unbekannter Fehler';
-                    this.showToast('Speichern fehlgeschlagen: ' + msg);
+                    this.showToast('Profil konnte nicht gespeichert werden. Bitte erneut versuchen.');
                 } finally {
                     this.onboardingLoading = false;
                 }
@@ -687,7 +685,8 @@ function app() {
             }
 
             // Listen for auth changes (login/logout)
-            Supa.onAuthStateChange((session) => {
+            // Store subscription for cleanup to prevent memory leaks
+            const { data: { subscription: authSubscription } } = Supa.onAuthStateChange((session) => {
                 const wasLoggedIn = !!this.authUser;
                 this.authUser = session?.user || null;
                 // If just logged in, load the app
@@ -697,11 +696,24 @@ function app() {
                     this.authError = '';
                     this.authAnimationPending = true;
                 }
-                // If just logged out, show auth screen
+                // If just logged out, reset all user state and show auth screen
                 if (wasLoggedIn && !this.authUser) {
+                    this.displayName = '';
+                    this.startWeight = DEFAULT_PROFILE.startWeight;
+                    this.goalWeight = DEFAULT_PROFILE.goalWeight;
+                    this.goalDate = null;
+                    this.userHeight = DEFAULT_PROFILE.userHeight;
+                    this.userAge = DEFAULT_PROFILE.userAge;
+                    this.gender = null;
+                    this.history = [];
+                    this.workoutHistory = [];
+                    this.workoutHistoryLoaded = false;
+                    this.onboardingOpen = false;
+                    this._initFailed = false;
                     this.appLoaded = true;
                 }
             });
+            this._authSubscription = authSubscription;
 
             // If already logged in, load data
             if (this.authUser) {
