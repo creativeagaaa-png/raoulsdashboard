@@ -767,3 +767,135 @@ input[type="number"] {
         box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 20px 50px -12px rgba(0,0,0,0.15);
     }
 }
+
+/* ========================================
+   AUTH SCREEN
+   ======================================== */
+
+.auth-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--bg);
+}
+
+/* Glass Card Wrapper */
+.auth-card-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 360px;
+}
+
+/* Glass Card */
+.auth-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (min-width: 376px) {
+    .auth-card {
+        padding: 28px 24px;
+    }
+}
+
+@media (min-width: 481px) {
+    .auth-card {
+        padding: 32px 28px;
+    }
+}
+
+/* Light mode card */
+@media (prefers-color-scheme: light) {
+    .auth-screen {
+        background: var(--bg);
+    }
+    .auth-card {
+        background: rgba(0, 0, 0, 0.03);
+        border-color: rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* ========================================
+   WORDMARK
+   ======================================== */
+
+.auth-wordmark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 4px;
+}
+
+.auth-wordmark__title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin: 0;
+}
+
+@media (min-width: 376px) {
+    .auth-wordmark__title {
+        font-size: 52px;
+    }
+}
+
+.auth-wordmark__tr {
+    color: #555;
+}
+
+.auth-wordmark__action {
+    color: #ffffff;
+}
+
+/* Light mode wordmark */
+@media (prefers-color-scheme: light) {
+    .auth-wordmark__tr {
+        color: #aaa;
+    }
+    .auth-wordmark__action {
+        color: #1a1a1a;
+    }
+}
+
+.auth-wordmark__divider {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+@media (prefers-color-scheme: light) {
+    .auth-wordmark__divider {
+        background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.15), transparent);
+    }
+}
+
+.auth-wordmark__tagline {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #4a4a4a;
+    margin: 0;
+}
+
+@media (prefers-color-scheme: light) {
+    .auth-wordmark__tagline {
+        color: #999;
+    }
+}
