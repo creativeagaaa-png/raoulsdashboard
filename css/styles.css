@@ -780,7 +780,7 @@ input[type="number"] {
     align-items: center;
     justify-content: center;
     padding: 16px;
-    background: var(--bg);
+    background: transparent;
 }
 
 /* Glass Card Wrapper */
