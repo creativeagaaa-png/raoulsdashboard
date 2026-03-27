@@ -85,6 +85,63 @@
                 </div>
             </section>
 
+            <!-- Benachrichtigungen -->
+            <section>
+                <h3 class="text-[10px] font-bold text-muted uppercase tracking-widest mb-3">Benachrichtigungen</h3>
+                <div class="rounded-2xl border border-[var(--glass-border)] overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3.5">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center border"
+                             :class="pushEnabled ? 'bg-emerald-500/15 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/5 text-muted'">
+                            <i class="ph-bold ph-bell-ringing text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-white">Tägliche Erinnerung</p>
+                            <p class="text-[10px] text-muted" x-text="pushEnabled ? 'Aktiv — ' + pushReminderTime + ' Uhr' : 'Deaktiviert'"></p>
+                        </div>
+                        <button @click="togglePushNotifications()"
+                                :disabled="pushLoading"
+                                class="relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 disabled:opacity-50"
+                                :class="pushEnabled ? 'bg-emerald-500' : 'bg-white/10'">
+                            <div class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                                 :class="pushEnabled ? 'translate-x-[22px]' : 'translate-x-0.5'"></div>
+                        </button>
+                    </div>
+                    <div x-show="pushEnabled" x-collapse class="border-t border-[var(--glass-border)]">
+                        <div class="flex items-center gap-3 px-4 py-3.5">
+                            <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-muted border border-white/5">
+                                <i class="ph ph-clock text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-white">Uhrzeit</p>
+                            </div>
+                            <input type="time" x-model="pushReminderTime" @change="updatePushReminderTime()"
+                                   class="bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-white text-sm font-mono focus:border-white/20 outline-none">
+                        </div>
+                    </div>
+                    <div x-show="pushPermission === 'denied'" class="px-4 py-2.5 border-t border-[var(--glass-border)]">
+                        <p class="text-[10px] text-rose-400">Benachrichtigungen sind im Browser blockiert. Bitte erlaube sie in den Browser-Einstellungen.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daten -->
+            <section>
+                <h3 class="text-[10px] font-bold text-muted uppercase tracking-widest mb-3">Daten</h3>
+                <div class="rounded-2xl border border-[var(--glass-border)] overflow-hidden">
+                    <button type="button" @click="exportWeightData()"
+                            class="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-all text-left">
+                        <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-muted border border-white/5">
+                            <i class="ph ph-download-simple text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-white">Gewichtsdaten exportieren</p>
+                            <p class="text-[10px] text-muted">CSV-Datei herunterladen</p>
+                        </div>
+                        <i class="ph ph-caret-right text-white/20"></i>
+                    </button>
+                </div>
+            </section>
+
             <!-- Gefahrenzone -->
             <section>
                 <h3 class="text-[10px] font-bold text-rose-400/80 uppercase tracking-widest mb-3">Gefahrenzone</h3>

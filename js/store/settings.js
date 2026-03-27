@@ -1,7 +1,9 @@
 import { DEFAULT_PROFILE } from '../utils/constants.js';
 import * as Supa from './supabase.js';
+import { debounce } from '../utils/debounce.js';
 
 export const settingsMixin = () => ({
+    _debouncedSaveSettings: null,
     settingsOpen: false,
     bmiDetailOpen: false,
 
@@ -13,23 +15,28 @@ export const settingsMixin = () => ({
     profileDirty: false,
 
     async saveSettings() {
-        try {
-            await Supa.saveSettings({
-                displayName: this.displayName,
-                startWeight: this.startWeight,
-                goalWeight: this.goalWeight,
-                goalDate: this.goalDate,
-                userHeight: this.userHeight,
-                userAge: this.userAge,
-                gender: this.gender,
-                activityLevel: this.activityLevel,
-                weeklyGoalRate: this.weeklyGoalRate,
-                checklistItems: this.checklistItems
-            });
-        } catch (e) {
-            console.error('Einstellungen konnten nicht gespeichert werden:', e);
-            this.showToast('Fehler beim Speichern');
+        if (!this._debouncedSaveSettings) {
+            this._debouncedSaveSettings = debounce(async () => {
+                try {
+                    await Supa.saveSettings({
+                        displayName: this.displayName,
+                        startWeight: this.startWeight,
+                        goalWeight: this.goalWeight,
+                        goalDate: this.goalDate,
+                        userHeight: this.userHeight,
+                        userAge: this.userAge,
+                        gender: this.gender,
+                        activityLevel: this.activityLevel,
+                        weeklyGoalRate: this.weeklyGoalRate,
+                        checklistItems: this.checklistItems
+                    });
+                } catch (e) {
+                    console.error('Einstellungen konnten nicht gespeichert werden:', e);
+                    this.showToast('Fehler beim Speichern');
+                }
+            }, 500);
         }
+        this._debouncedSaveSettings();
     },
 
     openSettings() { this.settingsOpen = true; },
@@ -82,6 +89,7 @@ export const settingsMixin = () => ({
             return;
         }
 
+        this.displayName = (f.displayName || '').trim() || this.displayName;
         this.startWeight = newStart;
         this.goalWeight = newGoal;
         this.goalDate = f.goalDate || null;

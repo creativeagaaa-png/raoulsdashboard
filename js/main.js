@@ -15,6 +15,7 @@ import { weightAnalysisMixin } from './features/weight-analysis.js';
 import { weeklyReportMixin } from './features/weekly-report.js';
 import { hapticLight, hapticMedium, hapticSuccess, hapticWarning, hapticSelection } from './utils/haptics.js';
 import { registerSwipeDismiss } from './utils/swipe-dismiss.js';
+import { exportWeightCSV } from './utils/export.js';
 
 // Modal templates (loaded as raw HTML via Vite)
 import bmiDetailModal from '../templates/modals/bmi-detail.html?raw';
@@ -99,6 +100,12 @@ function app() {
             userAge: ''
         },
         onboardingLoading: false,
+
+        // Push Notifications
+        pushEnabled: false,
+        pushReminderTime: '20:00',
+        pushPermission: typeof Notification !== 'undefined' ? Notification.permission : 'denied',
+        pushLoading: false,
 
         // UI State
         activeTab: 'health',
@@ -476,6 +483,97 @@ function app() {
             }
         },
 
+        // --- PUSH NOTIFICATIONS ---
+        _localToUtcTime(localTime) {
+            const [h, m] = localTime.split(':').map(Number);
+            const d = new Date();
+            d.setHours(h, m, 0, 0);
+            return d.toISOString().slice(11, 16);
+        },
+
+        _utcToLocalTime(utcTime) {
+            const [h, m] = utcTime.split(':').map(Number);
+            const d = new Date();
+            d.setUTCHours(h, m, 0, 0);
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        },
+
+        async loadPushState() {
+            try {
+                const sub = await Supa.getPushSubscription();
+                if (sub) {
+                    this.pushEnabled = sub.enabled;
+                    this.pushReminderTime = this._utcToLocalTime(sub.reminder_time);
+                }
+            } catch (e) {
+                console.error('Failed to load push state:', e);
+            }
+        },
+
+        async togglePushNotifications() {
+            if (this.pushLoading) return;
+            this.pushLoading = true;
+
+            try {
+                if (this.pushEnabled) {
+                    // Disable
+                    await Supa.deletePushSubscription();
+                    this.pushEnabled = false;
+                    this.showToast('Benachrichtigungen deaktiviert');
+                } else {
+                    // Enable
+                    const permission = await Notification.requestPermission();
+                    this.pushPermission = permission;
+                    if (permission !== 'granted') {
+                        this.showToast('Benachrichtigungen wurden im Browser blockiert');
+                        this.pushLoading = false;
+                        return;
+                    }
+
+                    const reg = await navigator.serviceWorker.ready;
+                    const subscription = await reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
+                    });
+
+                    const utcTime = this._localToUtcTime(this.pushReminderTime);
+                    await Supa.savePushSubscription(subscription.toJSON(), utcTime);
+                    this.pushEnabled = true;
+                    this.showToast('Erinnerung um ' + this.pushReminderTime + ' aktiviert');
+                }
+            } catch (e) {
+                console.error('Push toggle failed:', e);
+                this.showToast('Fehler bei Benachrichtigungen');
+            } finally {
+                this.pushLoading = false;
+            }
+        },
+
+        async updatePushReminderTime() {
+            if (!this.pushEnabled) return;
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const subscription = await reg.pushManager.getSubscription();
+                if (subscription) {
+                    const utcTime = this._localToUtcTime(this.pushReminderTime);
+                    await Supa.savePushSubscription(subscription.toJSON(), utcTime);
+                    this.showToast('Erinnerungszeit geändert: ' + this.pushReminderTime);
+                }
+            } catch (e) {
+                console.error('Failed to update reminder time:', e);
+            }
+        },
+
+        // --- CSV EXPORT ---
+        exportWeightData() {
+            if (!this.history || this.history.length === 0) {
+                this.showToast('Keine Gewichtsdaten zum Exportieren');
+                return;
+            }
+            exportWeightCSV(this.history);
+            this.showToast('CSV-Datei heruntergeladen');
+        },
+
         // --- INIT ---
         async initApp() {
             // Check auth state first
@@ -598,6 +696,7 @@ function app() {
 
             // Checkins laden
             try { await this.loadCheckins(); } catch(e) { console.error('Failed to load checkins:', e); }
+            try { await this.loadPushState(); } catch(e) { console.error('Failed to load push state:', e); }
 
             this.$nextTick(() => {
                 this.renderChart();

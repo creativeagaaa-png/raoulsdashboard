@@ -1,8 +1,10 @@
 import { WEEKDAYS, WEEKDAY_SHORT } from '../utils/constants.js';
 import { getTodayWeekdayIndex } from '../utils/formatting.js';
 import * as Supa from '../store/supabase.js';
+import { debounce } from '../utils/debounce.js';
 
 export const trainingMixin = () => ({
+    _debouncedSaveTraining: null,
     WEEKDAYS,
     WEEKDAY_SHORT,
     trainingOpen: false,
@@ -14,12 +16,17 @@ export const trainingMixin = () => ({
     trainingNewExercise: { name: '', sets: '', reps: '', weight: '', note: '', type: 'strength', rounds: '', circuitExercises: [{ name: '', reps: '', duration: '', weight: '' }] },
 
     async saveTrainingPlan() {
-        try {
-            await Supa.saveTrainingPlan(this.trainingPlan);
-        } catch (e) {
-            console.error('Failed to save training plan:', e);
-            this.showToast('Failed to save training plan');
+        if (!this._debouncedSaveTraining) {
+            this._debouncedSaveTraining = debounce(async () => {
+                try {
+                    await Supa.saveTrainingPlan(this.trainingPlan);
+                } catch (e) {
+                    console.error('Failed to save training plan:', e);
+                    this.showToast('Failed to save training plan');
+                }
+            }, 500);
         }
+        this._debouncedSaveTraining();
     },
 
     // NOTE: todayTraining, todayWeekday, isRestDay are defined as getters

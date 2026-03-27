@@ -1,4 +1,4 @@
-const CACHE_NAME = 'health-os-v9';
+const CACHE_NAME = 'traction-v1';
 
 // Essential assets to pre-cache during install
 const PRE_CACHE_URLS = [
@@ -54,4 +54,31 @@ self.addEventListener('message', (event) => {
             Promise.all(keys.map(k => caches.delete(k)))
         );
     }
+});
+
+// Push Notifications
+self.addEventListener('push', (event) => {
+    const data = event.data ? event.data.json() : {};
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'TrAction', {
+            body: data.body || 'Hast du heute schon gewogen? Trag dein Gewicht ein!',
+            icon: '/icons/icon-192.png',
+            badge: '/icons/icon-192.png',
+            tag: 'traction-reminder',
+            data: { url: '/' }
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+            const existing = clients.find(c => c.url.includes(self.location.origin));
+            if (existing) {
+                return existing.focus();
+            }
+            return self.clients.openWindow(event.notification.data?.url || '/');
+        })
+    );
 });

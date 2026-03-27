@@ -364,3 +364,38 @@ export async function clearAllCheckins() {
         .eq('user_id', userId);
     if (error) throw error;
 }
+
+// ── Push Subscriptions ─────────────────────────────────
+
+export async function getPushSubscription() {
+    const userId = await requireUserId();
+    const { data, error } = await requireDb()
+        .from('push_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+}
+
+export async function savePushSubscription(subscription, reminderTime) {
+    const userId = await requireUserId();
+    const { error } = await requireDb()
+        .from('push_subscriptions')
+        .upsert({
+            user_id: userId,
+            subscription,
+            reminder_time: reminderTime,
+            enabled: true
+        }, { onConflict: 'user_id' });
+    if (error) throw error;
+}
+
+export async function deletePushSubscription() {
+    const userId = await requireUserId();
+    const { error } = await requireDb()
+        .from('push_subscriptions')
+        .delete()
+        .eq('user_id', userId);
+    if (error) throw error;
+}
