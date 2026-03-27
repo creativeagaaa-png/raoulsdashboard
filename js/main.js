@@ -334,6 +334,7 @@ function app() {
                 if (isMock) {
                     await new Promise(r => setTimeout(r, 800));
                     if (isErrorMock) throw new Error('Mock-Fehler: Ungültige Zugangsdaten.');
+                    this.authUser = { id: 'mock-user', email: this.authEmail };
                     this.authAnimationPending = true;
                     return;
                 }
@@ -366,6 +367,7 @@ function app() {
                 if (isMock) {
                     await new Promise(r => setTimeout(r, 800));
                     if (isErrorMock) throw new Error('Mock-Fehler: Registrierung fehlgeschlagen.');
+                    this.authUser = { id: 'mock-user', email: this.authEmail };
                     this.authAnimationPending = true;
                     return;
                 }
@@ -423,7 +425,12 @@ function app() {
         triggerVaporizeAnimation(canvas) {
             VaporizeText.play(canvas, 'TrAction', () => {
                 this.authAnimationPending = false;
-                this.loadAppData();
+                const isMock = import.meta.env.DEV && new URLSearchParams(location.search).has('dev');
+                if (isMock) {
+                    this.$nextTick(() => { this.appLoaded = true; });
+                } else {
+                    this.loadAppData();
+                }
             });
         },
 
