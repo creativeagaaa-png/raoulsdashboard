@@ -183,12 +183,62 @@ export const trainingGeneratorMixin = () => ({
             return true;
         });
 
-        // Praeferenz-Filter (vermeiden)
+        // Praeferenz-Verarbeitung
+        let preferredEquipment = null; // fuer Priority-Boost
         if (a.exercisePreferences) {
             const prefText = a.exercisePreferences.toLowerCase();
-            const avoidKeywords = ['vermeiden', 'nicht', 'kein', 'ohne'];
+
+            // Negative Praeferenzen: Uebungen oder Equipment vermeiden
+            const avoidKeywords = ['vermeiden', 'nicht', 'kein', 'ohne', 'keine'];
             if (avoidKeywords.some(kw => prefText.includes(kw))) {
                 available = available.filter(ex => !prefText.includes(ex.name.toLowerCase()));
+                // Equipment-Vermeidung pruefen
+                const equipmentNames = {
+                    'langhantel': 'barbell', 'barbell': 'barbell',
+                    'kurzhantel': 'dumbbell', 'dumbbell': 'dumbbell', 'kurzhanteln': 'dumbbell',
+                    'maschine': 'machine', 'machine': 'machine',
+                    'kabel': 'cable', 'cable': 'cable',
+                    'koerpergewicht': 'bodyweight', 'bodyweight': 'bodyweight',
+                    'band': 'band', 'baender': 'band'
+                };
+                for (const [keyword, eqType] of Object.entries(equipmentNames)) {
+                    if (prefText.includes(keyword) && avoidKeywords.some(kw => prefText.includes(kw))) {
+                        available = available.filter(ex => ex.equipment !== eqType);
+                    }
+                }
+            }
+
+            // Positive Praeferenzen: Equipment boosten (priority um 1 erhoehen)
+            const positiveKeywords = ['bevorzuge', 'mag', 'liebe', 'lieber', 'am liebsten', 'praeferiere', 'mit'];
+            if (positiveKeywords.some(kw => prefText.includes(kw))) {
+                const equipmentNames = {
+                    'langhantel': 'barbell', 'barbell': 'barbell',
+                    'kurzhantel': 'dumbbell', 'dumbbell': 'dumbbell', 'kurzhanteln': 'dumbbell',
+                    'maschine': 'machine', 'machine': 'machine',
+                    'kabel': 'cable', 'cable': 'cable',
+                    'koerpergewicht': 'bodyweight', 'bodyweight': 'bodyweight',
+                    'band': 'band', 'baender': 'band'
+                };
+                for (const [keyword, eqType] of Object.entries(equipmentNames)) {
+                    if (prefText.includes(keyword)) {
+                        preferredEquipment = eqType;
+                        // Boost: Uebungen mit bevorzugtem Equipment bekommen Priority +1 (max 5)
+                        available = available.map(ex => {
+                            if (ex.equipment === eqType) {
+                                return { ...ex, priority: Math.min(5, (ex.priority ?? 3) + 1) };
+                            }
+                            return ex;
+                        });
+                        break; // Nur ein Equipment-Boost pro Durchlauf
+                    }
+                }
+                // Auch spezifische Uebungsnamen boosten
+                available = available.map(ex => {
+                    if (prefText.includes(ex.name.toLowerCase())) {
+                        return { ...ex, priority: Math.min(5, (ex.priority ?? 3) + 2) };
+                    }
+                    return ex;
+                });
             }
         }
 
@@ -212,15 +262,19 @@ export const trainingGeneratorMixin = () => ({
             const dayExercises = [];
 
             for (const target of dayDef.muscleTargets) {
+                // Equipment-Tracking pro Muskelgruppe fuer Vielfalt innerhalb eines Tages
+                const equipmentUsedForMuscle = [];
+
                 // Compounds fuer diese Muskelgruppe
                 const compounds = this._pickExercises(
-                    available, target.muscle, true, target.compound, usedExerciseIds
+                    available, target.muscle, true, target.compound, usedExerciseIds, equipmentUsedForMuscle
                 );
+                compounds.forEach(ex => { if (ex.equipment) equipmentUsedForMuscle.push(ex.equipment); });
                 dayExercises.push(...compounds);
 
                 // Isolationsuebungen fuer diese Muskelgruppe
                 const isolations = this._pickExercises(
-                    available, target.muscle, false, target.isolation, usedExerciseIds
+                    available, target.muscle, false, target.isolation, usedExerciseIds, equipmentUsedForMuscle
                 );
                 dayExercises.push(...isolations);
             }
@@ -239,6 +293,9 @@ export const trainingGeneratorMixin = () => ({
             // Zeitbudget pruefen und ggf. anpassen
             this._adjustForDuration(formattedExercises, a.sessionDuration);
 
+            // Internes _compound-Flag entfernen (nur fuer Zeitschaetzung benoetigt)
+            formattedExercises.forEach(ex => delete ex._compound);
+
             plan[dayIndex] = formattedExercises;
         }
 
@@ -246,6 +303,20 @@ export const trainingGeneratorMixin = () => ({
     },
 
     _selectTemplate(answers, level) {
+        // Score-basierte Auswahl: mehr Matches = hoehere Prioritaet
+        const scoreTemplate = (t) => {
+            let score = 0;
+            // Tages-Uebereinstimmung ist Pflicht (wird spaeter als Fallback behandelt)
+            if (t.daysPerWeek === answers.daysPerWeek) score += 10;
+            // Level-Match gibt Bonus
+            if (t.suitableFor.includes(level)) score += 5;
+            // Jedes Ziel das matched gibt Punkte
+            for (const g of answers.goals) {
+                if (t.goals.includes(g)) score += 3;
+            }
+            return score;
+        };
+
         let candidates = splitTemplates.filter(t => {
             if (t.daysPerWeek !== answers.daysPerWeek) return false;
             if (!t.suitableFor.includes(level)) return false;
@@ -253,10 +324,18 @@ export const trainingGeneratorMixin = () => ({
             return true;
         });
 
+        // Fallback: nur nach Tagen und Level filtern
+        if (candidates.length === 0) {
+            candidates = splitTemplates.filter(t =>
+                t.daysPerWeek === answers.daysPerWeek && t.suitableFor.includes(level)
+            );
+        }
+
         // Fallback: nur nach Tagen filtern
         if (candidates.length === 0) {
             candidates = splitTemplates.filter(t => t.daysPerWeek === answers.daysPerWeek);
         }
+
         // Fallback: naechstliegende Tagesanzahl
         if (candidates.length === 0) {
             const sorted = [...splitTemplates].sort((a, b) =>
@@ -265,8 +344,17 @@ export const trainingGeneratorMixin = () => ({
             candidates = [sorted[0]];
         }
 
-        // Zufaellige Auswahl
-        return candidates[Math.floor(Math.random() * candidates.length)];
+        // Score-basierte Auswahl — deterministisch, kein Zufall
+        let bestScore = -1;
+        let bestTemplate = candidates[0];
+        for (const t of candidates) {
+            const s = scoreTemplate(t);
+            if (s > bestScore) {
+                bestScore = s;
+                bestTemplate = t;
+            }
+        }
+        return bestTemplate;
     },
 
     _distributeTrainingDays(count, freeDays) {
@@ -281,19 +369,69 @@ export const trainingGeneratorMixin = () => ({
         return result;
     },
 
-    _pickExercises(available, muscle, isCompound, count, usedIds) {
+    _fisherYatesShuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    },
+
+    _pickExercises(available, muscle, isCompound, count, usedIds, usedEquipmentForMuscle = null) {
         if (count <= 0) return [];
 
-        const candidates = available.filter(ex =>
+        let candidates = available.filter(ex =>
             (ex.primaryMuscle === muscle || ex.muscleGroups.includes(muscle)) &&
             ex.compound === isCompound &&
             ex.type === 'strength' &&
             !usedIds.has(ex.id)
         );
 
-        // Shuffle fuer Variation
-        const shuffled = [...candidates].sort(() => Math.random() - 0.5);
-        const picked = shuffled.slice(0, count);
+        // Praeferenz-Boost: wenn Praeferenz-Text Equipment-Begriffe enthaelt, boost passende Uebungen
+        // (wird ueber den answers-Kontext von _buildPlan gesetzt — hier via closure nicht direkt verfuegbar,
+        //  daher wird preferredEquipment als optionaler Parameter nach usedIds erwartet)
+
+        // Priority-basierte Sortierung (5 zuerst) mit leichter Fisher-Yates-Randomisierung innerhalb gleicher Priority
+        // Erst nach Priority-Gruppe gruppieren, innerhalb jeder Gruppe shufflen
+        const byPriority = {};
+        for (const ex of candidates) {
+            const p = ex.priority ?? 3;
+            if (!byPriority[p]) byPriority[p] = [];
+            byPriority[p].push(ex);
+        }
+        const priorityLevels = Object.keys(byPriority).map(Number).sort((a, b) => b - a);
+        let sorted = [];
+        for (const p of priorityLevels) {
+            sorted.push(...this._fisherYatesShuffle(byPriority[p]));
+        }
+
+        // Equipment-Vielfalt: wenn bereits ein Equipment fuer diese Muskelgruppe gewaehlt wurde,
+        // bevorzuge andere Equipment-Typen
+        const picked = [];
+        const pickedEquipment = usedEquipmentForMuscle ? new Set(usedEquipmentForMuscle) : new Set();
+
+        for (const ex of sorted) {
+            if (picked.length >= count) break;
+            // Wenn wir noch Platz haben und Equipment-Vielfalt moeglich ist, bevorzuge anderes Equipment
+            if (pickedEquipment.has(ex.equipment) && sorted.some(e =>
+                !pickedEquipment.has(e.equipment) && !picked.includes(e)
+            )) {
+                continue; // Ueberspringe, bessere Option kommt noch
+            }
+            picked.push(ex);
+            pickedEquipment.add(ex.equipment);
+        }
+
+        // Auffuellen falls nicht genug Uebungen nach Equipment-Filter
+        if (picked.length < count) {
+            for (const ex of sorted) {
+                if (picked.length >= count) break;
+                if (!picked.includes(ex)) {
+                    picked.push(ex);
+                }
+            }
+        }
 
         picked.forEach(ex => usedIds.add(ex.id));
         return picked;
@@ -308,8 +446,11 @@ export const trainingGeneratorMixin = () => ({
 
         if (entry.type === 'strength') {
             entry.sets = scheme.sets;
-            entry.reps = ex.defaultReps || scheme.reps;
+            // IMMER scheme.reps verwenden (zielbasiert: muscle 8-12, fat_loss 12-15, etc.)
+            entry.reps = scheme.reps;
             entry.weight = ex.defaultWeight || 0;
+            // Compound-Flag fuer Zeitschaetzung in _adjustForDuration
+            entry._compound = ex.compound === true;
         } else if (entry.type === 'cardio') {
             entry.duration = ex.defaultDuration || '20 min';
         } else if (entry.type === 'distance') {
@@ -344,25 +485,60 @@ export const trainingGeneratorMixin = () => ({
         };
     },
 
-    _adjustForDuration(exercises, targetMinutes) {
+    _adjustForDuration(dayExercises, targetMinutes) {
         if (!targetMinutes) return;
-        // Grobe Schaetzung: ~4 Min pro Satz (inkl. Pause)
-        const estimatedMinutes = exercises.reduce((sum, ex) => {
-            if (ex.type === 'strength') return sum + (ex.sets || 3) * 4;
+
+        // Zeitschaetzung: Compounds ~4 Min/Satz (inkl. Pause), Isolations ~3 Min/Satz
+        const estimateTime = (exList) => exList.reduce((sum, ex) => {
+            if (ex.type === 'strength') {
+                const minsPerSet = ex._compound ? 4 : 3;
+                return sum + (ex.sets || 3) * minsPerSet;
+            }
             if (ex.type === 'cardio' || ex.type === 'distance') {
+                // parseInt ist korrekt fuer Strings wie "20 min" (stoppt bei Leerzeichen)
                 return sum + (parseInt(ex.duration) || 15);
             }
             return sum + 10;
         }, 0);
 
-        // Wenn zu lang: letzte Isolation entfernen
-        if (estimatedMinutes > targetMinutes * 1.2 && exercises.length > 3) {
-            // Entferne von hinten (Isolation-Uebungen stehen hinten)
-            for (let i = exercises.length - 1; i >= 0; i--) {
-                if (exercises[i].type === 'strength' && estimatedMinutes > targetMinutes) {
-                    exercises.splice(i, 1);
-                    break;
+        let estimated = estimateTime(dayExercises);
+
+        // Zu lang: letzte Isolation(en) entfernen bis innerhalb des Budgets
+        if (estimated > targetMinutes * 1.2 && dayExercises.length > 3) {
+            for (let i = dayExercises.length - 1; i >= 0; i--) {
+                if (estimated <= targetMinutes * 1.1) break;
+                if (dayExercises[i].type === 'strength') {
+                    const removedTime = (dayExercises[i].sets || 3) * (dayExercises[i]._compound ? 4 : 3);
+                    dayExercises.splice(i, 1);
+                    estimated -= removedTime;
                 }
+            }
+        }
+
+        // Zu kurz (< 80% der Zielzeit): Extra-Isolationssatz-Sets hinzufuegen
+        // Wir erhoehen die Satz-Anzahl der letzten Isolation um 1, maximal 2x
+        if (estimated < targetMinutes * 0.8 && dayExercises.length > 0) {
+            let boostRounds = 0;
+            while (estimateTime(dayExercises) < targetMinutes * 0.8 && boostRounds < 2) {
+                // Suche Isolation-Uebung von hinten und erhoehere sets um 1
+                let boosted = false;
+                for (let i = dayExercises.length - 1; i >= 0; i--) {
+                    if (dayExercises[i].type === 'strength' && !dayExercises[i]._compound) {
+                        dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
+                        boosted = true;
+                        break;
+                    }
+                }
+                // Falls keine Isolation gefunden: Compound-Satz erhoehen
+                if (!boosted) {
+                    for (let i = dayExercises.length - 1; i >= 0; i--) {
+                        if (dayExercises[i].type === 'strength') {
+                            dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
+                            break;
+                        }
+                    }
+                }
+                boostRounds++;
             }
         }
     },
@@ -413,7 +589,10 @@ export const trainingGeneratorMixin = () => ({
             ex.id !== original.id &&
             !usedNames.has(ex.name) &&
             allowedEquipment.includes(ex.equipment)
-        ).slice(0, 3);
+        )
+        // Nach Priority DESC sortieren, dann ersten 3 nehmen
+        .sort((a, b) => (b.priority ?? 3) - (a.priority ?? 3))
+        .slice(0, 3);
 
         if (alternatives.length === 0) {
             this.showToast('Keine Alternative verfuegbar');
@@ -433,6 +612,9 @@ export const trainingGeneratorMixin = () => ({
         const primaryGoal = this.generatorAnswers.goals[0] || 'general';
         const scheme = REPS_SCHEMES[primaryGoal] || REPS_SCHEMES.general;
         const formatted = this._formatExercise(alt, scheme, primaryGoal, this.generatorAnswers);
+
+        // Internes _compound-Flag entfernen (nur fuer Zeitschaetzung benoetigt)
+        delete formatted._compound;
 
         this.generatedPlan[dayIndex].splice(exIndex, 1, formatted);
         this.swapOptions = null;
