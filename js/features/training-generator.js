@@ -5,6 +5,56 @@ import { getTodayWeekdayIndex } from '../utils/formatting.js';
 import { exercises, EQUIPMENT_MAP } from '../data/exercises.js';
 import { splitTemplates, REPS_SCHEMES } from '../data/split-templates.js';
 
+// ── Physiologische Leitplanken ──────────────────────────
+// Alle Limits als benannte Konstanten mit sportwissenschaftlicher Begruendung.
+const PHYSIO_CONSTRAINTS = {
+    // Volumen pro Muskelgruppe pro Session
+    // Schoenfeld et al. (2017): 10-20 Sets/Woche optimal → max 6-10/Session
+    MAX_SETS_PER_MUSCLE_PER_SESSION: 10,
+    MIN_SETS_PER_MUSCLE_PER_SESSION: 2,
+    MAX_SETS_SMALL_MUSCLE: 6,
+    SMALL_MUSCLES: ['biceps', 'triceps', 'calves', 'forearms', 'rear_delts', 'side_delts', 'front_delts'],
+
+    // Satzpausen skaliert nach Intensitaet
+    REST_BY_GOAL: {
+        strength: '2-3 min Pause',
+        muscle:   '60-90s Pause',
+        fat_loss: '30-60s Pause',
+        endurance:'30s Pause',
+        general:  '60s Pause'
+    },
+
+    // Ermuedungs-Management
+    FATIGUE_REDUCTION_AFTER_EXERCISE: 6,
+    MAX_EXERCISES_PER_SESSION: 10,
+
+    // Duration Sanity
+    MAX_CARDIO_DURATION_MINUTES: 20,
+    MIN_SESSION_MINUTES: 20,
+    MAX_SESSION_MINUTES: 120,
+    WARMUP_MINUTES: { 30: 5, 45: 5, 60: 8, 90: 10 },
+    COOLDOWN_MINUTES: 5,
+
+    // Set-Limits pro Uebung
+    MAX_SETS_PER_EXERCISE: 5,
+    MIN_SETS_PER_EXERCISE: 2,
+
+    // Duplikat-Schutz
+    MAX_SAME_MOVEMENT_PATTERN: 1
+};
+
+// Shared helper: geschaetzte Zeit einer einzelnen Uebung in Minuten
+function _exerciseTimeEstimate(ex) {
+    if (ex.type === 'strength') {
+        const minsPerSet = ex._compound ? 4 : 3;
+        return (ex.sets || 3) * minsPerSet;
+    }
+    if (ex.type === 'cardio' || ex.type === 'distance') {
+        return parseInt(ex.duration) || 10;
+    }
+    return 5;
+}
+
 export const trainingGeneratorMixin = () => ({
     generatorOpen: false,
     generatorStep: 0,
