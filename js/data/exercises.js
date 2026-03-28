@@ -28,6 +28,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust', 'handgelenk'],
+        movementPattern: 'horizontal_push',
         priority: 5
     },
     {
@@ -44,6 +45,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust', 'handgelenk'],
+        movementPattern: 'horizontal_push',
         priority: 4
     },
     {
@@ -60,6 +62,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust'],
+        movementPattern: 'horizontal_push',
         priority: 4
     },
     {
@@ -76,6 +79,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust'],
+        movementPattern: 'horizontal_push',
         priority: 4
     },
     {
@@ -92,6 +96,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -108,6 +113,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -124,6 +130,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust'],
+        movementPattern: 'horizontal_push',
         priority: 2
     },
     {
@@ -140,6 +147,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['handgelenk', 'schulter', 'brust'],
+        movementPattern: 'horizontal_push',
         priority: 4
     },
     {
@@ -156,6 +164,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'handgelenk', 'ellenbogen'],
+        movementPattern: 'horizontal_push',
         priority: 4
     },
     {
@@ -172,6 +181,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'brust'],
+        movementPattern: 'horizontal_push',
         priority: 2
     },
     {
@@ -188,6 +198,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'handgelenk', 'brust'],
+        movementPattern: 'horizontal_push',
         priority: 3
     },
     {
@@ -204,6 +215,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'ellenbogen', 'handgelenk'],
+        movementPattern: 'horizontal_push',
         priority: 5
     },
 
@@ -222,6 +234,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken', 'knie', 'handgelenk'],
+        movementPattern: 'hip_hinge',
         priority: 5
     },
     {
@@ -238,6 +251,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken', 'handgelenk'],
+        movementPattern: 'horizontal_pull',
         priority: 5
     },
     {
@@ -254,6 +268,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'horizontal_pull',
         priority: 4
     },
     {
@@ -270,6 +285,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'vertical_pull',
         priority: 4
     },
     {
@@ -286,6 +302,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'ellenbogen'],
+        movementPattern: 'vertical_pull',
         priority: 5
     },
     {
@@ -302,6 +319,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'horizontal_pull',
         priority: 4
     },
     {
@@ -318,6 +336,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'horizontal_pull',
         priority: 3
     },
     {
@@ -334,6 +353,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['handgelenk'],
+        movementPattern: 'horizontal_pull',
         priority: 3
     },
     {
@@ -350,6 +370,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -366,6 +387,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'horizontal_pull',
         priority: 2
     },
     {
@@ -382,6 +404,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull', 'push'],
         avoidWhenInjured: ['schulter', 'ellenbogen', 'handgelenk'],
+        movementPattern: 'vertical_pull',
         priority: 5
     },
     {
@@ -398,6 +421,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'ellenbogen'],
+        movementPattern: 'vertical_pull',
         priority: 5
     },
     {
@@ -414,6 +438,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken', 'knie', 'handgelenk'],
+        movementPattern: 'hip_hinge',
         priority: 4
     },
 
@@ -432,6 +457,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'ruecken'],
+        movementPattern: 'vertical_push',
         priority: 5
     },
     {
@@ -448,6 +474,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'vertical_push',
         priority: 4
     },
     {
@@ -464,6 +491,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -480,6 +508,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -496,6 +525,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -512,6 +542,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'vertical_push',
         priority: 2
     },
     {
@@ -528,6 +559,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'handgelenk'],
+        movementPattern: 'vertical_push',
         priority: 3
     },
     {
@@ -544,6 +576,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'vertical_push',
         priority: 2
     },
     {
@@ -560,6 +593,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'handgelenk', 'ruecken'],
+        movementPattern: 'vertical_push',
         priority: 4
     },
     {
@@ -576,6 +610,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -592,6 +627,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -608,6 +644,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -624,6 +661,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -640,6 +678,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -651,12 +690,12 @@ export const exercises = [
         equipment: 'dumbbell',
         difficulty: 'beginner',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -668,12 +707,12 @@ export const exercises = [
         equipment: 'cable',
         difficulty: 'beginner',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
 
@@ -692,6 +731,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -708,6 +748,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -724,6 +765,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -740,6 +782,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ellenbogen'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -756,6 +799,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'ellenbogen'],
+        movementPattern: 'vertical_pull',
         priority: 4
     },
     {
@@ -772,6 +816,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ellenbogen'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -788,6 +833,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        movementPattern: 'isolation',
         priority: 2
     },
 
@@ -806,6 +852,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['ellenbogen'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -822,6 +869,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['ellenbogen', 'schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -838,6 +886,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -854,6 +903,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['schulter', 'ellenbogen'],
+        movementPattern: 'compound_other',
         priority: 4
     },
     {
@@ -870,6 +920,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['handgelenk', 'ellenbogen'],
+        movementPattern: 'compound_other',
         priority: 3
     },
     {
@@ -886,6 +937,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['ellenbogen'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -902,6 +954,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['push'],
         avoidWhenInjured: ['ellenbogen'],
+        movementPattern: 'isolation',
         priority: 2
     },
 
@@ -920,6 +973,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'ruecken', 'hueft'],
+        movementPattern: 'squat',
         priority: 5
     },
     {
@@ -936,6 +990,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'squat',
         priority: 3
     },
     {
@@ -952,6 +1007,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'squat',
         priority: 4
     },
     {
@@ -968,6 +1024,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -984,6 +1041,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'hueft'],
+        movementPattern: 'lunge',
         priority: 4
     },
     {
@@ -1000,6 +1058,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'squat',
         priority: 2
     },
     {
@@ -1016,6 +1075,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'hueft'],
+        movementPattern: 'lunge',
         priority: 4
     },
     {
@@ -1032,6 +1092,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'hueft'],
+        movementPattern: 'squat',
         priority: 3
     },
     {
@@ -1048,6 +1109,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'ruecken'],
+        movementPattern: 'squat',
         priority: 3
     },
     {
@@ -1064,6 +1126,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'ruecken', 'handgelenk'],
+        movementPattern: 'squat',
         priority: 4
     },
     {
@@ -1080,6 +1143,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'squat',
         priority: 2
     },
     {
@@ -1096,6 +1160,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'achilles', 'hueft'],
+        movementPattern: 'lunge',
         priority: 3
     },
     {
@@ -1112,6 +1177,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'hueft'],
+        movementPattern: 'lunge',
         priority: 3
     },
 
@@ -1130,6 +1196,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs', 'pull'],
         avoidWhenInjured: ['ruecken', 'knie'],
+        movementPattern: 'hip_hinge',
         priority: 5
     },
     {
@@ -1146,6 +1213,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs', 'pull'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'hip_hinge',
         priority: 4
     },
     {
@@ -1162,6 +1230,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1178,6 +1247,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -1194,6 +1264,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'hip_hinge',
         priority: 3
     },
     {
@@ -1210,6 +1281,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs', 'pull'],
         avoidWhenInjured: ['ruecken', 'knie', 'hueft'],
+        movementPattern: 'hip_hinge',
         priority: 3
     },
     {
@@ -1226,6 +1298,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs', 'pull'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'hip_hinge',
         priority: 2
     },
     {
@@ -1237,12 +1310,12 @@ export const exercises = [
         equipment: 'bodyweight',
         difficulty: 'intermediate',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 3
     },
 
@@ -1261,6 +1334,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['hueft', 'ruecken'],
+        movementPattern: 'hip_hinge',
         priority: 5
     },
     {
@@ -1277,6 +1351,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['hueft'],
+        movementPattern: 'compound_other',
         priority: 3
     },
     {
@@ -1293,6 +1368,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['hueft', 'knie'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1309,6 +1385,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs', 'pull'],
         avoidWhenInjured: ['hueft', 'ruecken', 'knie'],
+        movementPattern: 'hip_hinge',
         priority: 4
     },
     {
@@ -1325,6 +1402,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs', 'pull'],
         avoidWhenInjured: ['ruecken', 'hueft'],
+        movementPattern: 'hip_hinge',
         priority: 3
     },
     {
@@ -1341,6 +1419,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['hueft'],
+        movementPattern: 'hip_hinge',
         priority: 3
     },
     {
@@ -1357,6 +1436,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['knie', 'hueft'],
+        movementPattern: 'compound_other',
         priority: 3
     },
 
@@ -1375,6 +1455,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['wade', 'achilles'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1391,6 +1472,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['wade', 'achilles'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1407,6 +1489,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['wade', 'achilles'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1418,12 +1501,12 @@ export const exercises = [
         equipment: 'dumbbell',
         difficulty: 'beginner',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['wade', 'achilles'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1435,12 +1518,12 @@ export const exercises = [
         equipment: 'band',
         difficulty: 'beginner',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['wade', 'achilles'],
+        movementPattern: 'isolation',
         priority: 2
     },
 
@@ -1459,6 +1542,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -1475,6 +1559,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['schulter', 'ruecken'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -1491,6 +1576,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1507,6 +1593,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken', 'schulter'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -1523,6 +1610,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['handgelenk', 'knie'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1539,6 +1627,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1555,6 +1644,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1571,6 +1661,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken', 'schulter'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -1587,6 +1678,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['handgelenk', 'schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1603,6 +1695,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1619,6 +1712,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['handgelenk', 'schulter', 'knie'],
+        movementPattern: 'compound_other',
         priority: 2
     },
 
@@ -1637,6 +1731,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'nacken'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1653,6 +1748,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'nacken'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1669,6 +1765,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'handgelenk'],
+        movementPattern: 'carry',
         priority: 3
     },
     {
@@ -1685,6 +1782,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken', 'handgelenk'],
+        movementPattern: 'compound_other',
         priority: 4
     },
     {
@@ -1696,12 +1794,12 @@ export const exercises = [
         equipment: 'cable',
         difficulty: 'beginner',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'nacken'],
+        movementPattern: 'isolation',
         priority: 3
     },
 
@@ -1720,6 +1818,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['handgelenk'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1736,6 +1835,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['handgelenk', 'ellenbogen'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1752,6 +1852,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['schulter', 'handgelenk'],
+        movementPattern: 'isolation',
         priority: 2
     },
 
@@ -1771,6 +1872,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['knie', 'hueft', 'achilles'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1788,6 +1890,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1805,6 +1908,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -1822,6 +1926,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: [],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1839,6 +1944,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1856,6 +1962,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['knie', 'handgelenk', 'schulter'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1873,6 +1980,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['knie', 'achilles'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1890,6 +1998,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1907,6 +2016,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -1924,6 +2034,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio'],
         avoidWhenInjured: ['schulter', 'handgelenk'],
+        movementPattern: 'isolation',
         priority: 3
     },
 
@@ -1944,6 +2055,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
         avoidWhenInjured: ['knie', 'hueft', 'achilles'],
+        movementPattern: 'isolation',
         priority: 4
     },
     {
@@ -1962,6 +2074,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
         avoidWhenInjured: [],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1980,6 +2093,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
         avoidWhenInjured: ['knie'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -1998,6 +2112,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
         avoidWhenInjured: ['schulter'],
+        movementPattern: 'isolation',
         priority: 4
     },
 
@@ -2016,6 +2131,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull', 'core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -2032,6 +2148,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'hip_hinge',
         priority: 3
     },
     {
@@ -2048,6 +2165,7 @@ export const exercises = [
         defaultWeight: 0,
         tags: ['pull', 'core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 2
     },
     {
@@ -2059,12 +2177,12 @@ export const exercises = [
         equipment: 'bodyweight',
         difficulty: 'beginner',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 3
     },
     {
@@ -2076,12 +2194,12 @@ export const exercises = [
         equipment: 'bodyweight',
         difficulty: 'beginner',
         compound: false,
-        movementPattern: 'isolation',
         defaultSets: 3,
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['core'],
         avoidWhenInjured: ['ruecken'],
+        movementPattern: 'isolation',
         priority: 3
     }
 ];
