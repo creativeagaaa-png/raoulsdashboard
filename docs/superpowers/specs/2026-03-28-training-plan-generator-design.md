@@ -151,7 +151,7 @@ Neues Alpine.js Mixin: `trainingGeneratorMixin()`
     equipment: null,              // 'full_gym' | 'home_gym' | 'bodyweight'
     goals: [],                    // ['muscle', 'fat_loss', 'endurance', 'general']
     otherSports: '',
-    otherSportsFrequency: '',
+    otherSportsDays: [],              // [0,3] = Montag+Donnerstag belegt
     hasOtherSports: false,
     sessionDuration: null,        // 30 | 45 | 60 | 90
     injuries: '',
@@ -214,10 +214,13 @@ switchToManualEdit()              — Uebernimmt Plan und oeffnet manuellen Edit
    - Wenn User eine Uebung schon gemacht hat:
      → defaultWeight durch letztes genutztes Gewicht ersetzen
 
-7. ANDERE SPORTARTEN BERUECKSICHTIGEN
-   - Wenn otherSports erwaehnt: Trainingstage so verteilen,
-     dass Belastung/Erholung Sinn ergibt (z.B. Beine nicht
-     vor Fussball)
+7. TAGE VERTEILEN (mit blockierten Tagen)
+   - Verfuegbare Tage = alle 7 Wochentage MINUS otherSportsDays
+   - Trainingstage gleichmaessig auf verfuegbare Tage verteilen
+   - Template-Structure auf die konkreten Wochentage mappen
+   - Nicht-Trainingstage = leeres Array (Ruhetag)
+   - Beispiel: 3 Trainingstage, Fussball Di+Do →
+     Generator nutzt Mo, Mi, Fr (oder Mo, Mi, Sa)
 
 8. AUSGABE
    - Array[7] im exakt gleichen Format wie trainingPlan:
@@ -283,7 +286,15 @@ Wizard mit Progress-Bar, einer Frage pro Schritt, Zurueck/Weiter-Navigation.
 
 **Step 5: Andere Sportarten**
 - Toggle: "Nein, nur diesen Trainingsplan" / "Ja"
-- Bei Ja: Textfeld + Haeufigkeit (z.B. "Fussball, 2x/Woche")
+- Bei Ja:
+  - Textfeld fuer Sportart (z.B. "Fussball")
+  - **Tage-Auswahl:** 7 Wochentag-Buttons (Mo-So) zum Anklicken
+    → User markiert an welchen Tagen die andere Sportart stattfindet
+  - Diese Tage sind dann fuer den Generator BLOCKIERT
+  - Der Generator verteilt Trainingstage nur auf die verbleibenden freien Tage
+  - Validierung: Wenn blockierte Tage + gewuenschte Trainingstage > 7 → Warnung
+    "Du hast X Tage fuer andere Sportarten belegt. Fuer Y Trainingstage
+    bleiben nicht genug freie Tage. Bitte passe die Anzahl an."
 
 **Step 6: Zeit pro Training**
 - 4 Radio-Karten: 30 Min / 45 Min / 60 Min / 90+ Min
