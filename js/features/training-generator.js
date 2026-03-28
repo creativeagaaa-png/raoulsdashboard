@@ -297,6 +297,7 @@ export const trainingGeneratorMixin = () => ({
 
     // ── Plan Generation ──────────────────────────────
     async generatePlan() {
+        if (!this.generatorAnswers) return;
         this.generatorLoading = true;
         await new Promise(r => setTimeout(r, 400));
 
@@ -317,6 +318,11 @@ export const trainingGeneratorMixin = () => ({
     _buildPlan() {
         const a = this.generatorAnswers;
         const daysPerWeek = a.selectedDays.length;
+
+        // Defensive: falls keine Goals gesetzt, Fallback auf 'general'
+        if (!a.goals || a.goals.length === 0) {
+            a.goals = ['general'];
+        }
 
         // 1. Template waehlen (level defaults to intermediate)
         const template = this._selectTemplate(a, 'intermediate', daysPerWeek);
@@ -726,63 +732,49 @@ export const trainingGeneratorMixin = () => ({
     },
 
     _estimateTime(dayExercises) {
-        return dayExercises.reduce((sum, ex) => {
-            if (ex.type === 'strength') {
-                const minsPerSet = ex._compound ? 4 : 3;
-                return sum + (ex.sets || 3) * minsPerSet;
-            }
-            if (ex.type === 'cardio' || ex.type === 'distance') {
-                return sum + (parseInt(ex.duration) || 10);
-            }
-            return sum + 5;
-        }, 0);
+        return dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex), 0);
     },
 
     _adjustForDuration(dayExercises, targetMinutes) {
         if (!targetMinutes) return;
 
-        const estimateTime = (exList) => exList.reduce((sum, ex) => {
-            if (ex.type === 'strength') {
-                const minsPerSet = ex._compound ? 4 : 3;
-                return sum + (ex.sets || 3) * minsPerSet;
-            }
-            if (ex.type === 'cardio' || ex.type === 'distance') {
-                return sum + (parseInt(ex.duration) || 15);
-            }
-            return sum + 10;
-        }, 0);
+        let estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex), 0);
 
-        let estimated = estimateTime(dayExercises);
-
-        // Too long
+        // Too long — remove isolation exercises from the end
         if (estimated > targetMinutes * 1.2 && dayExercises.length > 3) {
             for (let i = dayExercises.length - 1; i >= 0; i--) {
                 if (estimated <= targetMinutes * 1.1) break;
                 if (dayExercises[i].type === 'strength' && !dayExercises[i]._compound) {
-                    const removedTime = (dayExercises[i].sets || 3) * 3;
+                    const removedTime = _exerciseTimeEstimate(dayExercises[i]);
                     dayExercises.splice(i, 1);
                     estimated -= removedTime;
                 }
             }
         }
 
-        // Too short
+        // Too short — boost sets (with MAX cap)
+        estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex), 0);
         if (estimated < targetMinutes * 0.8 && dayExercises.length > 0) {
+            const MAX_SETS = typeof PHYSIO_CONSTRAINTS !== 'undefined' ? PHYSIO_CONSTRAINTS.MAX_SETS_PER_EXERCISE : 5;
             let boostRounds = 0;
-            while (estimateTime(dayExercises) < targetMinutes * 0.8 && boostRounds < 2) {
+            while (dayExercises.reduce((s, e) => s + _exerciseTimeEstimate(e), 0) < targetMinutes * 0.8 && boostRounds < 2) {
                 let boosted = false;
                 for (let i = dayExercises.length - 1; i >= 0; i--) {
                     if (dayExercises[i].type === 'strength' && !dayExercises[i]._compound) {
-                        dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
-                        boosted = true;
-                        break;
+                        if ((dayExercises[i].sets || 3) < MAX_SETS) {
+                            dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
+                            boosted = true;
+                            break;
+                        }
                     }
                 }
                 if (!boosted) {
                     for (let i = dayExercises.length - 1; i >= 0; i--) {
                         if (dayExercises[i].type === 'strength') {
-                            dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
-                            break;
+                            if ((dayExercises[i].sets || 3) < MAX_SETS) {
+                                dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
+                                break;
+                            }
                         }
                     }
                 }
