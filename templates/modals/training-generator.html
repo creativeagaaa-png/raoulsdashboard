@@ -549,63 +549,63 @@
                     <button type="button" @click="generatorStep = 1" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Trainingstage</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels.days + ' (' + generatorSummaryLabels.daysCount + 'x)'"></span>
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().days + ' (' + generatorSummaryLabels().daysCount + 'x)'"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button type="button" @click="generatorStep = 2" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Equipment</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels.equipment"></span>
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().equipment"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button type="button" @click="generatorStep = 3" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Ziele</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels.goals"></span>
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().goals"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button type="button" @click="generatorStep = 4" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Schwerpunkt</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels.focus"></span>
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().focus"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button type="button" @click="generatorStep = 5" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Andere Sportart</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels.otherSports"></span>
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().otherSports"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button type="button" @click="generatorStep = 6" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Trainingsdauer</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels.duration"></span>
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().duration"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button type="button" @click="generatorStep = 7" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Verletzungen</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels.injuries"></span>
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().injuries"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button x-show="generatorAnswers.preferredEquipment.length > 0" type="button" @click="generatorStep = 8" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Bevorzugtes Equipment</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-emerald-400" x-text="generatorSummaryLabels.preferredEquip"></span>
+                            <span class="text-xs font-bold text-emerald-400" x-text="generatorSummaryLabels().preferredEquip"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
                     <button x-show="generatorAnswers.avoidedEquipment.length > 0" type="button" @click="generatorStep = 8" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Vermiedenes Equipment</span>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-bold text-rose-400" x-text="generatorSummaryLabels.avoidedEquip"></span>
+                            <span class="text-xs font-bold text-rose-400" x-text="generatorSummaryLabels().avoidedEquip"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
@@ -815,14 +815,14 @@
                     </button>
                     <div class="hidden space-y-1.5 pt-1">
                         <template x-for="(label, muscle) in MUSCLE_LABELS" :key="muscle">
-                            <div x-show="generatorWeeklyMuscleStats[muscle]" class="flex items-center gap-2">
+                            <div x-show="generatorWeeklyMuscleStats()[muscle]" class="flex items-center gap-2">
                                 <span class="text-[10px] text-muted w-28 truncate" x-text="label"></span>
                                 <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                                     <div class="h-full rounded-full transition-all duration-500"
-                                         :class="generatorWeeklyMuscleStats[muscle] > 12 ? 'bg-blue-500' : generatorWeeklyMuscleStats[muscle] > 6 ? 'bg-blue-500/70' : 'bg-blue-500/40'"
-                                         :style="'width: ' + Math.min(100, (generatorWeeklyMuscleStats[muscle] || 0) / 20 * 100) + '%'"></div>
+                                         :class="generatorWeeklyMuscleStats()[muscle] > 12 ? 'bg-blue-500' : generatorWeeklyMuscleStats()[muscle] > 6 ? 'bg-blue-500/70' : 'bg-blue-500/40'"
+                                         :style="'width: ' + Math.min(100, (generatorWeeklyMuscleStats()[muscle] || 0) / 20 * 100) + '%'"></div>
                                 </div>
-                                <span class="text-[9px] text-muted font-mono w-8 text-right" x-text="(generatorWeeklyMuscleStats[muscle] || 0) + ' Sets'"></span>
+                                <span class="text-[9px] text-muted font-mono w-8 text-right" x-text="(generatorWeeklyMuscleStats()[muscle] || 0) + ' Sets'"></span>
                             </div>
                         </template>
                     </div>

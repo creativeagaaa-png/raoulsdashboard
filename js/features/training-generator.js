@@ -62,15 +62,15 @@ export const trainingGeneratorMixin = () => ({
     },
 
     // ── Computed ──────────────────────────────────────
-    get generatorDaysPerWeek() {
+    generatorDaysPerWeek() {
         return this.generatorAnswers.selectedDays.length;
     },
 
-    get generatorFreeDays() {
+    generatorFreeDays() {
         return this.generatorAnswers.selectedDays.slice().sort((a, b) => a - b);
     },
 
-    get generatorWeeklyMuscleStats() {
+    generatorWeeklyMuscleStats() {
         if (!this.generatedPlan) return {};
         const stats = {};
         for (const day of this.generatedPlan) {
@@ -84,7 +84,7 @@ export const trainingGeneratorMixin = () => ({
         return stats;
     },
 
-    get generatorSummaryLabels() {
+    generatorSummaryLabels() {
         const a = this.generatorAnswers;
         const equipLabels = { full_gym: 'Fitnessstudio', home_gym: 'Home-Gym', bodyweight: 'Bodyweight' };
         const goalLabels = { muscle: 'Muskelaufbau', fat_loss: 'Fettabbau', endurance: 'Ausdauer', general: 'Allg. Fitness' };
