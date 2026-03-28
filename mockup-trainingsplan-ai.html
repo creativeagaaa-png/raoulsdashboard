@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGAs Dashboard — Trainingsplan Generator Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0a0a0a;
+            --glass-border: rgba(255,255,255,0.06);
+            --muted: #8b8b94;
+            --backdrop: rgba(0,0,0,0.7);
+        }
+        body { background: var(--bg); }
+        .bg-surface { background: var(--surface); }
+    </style>
+</head>
+<body class="text-white antialiased min-h-screen flex items-center justify-center p-4 font-sans" x-data="mockup()">
+
+    <!-- Selection Screen -->
+    <div x-show="screen === 'selection'" class="bg-surface border border-[rgba(255,255,255,0.06)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div class="flex justify-center pt-3 pb-1"><div class="w-10 h-1 rounded-full bg-white/15"></div></div>
+        <div class="p-6 border-b border-[rgba(255,255,255,0.06)]">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-500/12 flex items-center justify-center text-blue-400 border border-blue-500/20">
+                    <i class="ph-bold ph-barbell text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold">Trainingsplan erstellen</h2>
+                    <p class="text-[10px] uppercase tracking-widest font-mono" style="color: var(--muted)">Methode waehlen</p>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <button @click="screen = 'manual'" class="w-full p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/15 transition-all text-left group">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10"><i class="ph-bold ph-notepad text-xl"></i></div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-bold">Manuellen Trainingsplan hinzufuegen</h3>
+                        <p class="text-[11px] mt-1" style="color: var(--muted)">Erstelle deinen Plan selbst</p>
+                    </div>
+                    <i class="ph ph-caret-right text-white/20"></i>
+                </div>
+            </button>
+            <button @click="screen = 'wizard'; step = 1" class="w-full p-5 rounded-2xl bg-blue-500/[0.06] border border-blue-500/15 hover:border-blue-500/30 transition-all text-left group">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/12 flex items-center justify-center text-blue-400 border border-blue-500/20"><i class="ph-bold ph-sparkle text-xl"></i></div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-bold">Lass dir einen Trainingsplan erstellen</h3>
+                        <p class="text-[11px] mt-1" style="color: var(--muted)">Beantworte 8 kurze Fragen</p>
+                    </div>
+                    <i class="ph ph-caret-right text-blue-400/30"></i>
+                </div>
+            </button>
+            <div class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                <i class="ph ph-warning text-amber-400 text-sm mt-0.5"></i>
+                <p class="text-[11px] text-amber-400/80">Du hast bereits einen Trainingsplan. Ein neuer Plan ersetzt den bestehenden.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wizard -->
+    <div x-show="screen === 'wizard'" class="bg-surface border border-[rgba(255,255,255,0.06)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div class="flex justify-center pt-3 pb-1"><div class="w-10 h-1 rounded-full bg-white/15"></div></div>
+        <div class="p-6 border-b border-[rgba(255,255,255,0.06)]">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-500/12 flex items-center justify-center text-blue-400 border border-blue-500/20"><i class="ph-bold ph-sparkle text-lg"></i></div>
+                <div>
+                    <h2 class="text-lg font-bold" x-text="step <= 8 ? 'Plan erstellen' : 'Dein Trainingsplan'"></h2>
+                    <p class="text-[10px] uppercase tracking-widest font-mono" style="color: var(--muted)" x-text="step <= 8 ? 'Schritt ' + step + ' von 8' : 'Vorschau'"></p>
+                </div>
+            </div>
+            <div x-show="step <= 8" class="mt-4 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 rounded-full transition-all duration-500" :style="'width:' + (step/8*100) + '%'"></div>
+            </div>
+        </div>
+        <div class="px-6 py-5 min-h-[300px]">
+            <!-- Step 1 -->
+            <div x-show="step === 1" class="space-y-3">
+                <h3 class="text-sm font-bold">Wie ist dein aktuelles Fitnesslevel?</h3>
+                <template x-for="opt in [{v:'beginner',l:'Anfaenger',d:'Weniger als 6 Monate Trainingserfahrung'},{v:'intermediate',l:'Fortgeschritten',d:'6 Monate bis 2 Jahre'},{v:'advanced',l:'Profi',d:'Mehr als 2 Jahre'}]">
+                    <button @click="answers.level = opt.v" class="w-full p-4 rounded-2xl border transition-all text-left" :class="answers.level === opt.v ? 'bg-blue-500/10 border-blue-500/25' : 'bg-white/5 border-white/5'">
+                        <p class="text-sm font-bold" x-text="opt.l"></p><p class="text-[11px] mt-0.5" style="color:var(--muted)" x-text="opt.d"></p>
+                    </button>
+                </template>
+            </div>
+            <!-- Step 2 -->
+            <div x-show="step === 2" class="space-y-4">
+                <h3 class="text-sm font-bold">Wie oft pro Woche moechtest du trainieren?</h3>
+                <div class="flex items-center justify-center gap-4 py-4">
+                    <button @click="answers.days = Math.max(1, answers.days-1)" class="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center"><i class="ph-bold ph-minus text-sm"></i></button>
+                    <div class="text-center min-w-[60px]"><p class="text-4xl font-extrabold font-mono" x-text="answers.days"></p><p class="text-[10px] mt-1" style="color:var(--muted)">Tage</p></div>
+                    <button @click="answers.days = Math.min(7, answers.days+1)" class="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center"><i class="ph-bold ph-plus text-sm"></i></button>
+                </div>
+            </div>
+            <!-- Step 3 -->
+            <div x-show="step === 3" class="space-y-3">
+                <h3 class="text-sm font-bold">Hast du ein Fitnessstudio?</h3>
+                <template x-for="opt in [{v:'full_gym',i:'ph-barbell',l:'Fitnessstudio',d:'Geraete, Kabelzug, Hanteln'},{v:'home_gym',i:'ph-house',l:'Home-Gym',d:'Hanteln + Langhantel'},{v:'bodyweight',i:'ph-person-arms-spread',l:'Bodyweight',d:'Nur Koerpergewicht'}]">
+                    <button @click="answers.equip = opt.v" class="w-full p-4 rounded-2xl border transition-all text-left" :class="answers.equip === opt.v ? 'bg-blue-500/10 border-blue-500/25' : 'bg-white/5 border-white/5'">
+                        <div class="flex items-center gap-3"><i class="text-lg text-blue-400" :class="'ph-bold ' + opt.i"></i><div><p class="text-sm font-bold" x-text="opt.l"></p><p class="text-[11px] mt-0.5" style="color:var(--muted)" x-text="opt.d"></p></div></div>
+                    </button>
+                </template>
+            </div>
+            <!-- Step 4 -->
+            <div x-show="step === 4" class="space-y-4">
+                <h3 class="text-sm font-bold">Was ist dein Trainingsziel?</h3>
+                <p class="text-[11px]" style="color:var(--muted)">Du kannst mehrere waehlen</p>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <template x-for="g in [{v:'muscle',i:'ph-barbell',l:'Muskelaufbau'},{v:'fat_loss',i:'ph-fire',l:'Fettabbau'},{v:'endurance',i:'ph-heartbeat',l:'Ausdauer'},{v:'general',i:'ph-target',l:'Allg. Fitness'}]">
+                        <button @click="answers.goals.includes(g.v) ? answers.goals.splice(answers.goals.indexOf(g.v),1) : answers.goals.push(g.v)" class="p-3.5 rounded-xl border transition-all text-center" :class="answers.goals.includes(g.v) ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' : 'bg-white/5 border-white/5 text-[var(--muted)]'">
+                            <i class="text-lg" :class="'ph-bold ' + g.i"></i><p class="text-xs font-bold mt-1.5" x-text="g.l"></p>
+                        </button>
+                    </template>
+                </div>
+            </div>
+            <!-- Step 5 -->
+            <div x-show="step === 5" class="space-y-4">
+                <h3 class="text-sm font-bold">Machst du noch eine andere Sportart?</h3>
+                <div class="flex gap-2">
+                    <button @click="answers.otherSport = false" class="flex-1 py-3 rounded-xl font-bold text-xs transition-all" :class="!answers.otherSport ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'">Nein</button>
+                    <button @click="answers.otherSport = true" class="flex-1 py-3 rounded-xl font-bold text-xs transition-all" :class="answers.otherSport ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'">Ja</button>
+                </div>
+                <div x-show="answers.otherSport" class="space-y-3">
+                    <input type="text" placeholder="z.B. Fussball" class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold text-sm focus:border-white/20 outline-none placeholder-white/15">
+                    <label class="text-[10px] uppercase font-bold tracking-wider" style="color:var(--muted)">An welchen Tagen?</label>
+                    <div class="flex gap-1.5">
+                        <template x-for="(d,i) in ['Mo','Di','Mi','Do','Fr','Sa','So']">
+                            <button @click="answers.blockedDays.includes(i) ? answers.blockedDays.splice(answers.blockedDays.indexOf(i),1) : answers.blockedDays.push(i)"
+                                    class="flex-1 py-2.5 rounded-xl text-[10px] font-bold transition-all border"
+                                    :class="answers.blockedDays.includes(i) ? 'bg-amber-500/15 text-amber-400 border-amber-500/25' : 'bg-white/5 text-[var(--muted)] border-white/5'"
+                                    x-text="d"></button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 6 -->
+            <div x-show="step === 6" class="space-y-3">
+                <h3 class="text-sm font-bold">Wie viel Zeit pro Training?</h3>
+                <template x-for="t in [{v:30,l:'30 Minuten',d:'Kurz und knackig'},{v:45,l:'45 Minuten',d:'Optimal fuer die meisten'},{v:60,l:'60 Minuten',d:'Ausfuehrliches Training'},{v:90,l:'90+ Minuten',d:'Intensiv mit viel Volumen'}]">
+                    <button @click="answers.time = t.v" class="w-full p-4 rounded-2xl border transition-all text-left" :class="answers.time === t.v ? 'bg-blue-500/10 border-blue-500/25' : 'bg-white/5 border-white/5'">
+                        <p class="text-sm font-bold" x-text="t.l"></p><p class="text-[11px] mt-0.5" style="color:var(--muted)" x-text="t.d"></p>
+                    </button>
+                </template>
+            </div>
+            <!-- Step 7 -->
+            <div x-show="step === 7" class="space-y-4">
+                <h3 class="text-sm font-bold">Verletzungen oder Einschraenkungen?</h3>
+                <div class="flex gap-2">
+                    <button @click="answers.injured = false" class="flex-1 py-3 rounded-xl font-bold text-xs transition-all" :class="!answers.injured ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'">Keine</button>
+                    <button @click="answers.injured = true" class="flex-1 py-3 rounded-xl font-bold text-xs transition-all" :class="answers.injured ? 'bg-white text-black' : 'bg-black/20 text-white border border-white/5'">Ja</button>
+                </div>
+                <input x-show="answers.injured" type="text" placeholder="z.B. Knie, Schulter..." class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold text-sm focus:border-white/20 outline-none placeholder-white/15">
+            </div>
+            <!-- Step 8 -->
+            <div x-show="step === 8" class="space-y-4">
+                <h3 class="text-sm font-bold">Bevorzugst du bestimmte Uebungen?</h3>
+                <p class="text-[11px]" style="color:var(--muted)">Optional — du kannst diesen Schritt ueberspringen</p>
+                <textarea rows="3" class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-white font-bold text-sm focus:border-white/20 outline-none placeholder-white/15 resize-none" placeholder="z.B. Kniebeugen bevorzugt..."></textarea>
+            </div>
+            <!-- Loading -->
+            <div x-show="step === 'loading'" class="flex flex-col items-center justify-center py-16 gap-4">
+                <div class="w-12 h-12 rounded-full border-2 border-blue-500/20 border-t-blue-500 animate-spin"></div>
+                <p class="text-sm animate-pulse" style="color:var(--muted)">Dein Trainingsplan wird zusammengestellt...</p>
+            </div>
+            <!-- Preview -->
+            <div x-show="step === 9" class="space-y-4">
+                <div class="flex gap-1.5">
+                    <template x-for="(d,i) in ['Mo','Di','Mi','Do','Fr','Sa','So']">
+                        <button @click="previewDay = i" class="relative flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border" :class="previewDay === i ? 'bg-white text-black border-white shadow-lg scale-105' : 'bg-white/5 text-[var(--muted)] border-white/5'" x-text="d">
+                        </button>
+                    </template>
+                </div>
+                <template x-for="ex in mockPlan[previewDay]">
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <div class="flex items-start justify-between">
+                            <div><p class="text-sm font-bold" x-text="ex.name"></p><p class="text-[11px] font-mono mt-1" style="color:var(--muted)" x-text="ex.detail"></p></div>
+                            <button class="p-2 rounded-lg hover:bg-white/5" style="color:var(--muted)"><i class="ph ph-arrows-clockwise text-sm"></i></button>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="mockPlan[previewDay].length === 0" class="py-12 text-center">
+                    <i class="ph ph-moon-stars text-3xl" style="color:var(--muted)"></i><p class="text-sm mt-2" style="color:var(--muted)">Ruhetag</p>
+                </div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div class="p-6 border-t border-[rgba(255,255,255,0.06)]">
+            <div x-show="step >= 1 && step <= 8" class="flex gap-3">
+                <button x-show="step > 1" @click="step--" class="flex-1 py-3.5 rounded-xl border border-white/5 font-bold text-xs" style="color:var(--muted)">Zurueck</button>
+                <button x-show="step < 8" @click="step++" class="flex-1 py-3.5 rounded-xl bg-white text-black font-bold text-xs">Weiter</button>
+                <button x-show="step === 8" @click="step = 'loading'; setTimeout(() => step = 9, 1500)" class="flex-1 py-3.5 rounded-xl bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20"><i class="ph-bold ph-sparkle text-xs mr-1"></i> Plan generieren</button>
+            </div>
+            <div x-show="step === 9" class="space-y-2.5">
+                <div class="flex gap-3">
+                    <button @click="step = 'loading'; setTimeout(() => step = 9, 1500)" class="flex-1 py-3.5 rounded-xl border border-white/5 font-bold text-xs" style="color:var(--muted)"><i class="ph ph-arrows-clockwise text-xs mr-1"></i> Nochmal</button>
+                    <button class="flex-1 py-3.5 rounded-xl bg-white text-black font-bold text-xs">Plan uebernehmen</button>
+                </div>
+                <button class="w-full py-3 rounded-xl border border-dashed border-white/10 font-bold text-[11px]" style="color:var(--muted)"><i class="ph ph-pencil-simple text-xs mr-1"></i> Im Editor anpassen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual (placeholder) -->
+    <div x-show="screen === 'manual'" class="bg-surface border border-[rgba(255,255,255,0.06)] rounded-3xl w-full max-w-lg shadow-2xl p-8 text-center">
+        <i class="ph-bold ph-notepad text-4xl mb-4" style="color:var(--muted)"></i>
+        <p class="text-sm font-bold">Manueller Editor</p>
+        <p class="text-[11px] mt-1" style="color:var(--muted)">(In der echten App oeffnet sich hier der bestehende Editor)</p>
+        <button @click="screen = 'selection'" class="mt-6 py-2 px-4 rounded-xl border border-white/5 text-xs font-bold" style="color:var(--muted)">Zurueck</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js" defer></script>
+    <script>
+        function mockup() {
+            return {
+                screen: 'selection',
+                step: 1,
+                previewDay: 0,
+                answers: { level: null, days: 3, equip: null, goals: [], otherSport: false, blockedDays: [], time: null, injured: false },
+                mockPlan: [
+                    [{name:'Bankdruecken (Langhantel)',detail:'4×8-12'},{name:'Schraegbankdruecken (KH)',detail:'3×10-12'},{name:'Seitheben',detail:'3×12-15'},{name:'Trizepsdruecken (Kabel)',detail:'3×10-12'}],
+                    [],
+                    [{name:'Klimmzuege',detail:'3×6-10'},{name:'Langhantelrudern',detail:'4×8-12'},{name:'Face Pulls',detail:'3×15-20'},{name:'Kurzhantelcurls',detail:'3×10-12'}],
+                    [],
+                    [{name:'Kniebeugen (Langhantel)',detail:'4×6-10'},{name:'Rum. Kreuzheben',detail:'3×8-12'},{name:'Beinstrecker',detail:'3×12-15'},{name:'Wadenheben',detail:'3×15-20'},{name:'Plank',detail:'3×30-60s'}],
+                    [],
+                    []
+                ]
+            }
+        }
+    </script>
+</body>
+</html>
