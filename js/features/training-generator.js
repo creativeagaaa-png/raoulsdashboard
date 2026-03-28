@@ -4,6 +4,7 @@ import { WEEKDAYS, WEEKDAY_SHORT, EQUIPMENT_LABELS, MUSCLE_LABELS, INJURY_REGION
 import { getTodayWeekdayIndex } from '../utils/formatting.js';
 import { exercises, EQUIPMENT_MAP } from '../data/exercises.js';
 import { splitTemplates, REPS_SCHEMES } from '../data/split-templates.js';
+import { WEEKLY_VOLUME_BUDGET, TRAINING_LEVELS, TRAINING_LEVEL_LABELS, EQUIPMENT_COMPATIBILITY_THRESHOLD, EQUIPMENT_SCORE_BONUS, EQUIPMENT_SCORE_EXCLUDE_BELOW, EQUIPMENT_SCORE_PENALTY, PERIODIZATION, SPORT_MUSCLE_LOAD, SPORT_RECOVERY_REDUCTION, WARMUP_BY_MUSCLE, MAX_WARMUP_ELEMENTS, WARMUP_FALLBACK } from '../data/training-constants.js';
 
 // ── Physiologische Leitplanken ──────────────────────────
 // Alle Limits als benannte Konstanten mit sportwissenschaftlicher Begruendung.
@@ -15,13 +16,28 @@ const PHYSIO_CONSTRAINTS = {
     MAX_SETS_SMALL_MUSCLE: 6,
     SMALL_MUSCLES: ['biceps', 'triceps', 'calves', 'forearms', 'rear_delts', 'side_delts', 'front_delts'],
 
-    // Satzpausen skaliert nach Intensitaet
+    // Satzpausen skaliert nach Intensitaet (Sekunden, fuer Zeitberechnung)
+    // Kraemer & Ratamess (2004): rest period ranges by training goal
+    REST_SECONDS_BY_GOAL: {
+        strength: 150,  // 2-3 min → Mittelwert 150s
+        muscle:   75,   // 60-90s → Mittelwert 75s
+        fat_loss: 45,   // 30-60s → Mittelwert 45s
+        endurance: 30,  // 30s
+        general:  60    // 60s
+    },
     REST_BY_GOAL: {
         strength: '2-3 min Pause',
         muscle:   '60-90s Pause',
         fat_loss: '30-60s Pause',
         endurance:'30s Pause',
         general:  '60s Pause'
+    },
+
+    // Geschaetzte Wiederholungsdauer pro Satz (Sekunden)
+    // Basierend auf Time-Under-Tension: ~3-4s pro Rep
+    WORK_SECONDS_PER_SET: {
+        compound: 40,   // ~10 reps × 4s = 40s
+        isolation: 35   // ~12 reps × 3s = 36s
     },
 
     // Ermuedungs-Management
@@ -40,14 +56,28 @@ const PHYSIO_CONSTRAINTS = {
     MIN_SETS_PER_EXERCISE: 2,
 
     // Duplikat-Schutz
-    MAX_SAME_MOVEMENT_PATTERN: 1
+    MAX_SAME_MOVEMENT_PATTERN: 1,
+
+    // Constraint 4: Minimale Erholungszeit fuer gleiche Muskelgruppe bei hoher Intensitaet
+    // ACSM Guidelines: 48h Erholung fuer gleiche Muskelgruppe bei hoher Intensitaet
+    MIN_RECOVERY_DAYS_HIGH_INTENSITY: 2
 };
 
 // Shared helper: geschaetzte Zeit einer einzelnen Uebung in Minuten
-function _exerciseTimeEstimate(ex) {
+// Constraint 2: Beruecksichtigt Satzpausen nach Trainingsziel fuer korrekte Zeitbudgets
+function _exerciseTimeEstimate(ex, goal) {
     if (ex.type === 'strength') {
-        const minsPerSet = ex._compound ? 4 : 3;
-        return (ex.sets || 3) * minsPerSet;
+        const sets = ex.sets || 3;
+        // _compound may be deleted after formatting — fallback to movementPattern
+        const isCompound = ex._compound === true ||
+            (ex._compound === undefined && ex._movementPattern && ex._movementPattern !== 'isolation');
+        const workSec = isCompound
+            ? PHYSIO_CONSTRAINTS.WORK_SECONDS_PER_SET.compound
+            : PHYSIO_CONSTRAINTS.WORK_SECONDS_PER_SET.isolation;
+        // Rest only between sets (sets-1 rest periods)
+        const restSec = PHYSIO_CONSTRAINTS.REST_SECONDS_BY_GOAL[goal || 'general'] || 60;
+        const totalSec = sets * workSec + Math.max(0, sets - 1) * restSec;
+        return totalSec / 60;
     }
     if (ex.type === 'cardio' || ex.type === 'distance') {
         return parseInt(ex.duration) || 10;
@@ -72,7 +102,8 @@ export const trainingGeneratorMixin = () => ({
         hasInjuries: false,
         avoidedEquipment: [],
         preferredEquipment: [],
-        exercisePreferences: ''
+        exercisePreferences: '',
+        trainingLevel: null
     },
     generatedPlan: null,
     generatorLoading: false,
@@ -324,8 +355,9 @@ export const trainingGeneratorMixin = () => ({
             a.goals = ['general'];
         }
 
-        // 1. Template waehlen (level defaults to intermediate)
-        const template = this._selectTemplate(a, 'intermediate', daysPerWeek);
+        // 1. Template waehlen (level aus Wizard oder Fallback)
+        const level = a.trainingLevel || 'intermediate';
+        const template = this._selectTemplate(a, level, daysPerWeek);
 
         // 2. Muscle Focus anwenden
         const adjustedTemplate = this._applyMuscleFocus(template, a.muscleFocus);
@@ -389,6 +421,11 @@ export const trainingGeneratorMixin = () => ({
         const plan = Array.from({ length: 7 }, () => []);
         const usedExerciseIds = new Set();
         const usedCardioIds = new Set();
+
+        // Constraint 4: Recovery-Tracking — verfolge an welchen Tagen welche Muskelgruppen
+        // hoch-intensiv trainiert wurden. Gleiche Muskelgruppe braucht min. 48h Erholung (2 Tage).
+        // weeklyMuscleSchedule[dayIndex] = Set von Muskelgruppen mit hoher Intensitaet
+        const weeklyMuscleSchedule = {};
 
         // Estimated time per day for meta
         const dayMetas = [];
@@ -531,7 +568,7 @@ export const trainingGeneratorMixin = () => ({
             // Time adjustment (exclude warmup/cooldown from adjustment)
             const adjustableExercises = dayExercises.filter(ex => !ex._isWarmup && !ex._isCooldown);
             const adjustableMinutes = a.sessionDuration - warmupMin - PHYSIO_CONSTRAINTS.COOLDOWN_MINUTES;
-            this._adjustForDuration(adjustableExercises, adjustableMinutes);
+            this._adjustForDuration(adjustableExercises, adjustableMinutes, primaryGoal);
 
             // Sync back: remove exercises that _adjustForDuration spliced out
             const adjustableSet = new Set(adjustableExercises);
@@ -585,7 +622,7 @@ export const trainingGeneratorMixin = () => ({
             dayExercises.push(...sorted);
 
             // Estimated time
-            const estimatedTime = this._estimateTime(dayExercises);
+            const estimatedTime = this._estimateTime(dayExercises, primaryGoal);
 
             // Superset pairing for short sessions (≤30 min)
             if (a.sessionDuration <= 30) {
@@ -608,6 +645,16 @@ export const trainingGeneratorMixin = () => ({
 
             plan[dayIndex] = dayExercises;
             dayMetas.push({ dayIndex, label: dayDef.label, estimatedTime });
+
+            // Constraint 4: Record welche Muskeln an diesem Tag trainiert wurden
+            // Wird fuer Recovery-Check bei nachfolgenden Tagen verwendet
+            const dayMuscles = new Set();
+            for (const ex of dayExercises) {
+                if (ex.type === 'strength' && ex._muscles) {
+                    for (const m of ex._muscles) dayMuscles.add(m);
+                }
+            }
+            weeklyMuscleSchedule[dayIndex] = dayMuscles;
         }
 
         // Add other sports days to plan
@@ -629,10 +676,59 @@ export const trainingGeneratorMixin = () => ({
             }
         }
 
+        // Constraint 4: Recovery-Validierung — wenn gleiche Muskelgruppe an aufeinanderfolgenden
+        // Tagen mit hoher Intensitaet trainiert wird, reduziere Volumen am zweiten Tag
+        // (ACSM: min. 48h Erholung bei >6 Sets pro Muskelgruppe)
+        const sortedDayIndices = Object.keys(weeklyMuscleSchedule).map(Number).sort((a, b) => a - b);
+        for (let d = 1; d < sortedDayIndices.length; d++) {
+            const prevDayIdx = sortedDayIndices[d - 1];
+            const currDayIdx = sortedDayIndices[d];
+            const dayGap = currDayIdx - prevDayIdx;
+            // Nur pruefen wenn aufeinanderfolgende Tage (gap=1)
+            if (dayGap > 1) continue;
+            const prevMuscles = weeklyMuscleSchedule[prevDayIdx] || new Set();
+            const currDayExercises = plan[currDayIdx];
+            if (!currDayExercises) continue;
+
+            for (const ex of currDayExercises) {
+                if (ex.type !== 'strength' || !ex._muscles) continue;
+                const overlap = ex._muscles.filter(m => prevMuscles.has(m) && !CORE_MUSCLES.includes(m));
+                if (overlap.length > 0 && (ex.sets || 3) > PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
+                    // Reduziere Saetze auf Minimum — Erholungsprinzip
+                    ex.sets = PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE;
+                    if (!ex.note || ex.note === primaryScheme.restNote) {
+                        ex.note = primaryScheme.restNote + ' (reduziert — Erholung)';
+                    }
+                }
+            }
+        }
+
+        // Constraint 2: Finale Zeitbudget-Validierung
+        // Sicherstellen, dass kein Tag die Session-Dauer massiv ueberschreitet
+        for (const dayIdx of trainingDayIndices) {
+            const dayExercises = plan[dayIdx];
+            if (!dayExercises || dayExercises.length === 0) continue;
+            const totalTime = this._estimateTime(dayExercises, primaryGoal);
+            if (totalTime > a.sessionDuration * 1.2) {
+                // Entferne ueberschuessige Isolations-Uebungen vom Ende
+                for (let k = dayExercises.length - 1; k >= 0; k--) {
+                    if (this._estimateTime(dayExercises, primaryGoal) <= a.sessionDuration * 1.1) break;
+                    const ex = dayExercises[k];
+                    // _compound ist bereits geloescht, nutze movementPattern als Indikator:
+                    // Isolations-Uebungen haben movementPattern === 'isolation'
+                    const isIsolation = !ex._movementPattern || ex._movementPattern === 'isolation';
+                    if (ex.type === 'strength' && isIsolation && !ex._isMobility) {
+                        dayExercises.splice(k, 1);
+                    }
+                }
+            }
+        }
+
         const meta = {
             templateName: adjustedTemplate.name,
             templateId: adjustedTemplate.id,
             restNote: primaryScheme.restNote,
+            level,
             dayMetas
         };
 
@@ -694,23 +790,108 @@ export const trainingGeneratorMixin = () => ({
 
         const modified = JSON.parse(JSON.stringify(template));
 
-        for (const day of modified.structure) {
+        // Constraint 4: Fuer high-frequency (5+ Tage) + Fokus-Modus verwenden wir
+        // intelligente Rotation statt identischer Tage.
+        // Push/Pull-Rotation oder Heavy/Light-Periodisierung verteilt den
+        // Trainingsstress und verhindert Ueberbelastung (Rhea et al. 2003).
+        const UPPER_PUSH = ['chest', 'shoulders', 'front_delts', 'side_delts', 'triceps'];
+        const UPPER_PULL = ['back', 'rear_delts', 'biceps', 'traps', 'forearms'];
+        const LOWER_ANTERIOR = ['quadriceps', 'calves'];
+        const LOWER_POSTERIOR = ['hamstrings', 'glutes'];
+
+        // Constraint 1: Rotation-Templates fuer Focus-Modus
+        // Statt alle Tage identisch zu machen, rotieren wir Push/Pull (upper)
+        // bzw. Anterior/Posterior (lower) fuer bessere Erholung
+        const upperRotation = [
+            // Push-fokussiert
+            [
+                { muscle: 'chest', compound: 1, isolation: 1 },
+                { muscle: 'shoulders', compound: 1, isolation: 0 },
+                { muscle: 'triceps', compound: 0, isolation: 1 },
+                { muscle: 'front_delts', compound: 0, isolation: 1 },
+                { muscle: 'abs', compound: 0, isolation: 1 }
+            ],
+            // Pull-fokussiert
+            [
+                { muscle: 'back', compound: 1, isolation: 1 },
+                { muscle: 'biceps', compound: 0, isolation: 1 },
+                { muscle: 'rear_delts', compound: 0, isolation: 1 },
+                { muscle: 'traps', compound: 0, isolation: 1 },
+                { muscle: 'abs', compound: 0, isolation: 1 }
+            ],
+            // Schultern / Hypertrophie (leichter Tag)
+            [
+                { muscle: 'shoulders', compound: 1, isolation: 1 },
+                { muscle: 'side_delts', compound: 0, isolation: 1 },
+                { muscle: 'rear_delts', compound: 0, isolation: 1 },
+                { muscle: 'chest', compound: 0, isolation: 1 },
+                { muscle: 'back', compound: 0, isolation: 1 },
+                { muscle: 'abs', compound: 0, isolation: 1 }
+            ]
+        ];
+        const lowerRotation = [
+            // Quad-dominant (Anterior)
+            [
+                { muscle: 'quadriceps', compound: 1, isolation: 1 },
+                { muscle: 'glutes', compound: 1, isolation: 0 },
+                { muscle: 'calves', compound: 0, isolation: 1 },
+                { muscle: 'abs', compound: 0, isolation: 1 }
+            ],
+            // Hip-dominant (Posterior)
+            [
+                { muscle: 'hamstrings', compound: 1, isolation: 1 },
+                { muscle: 'glutes', compound: 1, isolation: 1 },
+                { muscle: 'lower_back', compound: 0, isolation: 1 },
+                { muscle: 'abs', compound: 0, isolation: 1 }
+            ],
+            // Mixed / Hypertrophie (leichter Tag)
+            [
+                { muscle: 'quadriceps', compound: 1, isolation: 0 },
+                { muscle: 'hamstrings', compound: 0, isolation: 1 },
+                { muscle: 'glutes', compound: 0, isolation: 1 },
+                { muscle: 'calves', compound: 0, isolation: 1 },
+                { muscle: 'abs', compound: 0, isolation: 2 }
+            ]
+        ];
+
+        const daysCount = modified.structure.length;
+
+        for (let dayIdx = 0; dayIdx < modified.structure.length; dayIdx++) {
+            const day = modified.structure[dayIdx];
             if (focus === 'upper') {
-                // Remove all lower body muscles entirely
+                // Remove all lower body muscles
                 day.muscleTargets = day.muscleTargets.filter(t => !LOWER_MUSCLES.includes(t.muscle));
-                // Boost upper body
-                for (const target of day.muscleTargets) {
-                    if (UPPER_MUSCLES.includes(target.muscle)) {
-                        target.isolation = Math.max(target.isolation, 1);
+
+                // Constraint 1 + 4: Wenn Tag leer ist (z.B. Legs-Tag nach Upper-Filter),
+                // ersetze durch rotierenden Upper-Split statt leeren Tag
+                if (day.muscleTargets.length === 0 || day.muscleTargets.every(t => CORE_MUSCLES.includes(t.muscle))) {
+                    const rotationIdx = dayIdx % upperRotation.length;
+                    day.muscleTargets = JSON.parse(JSON.stringify(upperRotation[rotationIdx]));
+                    day.label = ['Push', 'Pull', 'Schultern'][rotationIdx] + ' (Rotation)';
+                } else {
+                    // Boost upper body isolation
+                    for (const target of day.muscleTargets) {
+                        if (UPPER_MUSCLES.includes(target.muscle)) {
+                            target.isolation = Math.max(target.isolation, 1);
+                        }
                     }
                 }
             } else if (focus === 'lower') {
-                // Remove all upper body muscles entirely
+                // Remove all upper body muscles
                 day.muscleTargets = day.muscleTargets.filter(t => !UPPER_MUSCLES.includes(t.muscle));
-                // Boost lower body
-                for (const target of day.muscleTargets) {
-                    if (LOWER_MUSCLES.includes(target.muscle)) {
-                        target.isolation = Math.max(target.isolation, 1);
+
+                // Constraint 1 + 4: Wenn Tag leer ist (z.B. Push-Tag nach Lower-Filter),
+                // ersetze durch rotierenden Lower-Split
+                if (day.muscleTargets.length === 0 || day.muscleTargets.every(t => CORE_MUSCLES.includes(t.muscle))) {
+                    const rotationIdx = dayIdx % lowerRotation.length;
+                    day.muscleTargets = JSON.parse(JSON.stringify(lowerRotation[rotationIdx]));
+                    day.label = ['Quad-dominant', 'Hip-dominant', 'Beine Mix'][rotationIdx] + ' (Rotation)';
+                } else {
+                    // Boost lower body isolation
+                    for (const target of day.muscleTargets) {
+                        if (LOWER_MUSCLES.includes(target.muscle)) {
+                            target.isolation = Math.max(target.isolation, 1);
+                        }
                     }
                 }
             }
@@ -779,13 +960,33 @@ export const trainingGeneratorMixin = () => ({
             !usedIds.has(ex.id)
         );
 
-        // Fallback: try muscleGroups.includes if primaryMuscle match returned 0
+        // Fallback 1: try muscleGroups.includes if primaryMuscle match returned 0
         if (candidates.length === 0) {
             candidates = available.filter(ex =>
                 ex.muscleGroups.includes(muscle) &&
                 ex.compound === isCompound &&
                 ex.type === 'strength' &&
                 !usedIds.has(ex.id)
+            );
+        }
+
+        // Constraint 3: Fallback 2 — wenn Equipment-Restriktionen dazu fuehren, dass
+        // keine Uebungen verfuegbar sind, suche Uebungen der gleichen Muskelgruppe
+        // unabhaengig von compound/isolation (lieber falsche Uebungskategorie als gar keine)
+        if (candidates.length === 0) {
+            candidates = available.filter(ex =>
+                (ex.primaryMuscle === muscle || ex.muscleGroups.includes(muscle)) &&
+                ex.type === 'strength' &&
+                !usedIds.has(ex.id)
+            );
+        }
+
+        // Constraint 3: Fallback 3 — wenn auch das 0 ergibt, erlaube bereits benutzte Uebungen
+        // (besser eine wiederholte Uebung als eine leere Session)
+        if (candidates.length === 0) {
+            candidates = available.filter(ex =>
+                (ex.primaryMuscle === muscle || ex.muscleGroups.includes(muscle)) &&
+                ex.type === 'strength'
             );
         }
 
@@ -911,57 +1112,88 @@ export const trainingGeneratorMixin = () => ({
         };
     },
 
-    _estimateTime(dayExercises) {
-        return dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex), 0);
+    _estimateTime(dayExercises, goal) {
+        return dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex, goal), 0);
     },
 
-    _adjustForDuration(dayExercises, targetMinutes) {
+    // Constraint 2: Zeitbudget-basierte Anpassung
+    // targetMinutes = sessionDuration - warmup - cooldown (reiner Trainingsanteil)
+    // Verwendet goal-spezifische Satzpausen fuer realistische Zeitschaetzung
+    _adjustForDuration(dayExercises, targetMinutes, goal) {
         if (!targetMinutes) return;
 
-        let estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex), 0);
+        let estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex, goal), 0);
 
         // Too long — remove isolation exercises from the end, but keep at least 2 strength exercises
         const MIN_STRENGTH_EXERCISES = 2;
         const strengthCount = () => dayExercises.filter(e => e.type === 'strength').length;
-        if (estimated > targetMinutes * 1.2 && strengthCount() > MIN_STRENGTH_EXERCISES) {
+        if (estimated > targetMinutes * 1.15 && strengthCount() > MIN_STRENGTH_EXERCISES) {
             for (let i = dayExercises.length - 1; i >= 0; i--) {
-                if (estimated <= targetMinutes * 1.1) break;
+                if (estimated <= targetMinutes * 1.05) break;
                 if (strengthCount() <= MIN_STRENGTH_EXERCISES) break;
                 if (dayExercises[i].type === 'strength' && !dayExercises[i]._compound) {
-                    const removedTime = _exerciseTimeEstimate(dayExercises[i]);
+                    const removedTime = _exerciseTimeEstimate(dayExercises[i], goal);
                     dayExercises.splice(i, 1);
                     estimated -= removedTime;
                 }
             }
         }
 
-        // Too short — boost sets (with MAX cap)
-        estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex), 0);
+        // Too short — Constraint 1+2: Mehrere Strategien zum Fuellen:
+        // 1. Saetze erhoehen (bis MAX)
+        // 2. Mobility/Filler-Uebungen injizieren fuer verbleibende Zeit
+        estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex, goal), 0);
         if (estimated < targetMinutes * 0.8 && dayExercises.length > 0) {
-            const MAX_SETS = typeof PHYSIO_CONSTRAINTS !== 'undefined' ? PHYSIO_CONSTRAINTS.MAX_SETS_PER_EXERCISE : 5;
+            const MAX_SETS = PHYSIO_CONSTRAINTS.MAX_SETS_PER_EXERCISE;
+
+            // Phase 1: Saetze erhoehen — verteile gleichmaessig ueber alle Uebungen
+            // (statt nur eine Uebung zu boosten, was Dysbalancen erzeugt)
             let boostRounds = 0;
-            while (dayExercises.reduce((s, e) => s + _exerciseTimeEstimate(e), 0) < targetMinutes * 0.8 && boostRounds < 2) {
+            const maxBoostRounds = dayExercises.filter(e => e.type === 'strength').length;
+            while (dayExercises.reduce((s, e) => s + _exerciseTimeEstimate(e, goal), 0) < targetMinutes * 0.8
+                   && boostRounds < maxBoostRounds) {
                 let boosted = false;
-                for (let i = dayExercises.length - 1; i >= 0; i--) {
-                    if (dayExercises[i].type === 'strength' && !dayExercises[i]._compound) {
-                        if ((dayExercises[i].sets || 3) < MAX_SETS) {
-                            dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
-                            boosted = true;
-                            break;
-                        }
+                // Round-Robin: jede Uebung erhaelt nacheinander +1 Satz
+                for (const ex of dayExercises) {
+                    if (ex.type !== 'strength') continue;
+                    if ((ex.sets || 3) < MAX_SETS) {
+                        ex.sets = (ex.sets || 3) + 1;
+                        boosted = true;
+                        break;
                     }
                 }
-                if (!boosted) {
-                    for (let i = dayExercises.length - 1; i >= 0; i--) {
-                        if (dayExercises[i].type === 'strength') {
-                            if ((dayExercises[i].sets || 3) < MAX_SETS) {
-                                dayExercises[i].sets = (dayExercises[i].sets || 3) + 1;
-                                break;
-                            }
-                        }
-                    }
-                }
+                if (!boosted) break;
                 boostRounds++;
+            }
+
+            // Phase 2: Constraint 1 — Wenn immer noch zu kurz (z.B. Bodyweight + Upper + 90min),
+            // injiziere Mobility/Dehnungs-Bloecke als sichere Fueller
+            // Physiologisch sinnvoll: aktive Erholung foerdert Durchblutung und Beweglichkeit
+            estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex, goal), 0);
+            const deficit = targetMinutes - estimated;
+            if (deficit > 5) {
+                // Erhoehte Satzpause als "aktive Erholung" markieren
+                const fillerMinutes = Math.min(deficit, 15); // max 15 min Filler
+                dayExercises.push({
+                    name: 'Mobility & aktive Erholung',
+                    type: 'cardio',
+                    duration: Math.round(fillerMinutes) + ' min',
+                    note: 'Dynamisches Stretching, Foam Rolling, Atemarbeit — foerdert Regeneration ohne Ermuedung',
+                    _isMobility: true
+                });
+
+                // Wenn immer noch >10min Defizit, zusaetzlichen Stretching-Block
+                const remainingDeficit = deficit - fillerMinutes;
+                if (remainingDeficit > 5) {
+                    const stretchMinutes = Math.min(remainingDeficit, 10);
+                    dayExercises.push({
+                        name: 'Gezieltes Stretching',
+                        type: 'cardio',
+                        duration: Math.round(stretchMinutes) + ' min',
+                        note: 'Statisches Dehnen der trainierten Muskelgruppen — verbessert ROM und Erholung',
+                        _isMobility: true
+                    });
+                }
             }
         }
     },
