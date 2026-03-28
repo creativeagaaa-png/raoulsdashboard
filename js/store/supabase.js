@@ -127,6 +127,18 @@ export async function getSettings() {
 }
 
 export async function saveSettings(profile) {
+    const timeout = setTimeout(() => {
+        throw new Error('Profil speichern hat zu lange gedauert. Bitte erneut versuchen.');
+    }, 15000);
+
+    try {
+    return await _saveSettingsInner(profile);
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+async function _saveSettingsInner(profile) {
     const userId = await requireUserId();
     const fields = {
         start_weight: profile.startWeight,
@@ -259,7 +271,10 @@ export async function getTrainingPlan() {
             ex.rounds = row.sets || 3;
             try {
                 ex.circuitExercises = JSON.parse(row.reps || '[]');
-            } catch { ex.circuitExercises = []; }
+            } catch (e) {
+                console.warn('Corrupt circuit data for exercise', row.name, e);
+                ex.circuitExercises = [];
+            }
             if (ex.note && ex.note.startsWith('__cn__:')) {
                 ex.note = ex.note.slice(7);
             }
@@ -305,7 +320,12 @@ export async function saveTrainingPlan(plan) {
         }
     }
 
-    // Delete old plan then insert new one
+    // Atomic-safe: backup current plan, delete, insert, restore on failure
+    const { data: backup } = await requireDb()
+        .from('training_plan')
+        .select('*')
+        .eq('user_id', userId);
+
     const { error: delErr } = await requireDb()
         .from('training_plan')
         .delete()
@@ -316,7 +336,13 @@ export async function saveTrainingPlan(plan) {
         const { error: insErr } = await requireDb()
             .from('training_plan')
             .insert(rows);
-        if (insErr) throw insErr;
+        if (insErr) {
+            // Restore backup on insert failure
+            if (backup && backup.length > 0) {
+                await requireDb().from('training_plan').insert(backup).catch(() => {});
+            }
+            throw insErr;
+        }
     }
 }
 
@@ -462,7 +488,8 @@ export async function deletePushSubscription() {
 
 export async function uploadAvatar(file) {
     const userId = await requireUserId();
-    const ext = file.name.split('.').pop().toLowerCase();
+    const ext = file.name ? file.name.split('.').pop().toLowerCase() : 'jpg';
+    const contentType = file.type || 'image/jpeg';
     const filePath = `${userId}/avatar.${ext}`;
 
     // Alte Avatare loeschen (falls Dateiendung gewechselt)
@@ -477,13 +504,17 @@ export async function uploadAvatar(file) {
     // Neues Bild hochladen
     const { error: uploadErr } = await requireDb().storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true, contentType: file.type });
+        .upload(filePath, file, { upsert: true, contentType });
     if (uploadErr) throw uploadErr;
 
     // Public URL generieren
     const { data: urlData } = requireDb().storage
         .from('avatars')
         .getPublicUrl(filePath);
+
+    if (!urlData?.publicUrl) {
+        throw new Error('Öffentliche URL konnte nicht generiert werden');
+    }
 
     const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
 

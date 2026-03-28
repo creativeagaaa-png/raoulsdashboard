@@ -172,17 +172,19 @@ export const checkinMixin = () => ({
 
         if (activeDates.length === 0) return 0;
 
+        // Timezone-safe: String-basierter Vergleich über UTC-Mitternacht
+        const daysBetween = (dateStrA, dateStrB) => {
+            const a = new Date(dateStrA + 'T12:00:00');
+            const b = new Date(dateStrB + 'T12:00:00');
+            return Math.round((a - b) / 86400000);
+        };
+
         const lastDate = activeDates[0];
-        const diffFromToday = Math.round(
-            (new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24)
-        );
-        if (diffFromToday > 1) return 0;
+        if (daysBetween(today, lastDate) > 1) return 0;
 
         let streak = 1;
         for (let i = 0; i < activeDates.length - 1; i++) {
-            const curr = new Date(activeDates[i]);
-            const prev = new Date(activeDates[i + 1]);
-            const diff = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+            const diff = daysBetween(activeDates[i], activeDates[i + 1]);
             if (diff === 1) streak++;
             else break;
         }
@@ -218,7 +220,7 @@ export const checkinMixin = () => ({
         let currentStreak = 1;
         for (let i = 1; i < allDates.length; i++) {
             const diff = Math.round(
-                (new Date(allDates[i]) - new Date(allDates[i - 1])) / (1000 * 60 * 60 * 24)
+                (new Date(allDates[i] + 'T12:00:00') - new Date(allDates[i - 1] + 'T12:00:00')) / 86400000
             );
             if (diff === 1) currentStreak++;
             else {

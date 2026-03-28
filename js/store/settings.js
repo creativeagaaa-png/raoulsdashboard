@@ -125,31 +125,45 @@ export const settingsMixin = () => ({
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validierung
+        // Concurrent-Upload verhindern
+        if (this.avatarUploading) {
+            this.showToast('Upload läuft bereits...');
+            return;
+        }
+
+        // Validierung: Dateigröße
         const maxSize = 2 * 1024 * 1024; // 2 MB
         if (file.size > maxSize) {
             this.showToast('Bild ist zu gross (max. 2 MB)');
             return;
         }
+
+        // Validierung: MIME-Type (client-seitig)
         const allowed = ['image/jpeg', 'image/png', 'image/webp'];
         if (!allowed.includes(file.type)) {
             this.showToast('Nur JPG, PNG oder WebP erlaubt');
             return;
         }
 
-        this.avatarUploading = true;
+        // Validierung: Magic Bytes (gegen MIME-Spoofing)
         try {
-            const url = await Supa.uploadAvatar(file);
-            this.avatarUrl = url;
-            this.showToast('Profilbild gespeichert');
+            const header = await file.slice(0, 4).arrayBuffer();
+            const bytes = new Uint8Array(header);
+            const isJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8;
+            const isPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+            const isWebP = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+            if (!isJPEG && !isPNG && !isWebP) {
+                this.showToast('Ungültiges Bildformat — nur JPG, PNG oder WebP');
+                return;
+            }
         } catch (e) {
-            console.error('Avatar upload failed:', e);
-            this.showToast('Profilbild konnte nicht hochgeladen werden');
-        } finally {
-            this.avatarUploading = false;
-            // Reset file input
-            event.target.value = '';
+            this.showToast('Datei konnte nicht gelesen werden');
+            return;
         }
+
+        // Open crop editor instead of direct upload
+        event.target.value = '';
+        await this.openCropEditor(file);
     },
 
     async removeAvatar() {

@@ -14,6 +14,7 @@ import { caloriesMixin } from './features/calories.js';
 import { checkinMixin } from './features/checkin.js';
 import { weightAnalysisMixin } from './features/weight-analysis.js';
 import { weeklyReportMixin } from './features/weekly-report.js';
+import { avatarCropMixin } from './features/avatar-crop.js';
 import { hapticLight, hapticMedium, hapticSuccess, hapticWarning, hapticSelection } from './utils/haptics.js';
 import { registerSwipeDismiss } from './utils/swipe-dismiss.js';
 import { exportWeightCSV } from './utils/export.js';
@@ -32,6 +33,7 @@ import workoutHistoryModal from '../templates/modals/workout-history.html?raw';
 import workoutPickerModal from '../templates/modals/workout-picker.html?raw';
 import authScreen from '../templates/modals/auth.html?raw';
 import onboardingModal from '../templates/modals/onboarding.html?raw';
+import avatarCropModal from '../templates/modals/avatar-crop.html?raw';
 import { DottedSurface } from './fx/dotted-surface.js';
 import { VaporizeText } from './fx/vaporize-text.js';
 
@@ -53,7 +55,8 @@ if (modalsContainer) {
         toastComponent,
         workoutModal,
         workoutHistoryModal,
-        workoutPickerModal
+        workoutPickerModal,
+        avatarCropModal
     ].join('\n');
 }
 
@@ -188,6 +191,7 @@ function app() {
         ...checkinMixin(),
         ...weightAnalysisMixin(),
         ...weeklyReportMixin(),
+        ...avatarCropMixin(),
 
         // --- MIXIN GETTERS (must be defined here, not in mixins, because spread destroys getters) ---
 
@@ -1007,6 +1011,10 @@ function app() {
             if (this._saving) return;
             const w = parseFloat(String(this.inputWeight).replace(',', '.'));
             if (!w || isNaN(w)) return;
+            if (w < 20 || w > 500) {
+                this.showToast('Bitte gib ein Gewicht zwischen 20 und 500 kg ein');
+                return;
+            }
 
             this._saving = true;
             const entryDate = this.inputDate;

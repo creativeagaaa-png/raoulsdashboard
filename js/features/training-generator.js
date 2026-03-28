@@ -31,7 +31,6 @@ export const trainingGeneratorMixin = () => ({
     swapTarget: null,
     generatorMeta: null,
     previewEditTarget: null,
-    _beginnerWarningShown: false,
 
     // ── Constants for template ────────────────────────
     EQUIPMENT_LABELS,
@@ -175,7 +174,6 @@ export const trainingGeneratorMixin = () => ({
         this.generatedPlan = null;
         this.generatorMeta = null;
         this.previewEditTarget = null;
-        this._beginnerWarningShown = false;
     },
 
     closeGenerator() {

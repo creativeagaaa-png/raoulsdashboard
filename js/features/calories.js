@@ -51,7 +51,7 @@ export const caloriesMixin = () => ({
 
                 if (ex.type === 'strength') {
                     // Estimate: ~3 min per set (including rest)
-                    const sets = ex.sets || 3;
+                    const sets = ex.sets ?? 3;
                     minutes = sets * 3;
                     burnRate = TRAINING_BURN_PER_MIN_PER_KG.strength;
                 } else if (ex.type === 'cardio') {
@@ -212,8 +212,8 @@ export const caloriesMixin = () => ({
     },
 
     getProjectedGoalDate() {
-        const rate = this.weeklyGoalRate;
-        if (!rate || rate === 0) return null;
+        const rate = parseFloat(this.weeklyGoalRate) || 0;
+        if (rate === 0) return null;
 
         const currentWeight = this.get7DayAverageWeight();
         const diff = this.goalWeight - currentWeight;

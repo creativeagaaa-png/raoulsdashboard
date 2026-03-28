@@ -1,0 +1,65 @@
+<!-- Avatar Crop Editor Overlay -->
+<div class="fixed inset-0 z-[80] flex flex-col"
+     x-show="cropOpen" x-cloak
+     @keydown.escape.window="cropOpen && cancelCrop()"
+     @keydown.tab.window="cropOpen && trapFocus($event, $el)"
+     role="dialog" aria-modal="true" aria-label="Bild zuschneiden">
+
+    <div class="absolute inset-0 bg-[#050505]/95 backdrop-blur-xl"
+         x-show="cropOpen"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+
+    <div class="relative z-10 flex flex-col h-full w-full"
+         x-show="cropOpen"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="scale-100 opacity-100" x-transition:leave-end="scale-95 opacity-0">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 shrink-0">
+            <button type="button" @click="cancelCrop()"
+                    class="text-muted font-bold text-sm hover:text-white transition-colors px-2 py-1.5 -ml-2 rounded-lg hover:bg-white/5 active:scale-[0.97]">
+                Abbrechen
+            </button>
+            <h3 class="text-white font-bold text-sm">Zuschneiden</h3>
+            <button type="button" @click="applyCrop()" :disabled="cropProcessing"
+                    class="text-blue-400 font-bold text-sm hover:text-blue-300 transition-colors px-2 py-1.5 -mr-2 rounded-lg hover:bg-white/5 active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none">
+                <span x-show="!cropProcessing">Fertig</span>
+                <span x-show="cropProcessing" class="flex items-center gap-1.5">
+                    <i class="ph-bold ph-spinner animate-spin text-xs"></i> Speichern
+                </span>
+            </button>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="flex-1 min-h-0 relative overflow-hidden">
+            <canvas x-ref="cropCanvas"
+                    class="absolute inset-0 w-full h-full"
+                    style="touch-action: none;"
+                    @pointerdown="onCropPointerDown($event)"
+                    @pointermove="onCropPointerMove($event)"
+                    @pointerup="onCropPointerUp($event)"
+                    @pointercancel="onCropPointerUp($event)"
+                    @touchstart="onCropTouchStart($event)"
+                    @touchmove="onCropTouchMove($event)"
+                    @touchend="onCropTouchEnd($event)"
+                    @wheel.prevent="onCropWheel($event)"></canvas>
+        </div>
+
+        <!-- Zoom Slider -->
+        <div class="px-8 py-4 shrink-0">
+            <div class="flex items-center gap-3">
+                <i class="ph ph-image-square text-white/40 text-sm"></i>
+                <input type="range"
+                       :min="cropMinZoom" :max="3" step="0.01"
+                       :value="cropZoom"
+                       @input="updateCropZoom($event.target.value)"
+                       class="flex-1 accent-white h-1">
+                <i class="ph ph-image-square text-white/40 text-lg"></i>
+            </div>
+        </div>
+
+        <!-- Spacer for safe area on iPhone -->
+        <div class="h-[env(safe-area-inset-bottom,0px)] shrink-0"></div>
+    </div>
+</div>

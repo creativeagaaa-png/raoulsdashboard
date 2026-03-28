@@ -19,7 +19,7 @@
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@400&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <meta name="format-detection" content="telephone=no">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="css/styles.css">
 
@@ -786,7 +786,7 @@
                                     <template x-if="habit.reasons.length > 0">
                                         <div class="ml-2 mt-1">
                                             <template x-for="(reason, ri) in habit.reasons.slice(0, 2)" :key="ri">
-                                                <p class="text-[10px] text-orange-400/70 italic" x-text="'„' + reason + '\"'"></p>
+                                                <p class="text-[10px] text-orange-400/70 italic" x-text="'„' + reason + '&quot;'"></p>
                                             </template>
                                         </div>
                                     </template>
@@ -816,27 +816,27 @@
         <!-- Bottom Tab Bar -->
         <nav x-show="authUser" class="fixed bottom-0 left-0 right-0 z-40 bottom-tab-bar">
             <div class="flex justify-around items-center max-w-lg mx-auto px-2 py-1">
-                <button @click="switchTab('health')" class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 transition-all duration-200"
+                <button @click="switchTab('health')" class="flex flex-col items-center py-3 px-3 min-w-0 flex-1 min-h-[44px] transition-all duration-200"
                         :class="activeTab === 'health' ? 'text-emerald-500' : 'text-gray-400'">
                     <i class="text-xl" :class="activeTab === 'health' ? 'ph-fill ph-heart' : 'ph ph-heart'"></i>
                     <span class="text-[9px] font-semibold mt-0.5">Health</span>
                 </button>
-                <button @click="switchTab('training')" class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 transition-all duration-200"
+                <button @click="switchTab('training')" class="flex flex-col items-center py-3 px-3 min-w-0 flex-1 min-h-[44px] transition-all duration-200"
                         :class="activeTab === 'training' ? 'text-[#0a84ff]' : 'text-gray-400'">
                     <i class="text-xl" :class="activeTab === 'training' ? 'ph-fill ph-barbell' : 'ph ph-barbell'"></i>
                     <span class="text-[9px] font-semibold mt-0.5">Training</span>
                 </button>
-                <button @click="switchTab('plan')" class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 transition-all duration-200"
+                <button @click="switchTab('plan')" class="flex flex-col items-center py-3 px-3 min-w-0 flex-1 min-h-[44px] transition-all duration-200"
                         :class="activeTab === 'plan' ? 'text-emerald-500' : 'text-gray-400'">
                     <i class="text-xl" :class="activeTab === 'plan' ? 'ph-fill ph-flame' : 'ph ph-flame'"></i>
                     <span class="text-[9px] font-semibold mt-0.5">Plan</span>
                 </button>
-                <button @click="switchTab('habits')" class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 transition-all duration-200"
+                <button @click="switchTab('habits')" class="flex flex-col items-center py-3 px-3 min-w-0 flex-1 min-h-[44px] transition-all duration-200"
                         :class="activeTab === 'habits' ? 'text-amber-500' : 'text-gray-400'">
                     <i class="text-xl" :class="activeTab === 'habits' ? 'ph-fill ph-check-square' : 'ph ph-check-square'"></i>
                     <span class="text-[9px] font-semibold mt-0.5">Habits</span>
                 </button>
-                <button @click="switchTab('report')" class="flex flex-col items-center py-2 px-2 min-w-0 flex-1 transition-all duration-200"
+                <button @click="switchTab('report')" class="flex flex-col items-center py-3 px-3 min-w-0 flex-1 min-h-[44px] transition-all duration-200"
                         :class="activeTab === 'report' ? 'text-indigo-500' : 'text-gray-400'">
                     <i class="text-xl" :class="activeTab === 'report' ? 'ph-fill ph-chart-bar' : 'ph ph-chart-bar'"></i>
                     <span class="text-[9px] font-semibold mt-0.5">Report</span>

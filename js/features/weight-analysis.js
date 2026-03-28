@@ -1,4 +1,5 @@
 import { getLocalDateString } from '../utils/formatting.js';
+import { isItemDone, isItemMissed, isItemNotDone } from '../utils/checkin-helpers.js';
 
 const HABIT_KEYWORDS = {
     high: ['calories', 'kalorien', 'essen', 'ernährung', 'food', 'training', 'workout', 'sport', 'exercise', 'auto_calories'],
@@ -18,18 +19,6 @@ function classifyHabitItem(item) {
         if (text.includes(keyword)) return 3;
     }
     return 3;
-}
-
-function isItemDone(item) {
-    return item.status === 'done' || item.checked === true;
-}
-
-function isItemMissed(item) {
-    return item.status === 'missed';
-}
-
-function isItemNotDone(item) {
-    return item.status === 'missed' || item.status === 'none' || (!('status' in item) && !item.checked);
 }
 
 export const weightAnalysisMixin = () => ({

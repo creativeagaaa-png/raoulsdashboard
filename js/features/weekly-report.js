@@ -1,4 +1,5 @@
 import { getLocalDateString } from '../utils/formatting.js';
+import { isItemDone } from '../utils/checkin-helpers.js';
 
 function getMonday(date) {
     const d = new Date(date);
@@ -18,10 +19,6 @@ function getWeekNumber(date) {
 
 function formatDateShort(date) {
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
-}
-
-function isItemDone(item) {
-    return item.status === 'done' || item.checked === true;
 }
 
 const TRAINING_KEYWORDS = ['training', 'workout', 'sport', 'exercise'];

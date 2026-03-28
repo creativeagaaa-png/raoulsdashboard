@@ -4,7 +4,8 @@
 <div class="fixed inset-0 z-60 flex items-center justify-center p-4 modal-mobile-sheet"
      :class="showTrainingSelection ? 'pointer-events-auto' : 'pointer-events-none'"
      x-show="showTrainingSelection"
-     role="dialog" aria-modal="true">
+     @keydown.tab.window="showTrainingSelection && trapFocus($event, $el)"
+     role="dialog" aria-modal="true" aria-label="Training-Auswahl">
 
     <div class="absolute inset-0 bg-(--backdrop) backdrop-blur-xl"
          x-show="showTrainingSelection"
@@ -97,7 +98,8 @@
 <div class="fixed inset-0 z-60 flex items-center justify-center p-4 modal-mobile-sheet"
      :class="generatorOpen ? 'pointer-events-auto' : 'pointer-events-none'"
      x-show="generatorOpen"
-     role="dialog" aria-modal="true">
+     @keydown.tab.window="generatorOpen && trapFocus($event, $el)"
+     role="dialog" aria-modal="true" aria-label="Trainingsplan-Generator">
 
     <div class="absolute inset-0 bg-(--backdrop) backdrop-blur-xl"
          x-show="generatorOpen"

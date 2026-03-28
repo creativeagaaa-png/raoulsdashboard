@@ -252,7 +252,7 @@ export const workoutMixin = () => ({
             this.workoutHistoryLoaded = true;
         } catch (e) {
             console.error('Failed to save workout:', e);
-            this.showToast('Failed to save workout');
+            this.showToast('Workout konnte nicht gespeichert werden');
         }
 
         this.workoutSession = null;
@@ -264,16 +264,16 @@ export const workoutMixin = () => ({
         if (typeof this.clearRestTimer === 'function') this.clearRestTimer();
         hapticSuccess();
         if (typeof this.updateThemeColor === 'function') this.updateThemeColor();
-        this.showToast('Workout saved!');
+        this.showToast('Workout gespeichert!');
     },
 
     // --- Cancel Workout ---
     cancelWorkout() {
         this.confirmModal = {
             show: true,
-            title: 'Cancel Workout',
-            message: 'End workout without saving?',
-            confirmLabel: 'Cancel',
+            title: 'Workout abbrechen',
+            message: 'Workout ohne Speichern beenden?',
+            confirmLabel: 'Abbrechen',
             onConfirm: () => {
                 if (this._workoutTimerInterval) {
                     clearInterval(this._workoutTimerInterval);
@@ -327,22 +327,22 @@ export const workoutMixin = () => ({
         if (!workout) return;
         this.confirmModal = {
             show: true,
-            title: 'Delete Workout',
-            message: 'Permanently delete this workout?',
-            confirmLabel: 'Delete',
+            title: 'Workout löschen',
+            message: 'Dieses Workout unwiderruflich löschen?',
+            confirmLabel: 'Löschen',
             onConfirm: async () => {
-                const removed = this.workoutHistory.splice(wIdx, 1)[0];
-                if (removed && removed.id) {
-                    try {
-                        await Supa.deleteWorkoutLog(removed.id);
-                    } catch (e) {
-                        console.error('Failed to delete workout:', e);
-                        this.workoutHistory.splice(wIdx, 0, removed);
-                        this.showToast('Failed to delete');
-                        return;
+                try {
+                    if (workout.id) {
+                        await Supa.deleteWorkoutLog(workout.id);
                     }
+                    // Erst nach API-Erfolg aus UI entfernen
+                    const idx = this.workoutHistory.indexOf(workout);
+                    if (idx !== -1) this.workoutHistory.splice(idx, 1);
+                    this.showToast('Workout gelöscht');
+                } catch (e) {
+                    console.error('Workout löschen fehlgeschlagen:', e);
+                    this.showToast('Löschen fehlgeschlagen');
                 }
-                this.showToast('Workout deleted');
             }
         };
     },
@@ -351,24 +351,24 @@ export const workoutMixin = () => ({
         if (this.workoutHistory.length === 0) return;
         this.confirmModal = {
             show: true,
-            title: 'Delete All Workouts',
-            message: 'Permanently delete all ' + this.workoutHistory.length + ' workouts?',
-            confirmLabel: 'Delete All',
+            title: 'Alle Workouts löschen',
+            message: 'Alle ' + this.workoutHistory.length + ' Workouts unwiderruflich löschen?',
+            confirmLabel: 'Alle löschen',
             onConfirm: async () => {
                 try {
                     await Supa.clearAllWorkoutLogs();
                     this.workoutHistory = [];
-                    this.showToast('All workouts deleted');
+                    this.showToast('Alle Workouts gelöscht');
                 } catch (e) {
-                    console.error('Failed to clear workouts:', e);
-                    this.showToast('Failed to delete');
+                    console.error('Alle Workouts löschen fehlgeschlagen:', e);
+                    this.showToast('Löschen fehlgeschlagen');
                 }
             }
         };
     },
 
     formatWorkoutDuration(seconds) {
-        if (!seconds) return '0 Min';
+        if (!seconds || seconds < 0) return '0 Min';
         const mins = Math.floor(seconds / 60);
         return `${mins} Min`;
     },
@@ -384,8 +384,11 @@ export const workoutMixin = () => ({
     // Helper: get max weight for a strength exercise
     getExerciseMaxWeight(ex) {
         if (!ex || !ex.sets) return 0;
-        const doneWeights = ex.sets.filter(s => s.done && s.weight > 0).map(s => s.weight);
-        return doneWeights.length > 0 ? Math.max(...doneWeights) : 0;
+        let max = 0;
+        for (const s of ex.sets) {
+            if (s.done && s.weight > max) max = s.weight;
+        }
+        return max;
     },
 
     // Helper: get total volume (weight x reps) for a strength exercise

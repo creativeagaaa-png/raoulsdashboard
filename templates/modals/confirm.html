@@ -1,6 +1,8 @@
 <!-- Confirmation Dialog Modal -->
 <div class="fixed inset-0 z-[70] flex items-center justify-center p-4 modal-mobile-sheet"
-     :class="confirmModal.show ? 'pointer-events-auto' : 'pointer-events-none'">
+     :class="confirmModal.show ? 'pointer-events-auto' : 'pointer-events-none'"
+     @keydown.tab.window="confirmModal.show && trapFocus($event, $el)"
+     role="dialog" aria-modal="true" aria-label="Bestätigung">
 
     <div class="absolute inset-0 bg-[#050505]/90 backdrop-blur-xl"
          x-show="confirmModal.show"

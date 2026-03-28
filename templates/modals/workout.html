@@ -1,6 +1,7 @@
 <!-- Workout Session Modal -->
 <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 modal-mobile-sheet"
      :class="workoutOpen ? 'pointer-events-auto' : 'pointer-events-none'"
+     @keydown.tab.window="workoutOpen && trapFocus($event, $el)"
      role="dialog" aria-modal="true" aria-label="Workout-Sitzung">
 
     <div class="absolute inset-0 bg-[var(--backdrop)] backdrop-blur-xl"

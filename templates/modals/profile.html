@@ -1,6 +1,7 @@
 <!-- Profil-Einstellungen Modal -->
 <div class="fixed inset-0 z-60 flex items-center justify-center p-4 modal-mobile-sheet"
      :class="profileOpen ? 'pointer-events-auto' : 'pointer-events-none'"
+     @keydown.tab.window="profileOpen && trapFocus($event, $el)"
      role="dialog" aria-modal="true" aria-label="Profil-Einstellungen">
 
     <div class="absolute inset-0 bg-(--backdrop) backdrop-blur-xl"
