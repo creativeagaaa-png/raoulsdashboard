@@ -1,7 +1,8 @@
 // js/data/split-templates.js
 
 export const REPS_SCHEMES = {
-    muscle:  { sets: 4, reps: '8-12',  restNote: '60-90s Pause' },
+    strength:   { sets: 5, reps: '3-6',   restNote: '2-3 min Pause' },
+    muscle:     { sets: 4, reps: '8-12',  restNote: '60-90s Pause' },
     fat_loss:   { sets: 3, reps: '12-15', restNote: '30-60s Pause' },
     endurance:  { sets: 3, reps: '15-20', restNote: '30s Pause' },
     general:    { sets: 3, reps: '10-12', restNote: '60s Pause' }
