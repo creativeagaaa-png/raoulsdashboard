@@ -850,10 +850,17 @@ export const trainingGeneratorMixin = () => ({
         };
 
         if (entry.type === 'strength') {
-            entry.sets = scheme.sets;
-            entry.reps = scheme.reps;
-            entry.weight = ex.defaultWeight || 0;
             entry._compound = ex.compound === true;
+            // Zeitbasierte Uebungen (Plank, L-Sit, etc.) behalten ihre defaultReps
+            const isTimeBased = ex.defaultReps && /\d+s/.test(ex.defaultReps);
+            if (isTimeBased) {
+                entry.sets = Math.min(scheme.sets, ex.defaultSets || 3);
+                entry.reps = ex.defaultReps;
+            } else {
+                entry.sets = scheme.sets;
+                entry.reps = scheme.reps;
+            }
+            entry.weight = ex.defaultWeight || 0;
         } else if (entry.type === 'cardio') {
             entry.duration = ex.defaultDuration || '20 min';
         } else if (entry.type === 'distance') {
@@ -867,13 +874,14 @@ export const trainingGeneratorMixin = () => ({
     _pickCardioExercise(available, allowedEquipment, usedCardioIds, answers) {
         let cardioCandidates = available.filter(ex =>
             (ex.type === 'cardio' || ex.type === 'distance') &&
+            !ex.warmupOnly &&
             !usedCardioIds.has(ex.id)
         );
 
-        // If all used, allow repeats
+        // If all used, allow repeats (but still exclude warmup-only)
         if (cardioCandidates.length === 0) {
             cardioCandidates = available.filter(ex =>
-                ex.type === 'cardio' || ex.type === 'distance'
+                (ex.type === 'cardio' || ex.type === 'distance') && !ex.warmupOnly
             );
         }
 
