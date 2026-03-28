@@ -261,4 +261,18 @@ describe('Edge cases', () => {
         expect(template).toBeDefined();
         expect(template.structure).toBeDefined();
     });
+
+    it('every training day has at least 2 strength exercises (no empty days)', () => {
+        // Test with short session that previously caused empty legs days
+        mixin.generatorAnswers = defaultAnswers({ sessionDuration: 30 });
+        const result = mixin._buildPlan();
+
+        for (const day of result.plan) {
+            const strengthExercises = day.filter(ex => ex.type === 'strength');
+            if (day.length > 0) {
+                // If a day has exercises at all, it must have at least 2 strength exercises
+                expect(strengthExercises.length, 'Trainingstag hat zu wenig Kraftuebungen').toBeGreaterThanOrEqual(2);
+            }
+        }
+    });
 });

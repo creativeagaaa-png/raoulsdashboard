@@ -562,10 +562,14 @@ export const trainingGeneratorMixin = () => ({
                     }
                 }
             }
-            // Remove exercises that got capped below minimum
+            // Remove exercises that got capped below minimum, but keep at least 2 strength exercises
+            const currentStrength = dayExercises.filter(e => e.type === 'strength').length;
+            let removedStrength = 0;
             for (let k = dayExercises.length - 1; k >= 0; k--) {
                 if (dayExercises[k].type === 'strength' && (dayExercises[k].sets || 0) < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
+                    if (currentStrength - removedStrength <= 2) break;
                     dayExercises.splice(k, 1);
+                    removedStrength++;
                 }
             }
 
@@ -916,10 +920,13 @@ export const trainingGeneratorMixin = () => ({
 
         let estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex), 0);
 
-        // Too long — remove isolation exercises from the end
-        if (estimated > targetMinutes * 1.2 && dayExercises.length > 3) {
+        // Too long — remove isolation exercises from the end, but keep at least 2 strength exercises
+        const MIN_STRENGTH_EXERCISES = 2;
+        const strengthCount = () => dayExercises.filter(e => e.type === 'strength').length;
+        if (estimated > targetMinutes * 1.2 && strengthCount() > MIN_STRENGTH_EXERCISES) {
             for (let i = dayExercises.length - 1; i >= 0; i--) {
                 if (estimated <= targetMinutes * 1.1) break;
+                if (strengthCount() <= MIN_STRENGTH_EXERCISES) break;
                 if (dayExercises[i].type === 'strength' && !dayExercises[i]._compound) {
                     const removedTime = _exerciseTimeEstimate(dayExercises[i]);
                     dayExercises.splice(i, 1);
