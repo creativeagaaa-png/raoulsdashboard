@@ -882,9 +882,11 @@ export const trainingGeneratorMixin = () => ({
         const picked = cardioCandidates[Math.floor(Math.random() * cardioCandidates.length)];
         usedCardioIds.add(picked.id);
 
-        const durations = { 30: '10 min', 45: '15 min', 60: '20 min', 90: '25 min' };
-        const rawDuration = durations[answers.sessionDuration] || '15 min';
-        const cappedMins = Math.min(parseInt(rawDuration) || 15, PHYSIO_CONSTRAINTS.MAX_CARDIO_DURATION_MINUTES);
+        const durations = { 30: '10 min', 45: '15 min', 60: '20 min', 90: '20 min' };
+        const sessionDuration = parseInt(durations[answers.sessionDuration] || '15 min') || 15;
+        const exerciseDefault = parseInt(picked.defaultDuration) || sessionDuration;
+        // Nie laenger als die Uebung selbst vorgibt UND nie laenger als das Cardio-Cap
+        const cappedMins = Math.min(sessionDuration, exerciseDefault, PHYSIO_CONSTRAINTS.MAX_CARDIO_DURATION_MINUTES);
         const duration = cappedMins + ' min';
 
         if (picked.type === 'cardio') {
