@@ -27,7 +27,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'brust', 'handgelenk']
+        avoidWhenInjured: ['schulter', 'brust', 'handgelenk'],
+        priority: 5
     },
     {
         id: 'dumbbell-bench-press',
@@ -42,7 +43,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'brust', 'handgelenk']
+        avoidWhenInjured: ['schulter', 'brust', 'handgelenk'],
+        priority: 4
     },
     {
         id: 'incline-barbell-bench',
@@ -57,7 +59,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'brust']
+        avoidWhenInjured: ['schulter', 'brust'],
+        priority: 4
     },
     {
         id: 'incline-dumbbell-bench',
@@ -72,7 +75,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'brust']
+        avoidWhenInjured: ['schulter', 'brust'],
+        priority: 4
     },
     {
         id: 'cable-fly',
@@ -87,7 +91,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'brust']
+        avoidWhenInjured: ['schulter', 'brust'],
+        priority: 3
     },
     {
         id: 'dumbbell-fly',
@@ -102,7 +107,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'brust']
+        avoidWhenInjured: ['schulter', 'brust'],
+        priority: 3
     },
     {
         id: 'chest-press-machine',
@@ -117,7 +123,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'brust']
+        avoidWhenInjured: ['schulter', 'brust'],
+        priority: 2
     },
     {
         id: 'push-ups',
@@ -132,7 +139,8 @@ export const exercises = [
         defaultReps: '10-20',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['handgelenk', 'schulter', 'brust']
+        avoidWhenInjured: ['handgelenk', 'schulter', 'brust'],
+        priority: 4
     },
     {
         id: 'dips-chest',
@@ -147,7 +155,56 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'handgelenk', 'ellenbogen']
+        avoidWhenInjured: ['schulter', 'handgelenk', 'ellenbogen'],
+        priority: 4
+    },
+    {
+        id: 'band-chest-press',
+        name: 'Brustdruecken (Band)',
+        type: 'strength',
+        muscleGroups: ['chest', 'triceps', 'front_delts'],
+        primaryMuscle: 'chest',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter', 'brust'],
+        priority: 2
+    },
+    {
+        id: 'archer-push-ups',
+        name: 'Archer Liegestuetze',
+        type: 'strength',
+        muscleGroups: ['chest', 'triceps', 'front_delts'],
+        primaryMuscle: 'chest',
+        equipment: 'bodyweight',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '6-10',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter', 'handgelenk', 'brust'],
+        priority: 3
+    },
+    {
+        id: 'weighted-dips',
+        name: 'Dips (gewichtet)',
+        type: 'strength',
+        muscleGroups: ['chest', 'triceps', 'front_delts'],
+        primaryMuscle: 'chest',
+        equipment: 'bodyweight',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '6-10',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter', 'ellenbogen', 'handgelenk'],
+        priority: 5
     },
 
     // ── BACK ────────────────────────────────────────────
@@ -164,7 +221,8 @@ export const exercises = [
         defaultReps: '5-8',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ruecken', 'knie', 'handgelenk']
+        avoidWhenInjured: ['ruecken', 'knie', 'handgelenk'],
+        priority: 5
     },
     {
         id: 'barbell-row',
@@ -179,7 +237,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ruecken', 'handgelenk']
+        avoidWhenInjured: ['ruecken', 'handgelenk'],
+        priority: 5
     },
     {
         id: 'dumbbell-row',
@@ -194,7 +253,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 4
     },
     {
         id: 'lat-pulldown',
@@ -209,7 +269,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 4
     },
     {
         id: 'pull-ups',
@@ -224,7 +285,8 @@ export const exercises = [
         defaultReps: '6-10',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['schulter', 'ellenbogen']
+        avoidWhenInjured: ['schulter', 'ellenbogen'],
+        priority: 5
     },
     {
         id: 'cable-row',
@@ -239,7 +301,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 4
     },
     {
         id: 'seated-row-machine',
@@ -254,7 +317,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 3
     },
     {
         id: 'inverted-rows',
@@ -269,7 +333,8 @@ export const exercises = [
         defaultReps: '10-15',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['handgelenk']
+        avoidWhenInjured: ['handgelenk'],
+        priority: 3
     },
     {
         id: 'face-pulls',
@@ -284,7 +349,72 @@ export const exercises = [
         defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 4
+    },
+    {
+        id: 'band-rows',
+        name: 'Rudern (Band)',
+        type: 'strength',
+        muscleGroups: ['back', 'biceps', 'rear_delts'],
+        primaryMuscle: 'back',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['ruecken'],
+        priority: 2
+    },
+    {
+        id: 'muscle-ups',
+        name: 'Muscle-Ups',
+        type: 'strength',
+        muscleGroups: ['back', 'chest', 'triceps', 'biceps'],
+        primaryMuscle: 'back',
+        equipment: 'bodyweight',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '3-6',
+        defaultWeight: 0,
+        tags: ['pull', 'push'],
+        avoidWhenInjured: ['schulter', 'ellenbogen', 'handgelenk'],
+        priority: 5
+    },
+    {
+        id: 'weighted-pull-ups',
+        name: 'Klimmzuege (gewichtet)',
+        type: 'strength',
+        muscleGroups: ['back', 'biceps'],
+        primaryMuscle: 'back',
+        equipment: 'bodyweight',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '5-8',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['schulter', 'ellenbogen'],
+        priority: 5
+    },
+    {
+        id: 'deficit-deadlift',
+        name: 'Deficit Kreuzheben',
+        type: 'strength',
+        muscleGroups: ['back', 'hamstrings', 'glutes', 'lower_back'],
+        primaryMuscle: 'back',
+        equipment: 'barbell',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '3-6',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['ruecken', 'knie', 'handgelenk'],
+        priority: 4
     },
 
     // ── SHOULDERS ───────────────────────────────────────
@@ -301,7 +431,8 @@ export const exercises = [
         defaultReps: '6-10',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'ruecken']
+        avoidWhenInjured: ['schulter', 'ruecken'],
+        priority: 5
     },
     {
         id: 'dumbbell-overhead-press',
@@ -316,7 +447,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 4
     },
     {
         id: 'lateral-raises',
@@ -331,7 +463,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 3
     },
     {
         id: 'cable-lateral-raises',
@@ -346,7 +479,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 3
     },
     {
         id: 'rear-delt-fly',
@@ -361,7 +495,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 3
     },
     {
         id: 'shoulder-press-machine',
@@ -376,7 +511,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 2
     },
     {
         id: 'pike-push-ups',
@@ -391,7 +527,120 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'handgelenk']
+        avoidWhenInjured: ['schulter', 'handgelenk'],
+        priority: 3
+    },
+    {
+        id: 'band-overhead-press',
+        name: 'Schulterdruecken (Band)',
+        type: 'strength',
+        muscleGroups: ['shoulders', 'front_delts', 'triceps'],
+        primaryMuscle: 'shoulders',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter'],
+        priority: 2
+    },
+    {
+        id: 'handstand-push-ups',
+        name: 'Handstand Liegestuetze',
+        type: 'strength',
+        muscleGroups: ['shoulders', 'front_delts', 'triceps'],
+        primaryMuscle: 'shoulders',
+        equipment: 'bodyweight',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '3-6',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter', 'handgelenk', 'ruecken'],
+        priority: 4
+    },
+    {
+        id: 'rear-delt-machine',
+        name: 'Reverse Fly Maschine',
+        type: 'strength',
+        muscleGroups: ['rear_delts', 'shoulders'],
+        primaryMuscle: 'rear_delts',
+        equipment: 'machine',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['schulter'],
+        priority: 3
+    },
+    {
+        id: 'machine-lateral-raise',
+        name: 'Seitheben (Maschine)',
+        type: 'strength',
+        muscleGroups: ['side_delts', 'shoulders'],
+        primaryMuscle: 'side_delts',
+        equipment: 'machine',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter'],
+        priority: 2
+    },
+    {
+        id: 'band-lateral-raise',
+        name: 'Seitheben (Band)',
+        type: 'strength',
+        muscleGroups: ['side_delts', 'shoulders'],
+        primaryMuscle: 'side_delts',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter'],
+        priority: 2
+    },
+    {
+        id: 'band-pull-aparts',
+        name: 'Band Pull-Aparts',
+        type: 'strength',
+        muscleGroups: ['rear_delts', 'traps', 'shoulders'],
+        primaryMuscle: 'rear_delts',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '15-20',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['schulter'],
+        priority: 3
+    },
+    {
+        id: 'band-face-pulls',
+        name: 'Face Pulls (Band)',
+        type: 'strength',
+        muscleGroups: ['rear_delts', 'traps', 'shoulders'],
+        primaryMuscle: 'rear_delts',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '15-20',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['schulter'],
+        priority: 3
     },
 
     // ── BICEPS ──────────────────────────────────────────
@@ -408,7 +657,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ellenbogen', 'handgelenk']
+        avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        priority: 3
     },
     {
         id: 'dumbbell-curl',
@@ -423,7 +673,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ellenbogen', 'handgelenk']
+        avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        priority: 3
     },
     {
         id: 'hammer-curl',
@@ -438,7 +689,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ellenbogen', 'handgelenk']
+        avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        priority: 3
     },
     {
         id: 'cable-curl',
@@ -453,7 +705,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ellenbogen']
+        avoidWhenInjured: ['ellenbogen'],
+        priority: 3
     },
     {
         id: 'chin-ups',
@@ -468,7 +721,8 @@ export const exercises = [
         defaultReps: '6-10',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['schulter', 'ellenbogen']
+        avoidWhenInjured: ['schulter', 'ellenbogen'],
+        priority: 4
     },
     {
         id: 'preacher-curl-machine',
@@ -483,7 +737,24 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ellenbogen']
+        avoidWhenInjured: ['ellenbogen'],
+        priority: 2
+    },
+    {
+        id: 'band-curls',
+        name: 'Curls (Band)',
+        type: 'strength',
+        muscleGroups: ['biceps'],
+        primaryMuscle: 'biceps',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        priority: 2
     },
 
     // ── TRICEPS ─────────────────────────────────────────
@@ -500,7 +771,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['ellenbogen']
+        avoidWhenInjured: ['ellenbogen'],
+        priority: 3
     },
     {
         id: 'overhead-tricep-extension',
@@ -515,7 +787,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['ellenbogen', 'schulter']
+        avoidWhenInjured: ['ellenbogen', 'schulter'],
+        priority: 3
     },
     {
         id: 'skull-crushers',
@@ -530,7 +803,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['ellenbogen', 'handgelenk']
+        avoidWhenInjured: ['ellenbogen', 'handgelenk'],
+        priority: 3
     },
     {
         id: 'dips-triceps',
@@ -545,7 +819,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['schulter', 'ellenbogen']
+        avoidWhenInjured: ['schulter', 'ellenbogen'],
+        priority: 4
     },
     {
         id: 'diamond-push-ups',
@@ -560,7 +835,8 @@ export const exercises = [
         defaultReps: '8-15',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['handgelenk', 'ellenbogen']
+        avoidWhenInjured: ['handgelenk', 'ellenbogen'],
+        priority: 3
     },
     {
         id: 'tricep-machine',
@@ -575,7 +851,24 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['push'],
-        avoidWhenInjured: ['ellenbogen']
+        avoidWhenInjured: ['ellenbogen'],
+        priority: 2
+    },
+    {
+        id: 'band-tricep-extension',
+        name: 'Trizepsstrecken (Band)',
+        type: 'strength',
+        muscleGroups: ['triceps'],
+        primaryMuscle: 'triceps',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['ellenbogen'],
+        priority: 2
     },
 
     // ── QUADRICEPS ──────────────────────────────────────
@@ -592,7 +885,8 @@ export const exercises = [
         defaultReps: '6-10',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie', 'ruecken', 'hueft']
+        avoidWhenInjured: ['knie', 'ruecken', 'hueft'],
+        priority: 5
     },
     {
         id: 'goblet-squat',
@@ -607,7 +901,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 3
     },
     {
         id: 'leg-press',
@@ -622,7 +917,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 4
     },
     {
         id: 'leg-extension',
@@ -637,7 +933,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 3
     },
     {
         id: 'lunges',
@@ -652,7 +949,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie', 'hueft']
+        avoidWhenInjured: ['knie', 'hueft'],
+        priority: 4
     },
     {
         id: 'bodyweight-squat',
@@ -667,7 +965,8 @@ export const exercises = [
         defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 2
     },
     {
         id: 'bulgarian-split-squat',
@@ -682,7 +981,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie', 'hueft']
+        avoidWhenInjured: ['knie', 'hueft'],
+        priority: 4
     },
     {
         id: 'pistol-squat',
@@ -697,7 +997,8 @@ export const exercises = [
         defaultReps: '5-8',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie', 'hueft']
+        avoidWhenInjured: ['knie', 'hueft'],
+        priority: 3
     },
     {
         id: 'hack-squat',
@@ -712,7 +1013,72 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie', 'ruecken']
+        avoidWhenInjured: ['knie', 'ruecken'],
+        priority: 3
+    },
+    {
+        id: 'front-squat',
+        name: 'Frontkniebeugen',
+        type: 'strength',
+        muscleGroups: ['quadriceps', 'glutes', 'abs'],
+        primaryMuscle: 'quadriceps',
+        equipment: 'barbell',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '5-8',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['knie', 'ruecken', 'handgelenk'],
+        priority: 4
+    },
+    {
+        id: 'band-squats',
+        name: 'Kniebeugen (Band)',
+        type: 'strength',
+        muscleGroups: ['quadriceps', 'glutes'],
+        primaryMuscle: 'quadriceps',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '15-20',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['knie'],
+        priority: 2
+    },
+    {
+        id: 'box-jumps',
+        name: 'Box Jumps',
+        type: 'strength',
+        muscleGroups: ['quadriceps', 'glutes', 'calves'],
+        primaryMuscle: 'quadriceps',
+        equipment: 'bodyweight',
+        difficulty: 'intermediate',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '8-12',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['knie', 'achilles', 'hueft'],
+        priority: 3
+    },
+    {
+        id: 'step-ups',
+        name: 'Step-Ups',
+        type: 'strength',
+        muscleGroups: ['quadriceps', 'glutes', 'hamstrings'],
+        primaryMuscle: 'quadriceps',
+        equipment: 'dumbbell',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '10-12',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['knie', 'hueft'],
+        priority: 3
     },
 
     // ── HAMSTRINGS ──────────────────────────────────────
@@ -729,7 +1095,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['legs', 'pull'],
-        avoidWhenInjured: ['ruecken', 'knie']
+        avoidWhenInjured: ['ruecken', 'knie'],
+        priority: 5
     },
     {
         id: 'dumbbell-rdl',
@@ -744,7 +1111,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['legs', 'pull'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 4
     },
     {
         id: 'leg-curl',
@@ -759,7 +1127,8 @@ export const exercises = [
         defaultReps: '10-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 3
     },
     {
         id: 'nordic-hamstring-curl',
@@ -774,7 +1143,8 @@ export const exercises = [
         defaultReps: '5-8',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 4
     },
     {
         id: 'glute-ham-raise',
@@ -789,7 +1159,40 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 3
+    },
+    {
+        id: 'single-leg-rdl',
+        name: 'Einbeiniges Rumaenisches Kreuzheben',
+        type: 'strength',
+        muscleGroups: ['hamstrings', 'glutes', 'lower_back'],
+        primaryMuscle: 'hamstrings',
+        equipment: 'dumbbell',
+        difficulty: 'advanced',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '8-10',
+        defaultWeight: 0,
+        tags: ['legs', 'pull'],
+        avoidWhenInjured: ['ruecken', 'knie', 'hueft'],
+        priority: 3
+    },
+    {
+        id: 'band-good-mornings',
+        name: 'Good Mornings (Band)',
+        type: 'strength',
+        muscleGroups: ['hamstrings', 'lower_back', 'glutes'],
+        primaryMuscle: 'hamstrings',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['legs', 'pull'],
+        avoidWhenInjured: ['ruecken'],
+        priority: 2
     },
 
     // ── GLUTES ──────────────────────────────────────────
@@ -806,7 +1209,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['hueft', 'ruecken']
+        avoidWhenInjured: ['hueft', 'ruecken'],
+        priority: 5
     },
     {
         id: 'glute-bridge',
@@ -821,7 +1225,8 @@ export const exercises = [
         defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['hueft']
+        avoidWhenInjured: ['hueft'],
+        priority: 3
     },
     {
         id: 'cable-kickback',
@@ -836,7 +1241,72 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['hueft', 'knie']
+        avoidWhenInjured: ['hueft', 'knie'],
+        priority: 3
+    },
+    {
+        id: 'sumo-deadlift',
+        name: 'Sumo Kreuzheben',
+        type: 'strength',
+        muscleGroups: ['glutes', 'hamstrings', 'quadriceps', 'back'],
+        primaryMuscle: 'glutes',
+        equipment: 'barbell',
+        difficulty: 'intermediate',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '5-8',
+        defaultWeight: 0,
+        tags: ['legs', 'pull'],
+        avoidWhenInjured: ['hueft', 'ruecken', 'knie'],
+        priority: 4
+    },
+    {
+        id: 'cable-pull-through',
+        name: 'Cable Pull-Through',
+        type: 'strength',
+        muscleGroups: ['glutes', 'hamstrings', 'lower_back'],
+        primaryMuscle: 'glutes',
+        equipment: 'cable',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['legs', 'pull'],
+        avoidWhenInjured: ['ruecken', 'hueft'],
+        priority: 3
+    },
+    {
+        id: 'banded-hip-thrust',
+        name: 'Hip Thrusts (Band)',
+        type: 'strength',
+        muscleGroups: ['glutes', 'hamstrings'],
+        primaryMuscle: 'glutes',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '15-20',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['hueft'],
+        priority: 3
+    },
+    {
+        id: 'band-lateral-walk',
+        name: 'Lateral Walk (Band)',
+        type: 'strength',
+        muscleGroups: ['glutes', 'quadriceps'],
+        primaryMuscle: 'glutes',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '15-20',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['knie', 'hueft'],
+        priority: 3
     },
 
     // ── CALVES ──────────────────────────────────────────
@@ -853,7 +1323,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['wade', 'achilles']
+        avoidWhenInjured: ['wade', 'achilles'],
+        priority: 3
     },
     {
         id: 'seated-calf-raise',
@@ -868,7 +1339,8 @@ export const exercises = [
         defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['wade', 'achilles']
+        avoidWhenInjured: ['wade', 'achilles'],
+        priority: 3
     },
     {
         id: 'bodyweight-calf-raise',
@@ -883,7 +1355,8 @@ export const exercises = [
         defaultReps: '15-25',
         defaultWeight: 0,
         tags: ['legs'],
-        avoidWhenInjured: ['wade', 'achilles']
+        avoidWhenInjured: ['wade', 'achilles'],
+        priority: 2
     },
 
     // ── ABS ─────────────────────────────────────────────
@@ -900,7 +1373,8 @@ export const exercises = [
         defaultReps: '30-60s',
         defaultWeight: 0,
         tags: ['core'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 4
     },
     {
         id: 'hanging-leg-raise',
@@ -915,7 +1389,8 @@ export const exercises = [
         defaultReps: '10-15',
         defaultWeight: 0,
         tags: ['core'],
-        avoidWhenInjured: ['schulter', 'ruecken']
+        avoidWhenInjured: ['schulter', 'ruecken'],
+        priority: 4
     },
     {
         id: 'cable-crunch',
@@ -930,7 +1405,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['core'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 3
     },
     {
         id: 'ab-wheel',
@@ -945,7 +1421,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['core'],
-        avoidWhenInjured: ['ruecken', 'schulter']
+        avoidWhenInjured: ['ruecken', 'schulter'],
+        priority: 4
     },
     {
         id: 'mountain-climbers',
@@ -960,7 +1437,8 @@ export const exercises = [
         defaultReps: '20-30',
         defaultWeight: 0,
         tags: ['core'],
-        avoidWhenInjured: ['handgelenk', 'knie']
+        avoidWhenInjured: ['handgelenk', 'knie'],
+        priority: 2
     },
     {
         id: 'russian-twist',
@@ -975,7 +1453,8 @@ export const exercises = [
         defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['core'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 2
     },
     {
         id: 'crunch-machine',
@@ -990,7 +1469,72 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['core'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 2
+    },
+    {
+        id: 'dragon-flags',
+        name: 'Dragon Flags',
+        type: 'strength',
+        muscleGroups: ['abs'],
+        primaryMuscle: 'abs',
+        equipment: 'bodyweight',
+        difficulty: 'advanced',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '5-8',
+        defaultWeight: 0,
+        tags: ['core'],
+        avoidWhenInjured: ['ruecken', 'schulter'],
+        priority: 4
+    },
+    {
+        id: 'l-sit',
+        name: 'L-Sit',
+        type: 'strength',
+        muscleGroups: ['abs', 'quadriceps'],
+        primaryMuscle: 'abs',
+        equipment: 'bodyweight',
+        difficulty: 'advanced',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '15-30s',
+        defaultWeight: 0,
+        tags: ['core'],
+        avoidWhenInjured: ['handgelenk', 'schulter'],
+        priority: 3
+    },
+    {
+        id: 'hollow-body-hold',
+        name: 'Hollow Body Hold',
+        type: 'strength',
+        muscleGroups: ['abs'],
+        primaryMuscle: 'abs',
+        equipment: 'bodyweight',
+        difficulty: 'intermediate',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '20-30s',
+        defaultWeight: 0,
+        tags: ['core'],
+        avoidWhenInjured: ['ruecken'],
+        priority: 3
+    },
+    {
+        id: 'bear-crawl',
+        name: 'Bear Crawl',
+        type: 'strength',
+        muscleGroups: ['abs', 'shoulders', 'quadriceps'],
+        primaryMuscle: 'abs',
+        equipment: 'bodyweight',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '30-45s',
+        defaultWeight: 0,
+        tags: ['core'],
+        avoidWhenInjured: ['handgelenk', 'schulter', 'knie'],
+        priority: 2
     },
 
     // ── TRAPS ───────────────────────────────────────────
@@ -1007,7 +1551,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['schulter', 'nacken']
+        avoidWhenInjured: ['schulter', 'nacken'],
+        priority: 3
     },
     {
         id: 'dumbbell-shrugs',
@@ -1022,7 +1567,40 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['schulter', 'nacken']
+        avoidWhenInjured: ['schulter', 'nacken'],
+        priority: 3
+    },
+    {
+        id: 'farmers-walk',
+        name: 'Farmers Walk',
+        type: 'strength',
+        muscleGroups: ['traps', 'forearms', 'abs'],
+        primaryMuscle: 'traps',
+        equipment: 'dumbbell',
+        difficulty: 'beginner',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '30-45s',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['schulter', 'handgelenk'],
+        priority: 3
+    },
+    {
+        id: 'rack-pulls',
+        name: 'Rack Pulls',
+        type: 'strength',
+        muscleGroups: ['traps', 'back', 'lower_back'],
+        primaryMuscle: 'traps',
+        equipment: 'barbell',
+        difficulty: 'intermediate',
+        compound: true,
+        defaultSets: 3,
+        defaultReps: '5-8',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['ruecken', 'handgelenk'],
+        priority: 4
     },
 
     // ── FOREARMS ────────────────────────────────────────
@@ -1039,7 +1617,40 @@ export const exercises = [
         defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['handgelenk']
+        avoidWhenInjured: ['handgelenk'],
+        priority: 2
+    },
+    {
+        id: 'reverse-curl',
+        name: 'Reverse Curls',
+        type: 'strength',
+        muscleGroups: ['forearms', 'biceps'],
+        primaryMuscle: 'forearms',
+        equipment: 'barbell',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '10-12',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['handgelenk', 'ellenbogen'],
+        priority: 2
+    },
+    {
+        id: 'dead-hang',
+        name: 'Dead Hang',
+        type: 'strength',
+        muscleGroups: ['forearms', 'back'],
+        primaryMuscle: 'forearms',
+        equipment: 'bodyweight',
+        difficulty: 'beginner',
+        compound: false,
+        defaultSets: 3,
+        defaultReps: '30-60s',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['schulter', 'handgelenk'],
+        priority: 2
     },
 
     // ── CARDIO ──────────────────────────────────────────
@@ -1057,7 +1668,8 @@ export const exercises = [
         defaultDuration: '20 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['knie', 'hueft', 'achilles']
+        avoidWhenInjured: ['knie', 'hueft', 'achilles'],
+        priority: 3
     },
     {
         id: 'stationary-bike',
@@ -1073,7 +1685,8 @@ export const exercises = [
         defaultDuration: '20 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 3
     },
     {
         id: 'rowing-machine',
@@ -1089,7 +1702,8 @@ export const exercises = [
         defaultDuration: '15 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 4
     },
     {
         id: 'elliptical',
@@ -1105,7 +1719,8 @@ export const exercises = [
         defaultDuration: '20 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: []
+        avoidWhenInjured: [],
+        priority: 3
     },
     {
         id: 'jumping-jacks',
@@ -1121,7 +1736,8 @@ export const exercises = [
         defaultDuration: '10 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 2
     },
     {
         id: 'burpees',
@@ -1137,7 +1753,8 @@ export const exercises = [
         defaultDuration: '10 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['knie', 'handgelenk', 'schulter']
+        avoidWhenInjured: ['knie', 'handgelenk', 'schulter'],
+        priority: 3
     },
     {
         id: 'jump-rope',
@@ -1153,7 +1770,8 @@ export const exercises = [
         defaultDuration: '10 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['knie', 'achilles']
+        avoidWhenInjured: ['knie', 'achilles'],
+        priority: 3
     },
     {
         id: 'stair-climber',
@@ -1169,7 +1787,8 @@ export const exercises = [
         defaultDuration: '15 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 3
     },
     {
         id: 'high-knees',
@@ -1185,7 +1804,8 @@ export const exercises = [
         defaultDuration: '5 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 2
     },
     {
         id: 'battle-ropes',
@@ -1201,7 +1821,8 @@ export const exercises = [
         defaultDuration: '10 min',
         defaultWeight: 0,
         tags: ['cardio'],
-        avoidWhenInjured: ['schulter', 'handgelenk']
+        avoidWhenInjured: ['schulter', 'handgelenk'],
+        priority: 3
     },
 
     // ── DISTANCE ────────────────────────────────────────
@@ -1220,7 +1841,8 @@ export const exercises = [
         defaultDuration: '30 min',
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
-        avoidWhenInjured: ['knie', 'hueft', 'achilles']
+        avoidWhenInjured: ['knie', 'hueft', 'achilles'],
+        priority: 4
     },
     {
         id: 'outdoor-walk',
@@ -1237,7 +1859,8 @@ export const exercises = [
         defaultDuration: '30 min',
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
-        avoidWhenInjured: []
+        avoidWhenInjured: [],
+        priority: 3
     },
     {
         id: 'cycling',
@@ -1254,7 +1877,8 @@ export const exercises = [
         defaultDuration: '45 min',
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
-        avoidWhenInjured: ['knie']
+        avoidWhenInjured: ['knie'],
+        priority: 3
     },
     {
         id: 'swimming',
@@ -1271,7 +1895,8 @@ export const exercises = [
         defaultDuration: '30 min',
         defaultWeight: 0,
         tags: ['cardio', 'distance'],
-        avoidWhenInjured: ['schulter']
+        avoidWhenInjured: ['schulter'],
+        priority: 4
     },
 
     // ── LOWER BACK ──────────────────────────────────────
@@ -1288,7 +1913,8 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['pull', 'core'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 3
     },
     {
         id: 'good-mornings',
@@ -1303,7 +1929,8 @@ export const exercises = [
         defaultReps: '8-12',
         defaultWeight: 0,
         tags: ['pull'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 3
     },
     {
         id: 'back-extension-machine',
@@ -1318,6 +1945,7 @@ export const exercises = [
         defaultReps: '12-15',
         defaultWeight: 0,
         tags: ['pull', 'core'],
-        avoidWhenInjured: ['ruecken']
+        avoidWhenInjured: ['ruecken'],
+        priority: 2
     }
 ];
