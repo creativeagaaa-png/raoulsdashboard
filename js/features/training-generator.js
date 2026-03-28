@@ -606,6 +606,8 @@ export const trainingGeneratorMixin = () => ({
             this._adjustForDuration(adjustableExercises, adjustableMinutes, primaryGoal);
 
             // Sync back: remove exercises that _adjustForDuration spliced out
+            // and add any new exercises (mobility fillers) it created
+            const originalSet = new Set(dayExercises);
             const adjustableSet = new Set(adjustableExercises);
             for (let k = dayExercises.length - 1; k >= 0; k--) {
                 const ex = dayExercises[k];
@@ -613,6 +615,12 @@ export const trainingGeneratorMixin = () => ({
                     if (!adjustableSet.has(ex)) {
                         dayExercises.splice(k, 1);
                     }
+                }
+            }
+            // Add new exercises created by _adjustForDuration (e.g. mobility fillers)
+            for (const ex of adjustableExercises) {
+                if (!originalSet.has(ex)) {
+                    dayExercises.push(ex);
                 }
             }
 
@@ -1338,23 +1346,19 @@ export const trainingGeneratorMixin = () => ({
             const MAX_SETS = PHYSIO_CONSTRAINTS.MAX_SETS_PER_EXERCISE;
 
             // Phase 1: Saetze erhoehen — verteile gleichmaessig ueber alle Uebungen
-            // (statt nur eine Uebung zu boosten, was Dysbalancen erzeugt)
-            let boostRounds = 0;
-            const maxBoostRounds = dayExercises.filter(e => e.type === 'strength').length;
+            // Round-Robin: jede Uebung erhaelt nacheinander +1 Satz bis Zeitbudget erreicht
+            const strengthExs = dayExercises.filter(e => e.type === 'strength');
+            let boostPossible = true;
             while (dayExercises.reduce((s, e) => s + _exerciseTimeEstimate(e, goal), 0) < targetMinutes * 0.8
-                   && boostRounds < maxBoostRounds) {
-                let boosted = false;
-                // Round-Robin: jede Uebung erhaelt nacheinander +1 Satz
-                for (const ex of dayExercises) {
-                    if (ex.type !== 'strength') continue;
+                   && boostPossible) {
+                boostPossible = false;
+                for (const ex of strengthExs) {
+                    if (dayExercises.reduce((s, e) => s + _exerciseTimeEstimate(e, goal), 0) >= targetMinutes * 0.8) break;
                     if ((ex.sets || 3) < MAX_SETS) {
                         ex.sets = (ex.sets || 3) + 1;
-                        boosted = true;
-                        break;
+                        boostPossible = true;
                     }
                 }
-                if (!boosted) break;
-                boostRounds++;
             }
 
             // Phase 2: Constraint 1 — Wenn immer noch zu kurz (z.B. Bodyweight + Upper + 90min),
@@ -1363,27 +1367,27 @@ export const trainingGeneratorMixin = () => ({
             estimated = dayExercises.reduce((sum, ex) => sum + _exerciseTimeEstimate(ex, goal), 0);
             const deficit = targetMinutes - estimated;
             if (deficit > 5) {
-                // Erhoehte Satzpause als "aktive Erholung" markieren
-                const fillerMinutes = Math.min(deficit, 15); // max 15 min Filler
-                dayExercises.push({
-                    name: 'Mobility & aktive Erholung',
-                    type: 'cardio',
-                    duration: Math.round(fillerMinutes) + ' min',
-                    note: 'Dynamisches Stretching, Foam Rolling, Atemarbeit — foerdert Regeneration ohne Ermuedung',
-                    _isMobility: true
-                });
-
-                // Wenn immer noch >10min Defizit, zusaetzlichen Stretching-Block
-                const remainingDeficit = deficit - fillerMinutes;
-                if (remainingDeficit > 5) {
-                    const stretchMinutes = Math.min(remainingDeficit, 10);
+                // Sinnvolle Filler-Bloecke: Mobility, Stretching, Core-Arbeit
+                const fillers = [
+                    { name: 'Mobility & aktive Erholung', max: 15,
+                      note: 'Dynamisches Stretching, Foam Rolling, Atemarbeit — foerdert Regeneration ohne Ermuedung' },
+                    { name: 'Gezieltes Stretching', max: 15,
+                      note: 'Statisches Dehnen der trainierten Muskelgruppen — verbessert ROM und Erholung' },
+                    { name: 'Core-Stabilisation', max: 10,
+                      note: 'Planks, Dead Bugs, Pallof Press — staerkt Rumpf und beugt Verletzungen vor' },
+                ];
+                let remaining = deficit;
+                for (const filler of fillers) {
+                    if (remaining <= 3) break;
+                    const mins = Math.min(remaining, filler.max);
                     dayExercises.push({
-                        name: 'Gezieltes Stretching',
+                        name: filler.name,
                         type: 'cardio',
-                        duration: Math.round(stretchMinutes) + ' min',
-                        note: 'Statisches Dehnen der trainierten Muskelgruppen — verbessert ROM und Erholung',
+                        duration: Math.round(mins) + ' min',
+                        note: filler.note,
                         _isMobility: true
                     });
+                    remaining -= mins;
                 }
             }
         }
