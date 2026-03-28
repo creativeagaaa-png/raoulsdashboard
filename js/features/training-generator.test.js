@@ -549,3 +549,55 @@ describe('Issue 2 — Training Level', () => {
         expect(result.meta.level).toBe('advanced');
     });
 });
+
+// ── Issue 3: Equipment-Kompatibilitaet ───────────────────────
+describe('Issue 3 — Equipment Compatibility in Template Selection', () => {
+    let mixin;
+    beforeEach(() => { mixin = createMixin(); });
+
+    it('bodyweight user does not get gym-heavy templates', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            equipment: 'bodyweight',
+            selectedDays: [0, 1, 2, 3, 4],
+            goals: ['muscle'],
+            trainingLevel: 'intermediate'
+        });
+        const result = mixin._buildPlan();
+        // Template should not be a bro-split or machine-heavy variant
+        expect(result.meta.templateId).not.toMatch(/bro/i);
+    });
+
+    it('_templateEquipmentScore returns high score for full_gym', () => {
+        const fullGymEquipment = ['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight', 'band'];
+        const score = mixin._templateEquipmentScore(
+            { structure: [{ muscleTargets: [{ muscle: 'chest', compound: 1, isolation: 1 }] }] },
+            fullGymEquipment
+        );
+        expect(score).toBeGreaterThanOrEqual(0.7);
+    });
+
+    it('_templateEquipmentScore returns lower score for bodyweight with many targets', () => {
+        const bodyweightEquipment = ['bodyweight', 'band'];
+        const score = mixin._templateEquipmentScore(
+            { structure: [
+                { muscleTargets: [
+                    { muscle: 'chest', compound: 2, isolation: 2 },
+                    { muscle: 'back', compound: 2, isolation: 2 },
+                    { muscle: 'shoulders', compound: 1, isolation: 1 }
+                ]}
+            ]},
+            bodyweightEquipment
+        );
+        expect(score).toBeLessThan(1.0);
+    });
+
+    it('full_gym user still has all templates available', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            equipment: 'full_gym',
+            selectedDays: [0, 1, 2],
+            goals: ['muscle']
+        });
+        const result = mixin._buildPlan();
+        expect(result.meta.templateId).toBeDefined();
+    });
+});

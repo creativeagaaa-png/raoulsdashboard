@@ -357,13 +357,14 @@ export const trainingGeneratorMixin = () => ({
 
         // 1. Template waehlen (level aus Wizard oder Fallback)
         const level = a.trainingLevel || 'intermediate';
-        const template = this._selectTemplate(a, level, daysPerWeek);
+        const allowedEquipment = EQUIPMENT_MAP[a.equipment] || EQUIPMENT_MAP.full_gym;
+        const template = this._selectTemplate(a, level, daysPerWeek, allowedEquipment);
 
         // 2. Muscle Focus anwenden
         const adjustedTemplate = this._applyMuscleFocus(template, a.muscleFocus);
 
         // 3. Verfuegbare Uebungen filtern
-        const allowedEquipment = adjustedTemplate.equipmentFilter || EQUIPMENT_MAP[a.equipment] || EQUIPMENT_MAP.full_gym;
+        const effectiveEquipment = adjustedTemplate.equipmentFilter || allowedEquipment;
 
         // Alle Injury-Keywords sammeln (Chips + Freitext)
         const injuryKeywords = [];
@@ -377,7 +378,7 @@ export const trainingGeneratorMixin = () => ({
         }
 
         let available = exercises.filter(ex => {
-            if (ex.equipment && !allowedEquipment.includes(ex.equipment)) return false;
+            if (ex.equipment && !effectiveEquipment.includes(ex.equipment)) return false;
             // Injury filter
             if (a.hasInjuries && injuryKeywords.length > 0) {
                 if (ex.avoidWhenInjured && ex.avoidWhenInjured.some(kw => injuryKeywords.includes(kw))) return false;
@@ -552,7 +553,7 @@ export const trainingGeneratorMixin = () => ({
 
             // Cardio (separate tracking, allow repeats across days)
             if (adjustedTemplate.addCardioToEachDay || a.goals.includes('fat_loss') || a.goals.includes('endurance')) {
-                const cardioEx = this._pickCardioExercise(available, allowedEquipment, usedCardioIds, a);
+                const cardioEx = this._pickCardioExercise(available, effectiveEquipment, usedCardioIds, a);
                 if (cardioEx) dayExercises.push(cardioEx);
             }
 
@@ -735,13 +736,20 @@ export const trainingGeneratorMixin = () => ({
         return { plan, meta };
     },
 
-    _selectTemplate(answers, level, daysPerWeek) {
+    _selectTemplate(answers, level, daysPerWeek, allowedEquipment) {
         const scoreTemplate = (t) => {
             let score = 0;
             if (t.daysPerWeek === daysPerWeek) score += 10;
             if (t.suitableFor.includes(level)) score += 5;
             for (const g of answers.goals) {
                 if (t.goals.includes(g)) score += 3;
+            }
+            // Equipment-Kompatibilitaet
+            if (allowedEquipment) {
+                const eqScore = this._templateEquipmentScore(t, allowedEquipment);
+                if (eqScore < EQUIPMENT_SCORE_EXCLUDE_BELOW) return -Infinity;
+                if (eqScore >= EQUIPMENT_COMPATIBILITY_THRESHOLD) score += EQUIPMENT_SCORE_BONUS;
+                else score += EQUIPMENT_SCORE_PENALTY;
             }
             return score;
         };
@@ -783,6 +791,42 @@ export const trainingGeneratorMixin = () => ({
             }
         }
         return bestTemplate;
+    },
+
+    /**
+     * Berechnet Equipment-Kompatibilitaets-Score fuer ein Template.
+     * Prueft wie viele der benoetigten Uebungen mit dem verfuegbaren Equipment machbar sind.
+     * @param {Object} template - Split-Template mit structure[].muscleTargets
+     * @param {string[]} allowedEquipment - Erlaubte Equipment-Typen
+     * @returns {number} Score 0-1 (1 = alle Uebungen machbar)
+     */
+    _templateEquipmentScore(template, allowedEquipment) {
+        let totalNeeded = 0;
+        let totalFulfilled = 0;
+
+        for (const day of template.structure) {
+            for (const target of day.muscleTargets) {
+                const needed = (target.compound || 0) + (target.isolation || 0);
+                if (needed === 0) continue;
+
+                const availableForMuscle = exercises.filter(ex => {
+                    if (ex.type !== 'strength') return false;
+                    if (ex.equipment && !allowedEquipment.includes(ex.equipment)) return false;
+                    return ex.primaryMuscle === target.muscle;
+                });
+
+                const compoundAvailable = availableForMuscle.filter(ex => ex.compound).length;
+                const isolationAvailable = availableForMuscle.filter(ex => !ex.compound).length;
+
+                const compoundFulfilled = Math.min(target.compound || 0, compoundAvailable);
+                const isolationFulfilled = Math.min(target.isolation || 0, isolationAvailable);
+
+                totalNeeded += needed;
+                totalFulfilled += compoundFulfilled + isolationFulfilled;
+            }
+        }
+
+        return totalNeeded === 0 ? 1 : totalFulfilled / totalNeeded;
     },
 
     _applyMuscleFocus(template, focus) {
