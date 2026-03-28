@@ -77,7 +77,12 @@
       "Bash(npm uninstall:*)",
       "Bash(/Users/raoulagachi/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.6/scripts/start-server.sh --project-dir /Users/raoulagachi/Codes/AGAsDashboard)",
       "WebSearch",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ls -la /Users/raoulagachi/Codes/AGAsDashboard/*.html)",
+      "Bash(find /Users/raoulagachi/Codes/AGAsDashboard/supabase -type f -name *.ts -o -name *.js -o -name *.sql)",
+      "Bash(find /Users/raoulagachi/Codes/AGAsDashboard/docs -type f -name *.md)",
+      "Bash(/tmp/final_report.txt:*)",
+      "Read(//tmp/**)"
     ]
   }
 }
