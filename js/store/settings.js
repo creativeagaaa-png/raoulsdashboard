@@ -29,7 +29,9 @@ export const settingsMixin = () => ({
                         gender: this.gender,
                         activityLevel: this.activityLevel,
                         weeklyGoalRate: this.weeklyGoalRate,
-                        checklistItems: this.checklistItems
+                        checklistItems: this.checklistItems,
+                        sportName: this._savedSportName || '',
+                        sportDays: this._savedSportDays || []
                     });
                 } catch (e) {
                     console.error('Einstellungen konnten nicht gespeichert werden:', e);
@@ -101,6 +103,9 @@ export const settingsMixin = () => ({
         this.weeklyGoalRate = safeFloat(f.weeklyGoalRate);
 
         await this.saveSettings();
+
+        // Unlock calorie calculation now that profile is explicitly saved
+        if (this.unlockCalories) this.unlockCalories();
         if (this.recalculateCalories) this.recalculateCalories();
 
         this.refreshAnimations();

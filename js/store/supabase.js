@@ -152,6 +152,12 @@ export async function saveSettings(profile) {
     if (profile.displayName !== undefined) {
         fields.display_name = profile.displayName;
     }
+    if (profile.sportName !== undefined) {
+        fields.sport_name = profile.sportName;
+    }
+    if (profile.sportDays !== undefined) {
+        fields.sport_days = profile.sportDays;
+    }
 
     // Strategy: UPDATE-first — never relies on the id sequence.
     // 1) Try UPDATE (works for existing users, no PK generation)

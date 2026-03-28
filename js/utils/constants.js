@@ -88,3 +88,38 @@ export const CALORIE_CONSTANTS = {
     MAX_WEEKLY_LOSS: -1.0,
     MAX_WEEKLY_GAIN: 1.0
 };
+
+// ── Exercise / Sport Calorie Burn (kcal per minute per kg body weight) ──
+// MET-based: kcal/min/kg = MET * 3.5 / 200
+// Source: Compendium of Physical Activities
+export const TRAINING_BURN_PER_MIN_PER_KG = {
+    strength: 0.055,      // ~MET 3.5 (weight training, moderate)
+    cardio: 0.105,        // ~MET 6.0 (general cardio)
+    distance: 0.12,       // ~MET 7.0 (running/rowing)
+    warmup: 0.05,         // ~MET 3.0 (light movement)
+    cooldown: 0.03        // ~MET 2.0 (stretching)
+};
+
+export const SPORT_BURN_PER_MIN_PER_KG = {
+    fussball: 0.12,       // MET 7.0
+    basketball: 0.11,     // MET 6.5
+    tennis: 0.10,         // MET 6.0
+    schwimmen: 0.13,      // MET 7.5 (moderate)
+    radfahren: 0.11,      // MET 6.5
+    laufen: 0.15,         // MET 8.5
+    yoga: 0.04,           // MET 2.5
+    boxen: 0.16,          // MET 9.0
+    mma: 0.16,            // MET 9.0
+    kampfsport: 0.16,     // MET 9.0
+    kickboxen: 0.16,      // MET 9.0
+    volleyball: 0.07,     // MET 4.0
+    handball: 0.12,       // MET 7.0
+    tanzen: 0.08,         // MET 5.0
+    klettern: 0.11,       // MET 6.5
+    bouldern: 0.11,       // MET 6.5
+    wandern: 0.09,        // MET 5.5
+    rudern: 0.12,         // MET 7.0
+    hockey: 0.11,         // MET 6.5
+    ski: 0.10,            // MET 6.0
+    default: 0.09         // MET 5.0 (general sport)
+};

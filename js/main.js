@@ -96,6 +96,11 @@ function app() {
         displayName: '',
         avatarUrl: '',
 
+        // Calorie system: unlock gate + sport data
+        _caloriesUnlocked: false,
+        _savedSportName: '',
+        _savedSportDays: [],
+
         // Onboarding
         onboardingOpen: false,
         onboardingMode: 'full', // 'full' = new user, 'name_only' = existing user missing name
@@ -539,7 +544,8 @@ function app() {
                         console.error('Initial weight entry failed:', weightErr);
                     }
 
-                    if (this.recalculateCalories) this.recalculateCalories();
+                    // Do NOT unlock calories during onboarding — user must explicitly
+                    // set activity level + weekly goal in their profile first
                     this.onboardingOpen = false;
                     this.showToast('Willkommen, ' + name + '!');
                 } catch (e) {
@@ -774,6 +780,14 @@ function app() {
                     this.checklistItems = settings.checklist_items || [...DEFAULT_PROFILE.checklistItems];
                     this.displayName = settings.display_name || '';
                     this.avatarUrl = settings.avatar_url || '';
+                    this._savedSportName = settings.sport_name || '';
+                    this._savedSportDays = settings.sport_days || [];
+
+                    // Calories are unlocked if user has previously saved a complete profile
+                    // (gender + height + age all set means they went through profile setup)
+                    if (settings.gender && settings.user_height && settings.user_age && settings.activity_level) {
+                        this._caloriesUnlocked = true;
+                    }
                 }
 
                 // Onboarding check: no settings = new user, no display_name = existing user

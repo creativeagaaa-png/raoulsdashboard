@@ -9,13 +9,13 @@ export const trainingGeneratorMixin = () => ({
     generatorOpen: false,
     generatorStep: 0,
     generatorAnswers: {
-        fitnessLevel: null,
         selectedDays: [],
         equipment: null,
         goals: [],
         muscleFocus: null,
         hasOtherSports: false,
         otherSports: '',
+        otherSportsDays: [],
         sessionDuration: null,
         injuryRegions: [],
         injuryText: '',
@@ -37,6 +37,29 @@ export const trainingGeneratorMixin = () => ({
     EQUIPMENT_LABELS,
     MUSCLE_LABELS,
     INJURY_REGIONS,
+
+    getSportIcon(sportName) {
+        if (!sportName) return 'ph-heartbeat';
+        const s = sportName.toLowerCase();
+        if (s.includes('fussball') || s.includes('fußball') || s.includes('soccer')) return 'ph-soccer-ball';
+        if (s.includes('basketball')) return 'ph-basketball';
+        if (s.includes('tennis') || s.includes('badminton') || s.includes('squash')) return 'ph-tennis-ball';
+        if (s.includes('schwimm')) return 'ph-swimming-pool';
+        if (s.includes('rad') || s.includes('cycling') || s.includes('bike') || s.includes('fahrrad')) return 'ph-bicycle';
+        if (s.includes('lauf') || s.includes('jogg') || s.includes('running') || s.includes('sprint')) return 'ph-person-simple-run';
+        if (s.includes('yoga') || s.includes('pilates')) return 'ph-flower-lotus';
+        if (s.includes('box') || s.includes('kickbox') || s.includes('mma') || s.includes('kampf')) return 'ph-hand-fist';
+        if (s.includes('volleyball')) return 'ph-volleyball';
+        if (s.includes('handball')) return 'ph-hand-grabbing';
+        if (s.includes('golf')) return 'ph-golf';
+        if (s.includes('tanz') || s.includes('dance')) return 'ph-music-notes';
+        if (s.includes('kletter') || s.includes('boulder')) return 'ph-mountains';
+        if (s.includes('ski') || s.includes('snowboard')) return 'ph-snowflake';
+        if (s.includes('wander') || s.includes('hik')) return 'ph-boot';
+        if (s.includes('ruder') || s.includes('rowing') || s.includes('kajak') || s.includes('kanu')) return 'ph-waves';
+        if (s.includes('hockey') || s.includes('eishockey')) return 'ph-hockey';
+        return 'ph-heartbeat';
+    },
 
     // ── Computed ──────────────────────────────────────
     get generatorDaysPerWeek() {
@@ -63,22 +86,28 @@ export const trainingGeneratorMixin = () => ({
 
     get generatorSummaryLabels() {
         const a = this.generatorAnswers;
-        const levelLabels = { beginner: 'Anfaenger', intermediate: 'Fortgeschritten', advanced: 'Profi' };
         const equipLabels = { full_gym: 'Fitnessstudio', home_gym: 'Home-Gym', bodyweight: 'Bodyweight' };
         const goalLabels = { muscle: 'Muskelaufbau', fat_loss: 'Fettabbau', endurance: 'Ausdauer', general: 'Allg. Fitness' };
-        const focusLabels = { upper: 'Oberkoerper-Schwerpunkt', lower: 'Unterkoerper-Schwerpunkt', balanced: 'Ausgewogen' };
+        const focusLabels = { upper: 'Nur Oberkoerper', lower: 'Nur Unterkoerper', balanced: 'Ausgewogen' };
         const durationLabels = { 30: '30 Minuten', 45: '45 Minuten', 60: '60 Minuten', 90: '90+ Minuten' };
 
         const dayNames = a.selectedDays.slice().sort((a, b) => a - b).map(d => WEEKDAY_SHORT[d]).join(', ');
+        const sportDayNames = a.otherSportsDays.slice().sort((a, b) => a - b).map(d => WEEKDAY_SHORT[d]).join(', ');
+
+        let otherSportsLabel = 'Nein';
+        if (a.hasOtherSports) {
+            const parts = [a.otherSports || 'Ja'];
+            if (sportDayNames) parts.push(sportDayNames);
+            otherSportsLabel = parts.join(' — ');
+        }
 
         return {
-            level: levelLabels[a.fitnessLevel] || '–',
             days: dayNames || '–',
             daysCount: a.selectedDays.length,
             equipment: equipLabels[a.equipment] || '–',
             goals: a.goals.map(g => goalLabels[g] || g).join(', ') || '–',
             focus: focusLabels[a.muscleFocus] || '–',
-            otherSports: a.hasOtherSports ? (a.otherSports || 'Ja') : 'Nein',
+            otherSports: otherSportsLabel,
             duration: durationLabels[a.sessionDuration] || '–',
             injuries: a.hasInjuries ? [...a.injuryRegions.map(r => { const reg = INJURY_REGIONS.find(ir => ir.id === r); return reg ? reg.label : r; }), a.injuryText].filter(Boolean).join(', ') : 'Keine',
             avoidedEquip: a.avoidedEquipment.map(e => EQUIPMENT_LABELS[e] || e).join(', ') || '–',
@@ -128,13 +157,13 @@ export const trainingGeneratorMixin = () => ({
         this.generatorOpen = true;
         this.generatorStep = 1;
         this.generatorAnswers = {
-            fitnessLevel: null,
             selectedDays: [],
             equipment: null,
             goals: [],
             muscleFocus: null,
             hasOtherSports: false,
             otherSports: '',
+            otherSportsDays: [],
             sessionDuration: null,
             injuryRegions: [],
             injuryText: '',
@@ -168,22 +197,13 @@ export const trainingGeneratorMixin = () => ({
     generatorNextStep() {
         const a = this.generatorAnswers;
         // Validation per step
-        if (this.generatorStep === 1 && !a.fitnessLevel) return;
-        if (this.generatorStep === 2 && a.selectedDays.length === 0) return;
-        if (this.generatorStep === 3 && !a.equipment) return;
-        if (this.generatorStep === 4 && a.goals.length === 0) return;
-        if (this.generatorStep === 5 && !a.muscleFocus) return;
-        if (this.generatorStep === 7 && !a.sessionDuration) return;
+        if (this.generatorStep === 1 && a.selectedDays.length === 0) return;
+        if (this.generatorStep === 2 && !a.equipment) return;
+        if (this.generatorStep === 3 && a.goals.length === 0) return;
+        if (this.generatorStep === 4 && !a.muscleFocus) return;
+        if (this.generatorStep === 6 && !a.sessionDuration) return;
 
-        // Beginner warning at 5+ days
-        if (this.generatorStep === 2 && a.fitnessLevel === 'beginner' && a.selectedDays.length >= 5) {
-            if (!this._beginnerWarningShown) {
-                this.showToast('Fuer Anfaenger empfehlen wir 2-4 Trainingstage pro Woche.');
-                this._beginnerWarningShown = true;
-            }
-        }
-
-        if (this.generatorStep < 10) {
+        if (this.generatorStep < 9) {
             this.generatorStep++;
         }
     },
@@ -205,6 +225,12 @@ export const trainingGeneratorMixin = () => ({
         const idx = this.generatorAnswers.injuryRegions.indexOf(regionId);
         if (idx === -1) this.generatorAnswers.injuryRegions.push(regionId);
         else this.generatorAnswers.injuryRegions.splice(idx, 1);
+    },
+
+    toggleOtherSportDay(dayIndex) {
+        const idx = this.generatorAnswers.otherSportsDays.indexOf(dayIndex);
+        if (idx === -1) this.generatorAnswers.otherSportsDays.push(dayIndex);
+        else this.generatorAnswers.otherSportsDays.splice(idx, 1);
     },
 
     toggleEquipmentPref(eqType, list) {
@@ -231,7 +257,7 @@ export const trainingGeneratorMixin = () => ({
             await this._enrichWithHistory(result.plan);
             this.generatedPlan = result.plan;
             this.generatorMeta = result.meta;
-            this.generatorStep = 11; // Preview
+            this.generatorStep = 10; // Preview
         } catch (e) {
             console.error('Plan generation failed:', e);
             this.showToast('Fehler bei der Plan-Erstellung. Bitte versuche es erneut.');
@@ -242,19 +268,16 @@ export const trainingGeneratorMixin = () => ({
 
     _buildPlan() {
         const a = this.generatorAnswers;
-        const level = a.fitnessLevel || 'beginner';
         const daysPerWeek = a.selectedDays.length;
 
-        // 1. Template waehlen
-        const template = this._selectTemplate(a, level, daysPerWeek);
+        // 1. Template waehlen (level defaults to intermediate)
+        const template = this._selectTemplate(a, 'intermediate', daysPerWeek);
 
         // 2. Muscle Focus anwenden
         const adjustedTemplate = this._applyMuscleFocus(template, a.muscleFocus);
 
         // 3. Verfuegbare Uebungen filtern
         const allowedEquipment = adjustedTemplate.equipmentFilter || EQUIPMENT_MAP[a.equipment] || EQUIPMENT_MAP.full_gym;
-        const difficultyOrder = { beginner: 0, intermediate: 1, advanced: 2 };
-        const userLevel = difficultyOrder[level];
 
         // Alle Injury-Keywords sammeln (Chips + Freitext)
         const injuryKeywords = [];
@@ -269,7 +292,6 @@ export const trainingGeneratorMixin = () => ({
 
         let available = exercises.filter(ex => {
             if (ex.equipment && !allowedEquipment.includes(ex.equipment)) return false;
-            if (difficultyOrder[ex.difficulty] > userLevel) return false;
             // Injury filter
             if (a.hasInjuries && injuryKeywords.length > 0) {
                 if (ex.avoidWhenInjured && ex.avoidWhenInjured.some(kw => injuryKeywords.includes(kw))) return false;
@@ -372,6 +394,11 @@ export const trainingGeneratorMixin = () => ({
             // Estimated time
             const estimatedTime = this._estimateTime(dayExercises);
 
+            // Superset pairing for short sessions (≤30 min)
+            if (a.sessionDuration <= 30) {
+                this._applySupersets(dayExercises);
+            }
+
             // Progressive overload note
             for (const ex of dayExercises) {
                 if (ex.type === 'strength' && !ex.note) {
@@ -388,6 +415,25 @@ export const trainingGeneratorMixin = () => ({
 
             plan[dayIndex] = dayExercises;
             dayMetas.push({ dayIndex, label: dayDef.label, estimatedTime });
+        }
+
+        // Add other sports days to plan
+        if (a.hasOtherSports && a.otherSportsDays.length > 0) {
+            const sportName = a.otherSports || 'Andere Sportart';
+            for (const dayIdx of a.otherSportsDays) {
+                if (!plan[dayIdx]) plan[dayIdx] = [];
+                // Only add if not already a training day
+                if (plan[dayIdx].length === 0) {
+                    plan[dayIdx].push({
+                        name: sportName,
+                        type: 'cardio',
+                        duration: '',
+                        note: '',
+                        _isOtherSport: true
+                    });
+                    dayMetas.push({ dayIndex: dayIdx, label: sportName, estimatedTime: 0, isOtherSport: true });
+                }
+            }
         }
 
         const meta = {
@@ -453,22 +499,69 @@ export const trainingGeneratorMixin = () => ({
         const modified = JSON.parse(JSON.stringify(template));
 
         for (const day of modified.structure) {
-            for (const target of day.muscleTargets) {
-                if (focus === 'upper' && LOWER_MUSCLES.includes(target.muscle)) {
-                    target.compound = Math.min(target.compound, 1);
-                    target.isolation = 0;
-                } else if (focus === 'upper' && UPPER_MUSCLES.includes(target.muscle)) {
-                    target.isolation = Math.max(target.isolation, 1);
-                } else if (focus === 'lower' && UPPER_MUSCLES.includes(target.muscle)) {
-                    target.compound = Math.min(target.compound, 1);
-                    target.isolation = 0;
-                } else if (focus === 'lower' && LOWER_MUSCLES.includes(target.muscle)) {
-                    target.isolation = Math.max(target.isolation, 1);
+            if (focus === 'upper') {
+                // Remove all lower body muscles entirely
+                day.muscleTargets = day.muscleTargets.filter(t => !LOWER_MUSCLES.includes(t.muscle));
+                // Boost upper body
+                for (const target of day.muscleTargets) {
+                    if (UPPER_MUSCLES.includes(target.muscle)) {
+                        target.isolation = Math.max(target.isolation, 1);
+                    }
+                }
+            } else if (focus === 'lower') {
+                // Remove all upper body muscles entirely
+                day.muscleTargets = day.muscleTargets.filter(t => !UPPER_MUSCLES.includes(t.muscle));
+                // Boost lower body
+                for (const target of day.muscleTargets) {
+                    if (LOWER_MUSCLES.includes(target.muscle)) {
+                        target.isolation = Math.max(target.isolation, 1);
+                    }
                 }
             }
+            // Keep core muscles in both cases
         }
 
         return modified;
+    },
+
+    // Superset pairing: group opposing muscles for time efficiency
+    _applySupersets(dayExercises) {
+        const OPPOSING = {
+            chest: ['back', 'rear_delts'],
+            back: ['chest', 'front_delts'],
+            biceps: ['triceps'],
+            triceps: ['biceps'],
+            quadriceps: ['hamstrings'],
+            hamstrings: ['quadriceps'],
+            front_delts: ['rear_delts', 'back'],
+            rear_delts: ['front_delts', 'chest']
+        };
+
+        const strengthExercises = dayExercises.filter(ex => ex.type === 'strength' && !ex._supersetGroup);
+        let groupId = 1;
+        const paired = new Set();
+
+        for (let i = 0; i < strengthExercises.length; i++) {
+            if (paired.has(i)) continue;
+            const exA = strengthExercises[i];
+            const muscleA = exA._primaryMuscle;
+            const opposites = OPPOSING[muscleA] || [];
+
+            for (let j = i + 1; j < strengthExercises.length; j++) {
+                if (paired.has(j)) continue;
+                const exB = strengthExercises[j];
+                if (opposites.includes(exB._primaryMuscle)) {
+                    exA._supersetGroup = groupId;
+                    exB._supersetGroup = groupId;
+                    exA.note = 'Supersatz ' + groupId + 'A — minimale Pause zwischen A und B';
+                    exB.note = 'Supersatz ' + groupId + 'B — 60-90s Pause nach B';
+                    paired.add(i);
+                    paired.add(j);
+                    groupId++;
+                    break;
+                }
+            }
+        }
     },
 
     _fisherYatesShuffle(arr) {
@@ -788,10 +881,28 @@ export const trainingGeneratorMixin = () => ({
                 delete ex._primaryMuscle;
                 delete ex._equipment;
                 delete ex._exerciseId;
+                delete ex._isOtherSport;
+                delete ex._supersetGroup;
             }
         }
         this.trainingPlan = clean;
         await this.saveTrainingPlan();
+
+        // Save sport data for calorie calculation
+        const a = this.generatorAnswers;
+        if (a.hasOtherSports && a.otherSports) {
+            this._savedSportName = a.otherSports;
+            this._savedSportDays = [...a.otherSportsDays];
+        } else {
+            this._savedSportName = '';
+            this._savedSportDays = [];
+        }
+        // Persist sport data in settings
+        await this.saveSettings();
+
+        // Recalculate calories with new training plan + sport data
+        if (this.recalculateCalories) this.recalculateCalories();
+
         this.generatorOpen = false;
         this.generatedPlan = null;
         this.generatorMeta = null;
@@ -816,6 +927,8 @@ export const trainingGeneratorMixin = () => ({
                 delete ex._primaryMuscle;
                 delete ex._equipment;
                 delete ex._exerciseId;
+                delete ex._isOtherSport;
+                delete ex._supersetGroup;
             }
         }
         this.trainingPlan = clean;
