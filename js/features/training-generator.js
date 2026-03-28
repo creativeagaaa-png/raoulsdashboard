@@ -532,6 +532,9 @@ export const trainingGeneratorMixin = () => ({
             const sorted = [...splitTemplates].sort((a, b) =>
                 Math.abs(a.daysPerWeek - daysPerWeek) - Math.abs(b.daysPerWeek - daysPerWeek)
             );
+            if (sorted.length === 0) {
+                throw new Error('No split templates available');
+            }
             candidates = [sorted[0]];
         }
 
@@ -784,7 +787,7 @@ export const trainingGeneratorMixin = () => ({
     },
 
     async _enrichWithHistory(plan) {
-        if (!this.workoutLogs || this.workoutLogs.length === 0) return;
+        if (!this.workoutLogs?.length) return;
 
         const lastWeights = {};
         for (const log of this.workoutLogs) {
@@ -862,7 +865,11 @@ export const trainingGeneratorMixin = () => ({
 
         const { dayIndex, exIndex } = this.swapTarget;
         const primaryGoal = this.generatorAnswers.goals[0] || 'general';
-        const scheme = REPS_SCHEMES[primaryGoal] || REPS_SCHEMES.general;
+        const secondaryGoal = this.generatorAnswers.goals.length > 1 ? this.generatorAnswers.goals[1] : null;
+        const primaryScheme = REPS_SCHEMES[primaryGoal] || REPS_SCHEMES.general;
+        const secondaryScheme = secondaryGoal ? (REPS_SCHEMES[secondaryGoal] || null) : null;
+        // Compounds verwenden primaeres Schema, Isolations das sekundaere (oder primaere)
+        const scheme = alt.compound ? primaryScheme : (secondaryScheme || primaryScheme);
         const formatted = this._formatExercise(alt, scheme, primaryGoal, alt.compound);
         delete formatted._compound;
 
