@@ -435,6 +435,29 @@ export const trainingGeneratorMixin = () => ({
         const weeklyBudget = this._createWeeklyVolumeBudget(level);
         const weeklyUsed = {};
 
+        // Issue 5: Other Sports Recovery — reduziere Budget fuer belastete Muskeln
+        if (a.hasOtherSports && a.otherSportsDays.length > 0) {
+            const sportLoad = this._sportMuscleLoad(a.otherSports);
+            const reducedMuscles = new Set();
+
+            for (const sportDayIdx of a.otherSportsDays) {
+                for (const trainDayIdx of trainingDayIndices) {
+                    const gap = Math.abs(trainDayIdx - sportDayIdx);
+                    const wrapGap = Math.min(gap, 7 - gap);
+                    if (wrapGap <= 1) {
+                        for (const [muscle, load] of Object.entries(sportLoad)) {
+                            if (load >= 0.5 && !reducedMuscles.has(muscle)) {
+                                weeklyBudget[muscle] = Math.round(
+                                    (weeklyBudget[muscle] || 0) * (1 - SPORT_RECOVERY_REDUCTION * load)
+                                );
+                                reducedMuscles.add(muscle);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         for (let i = 0; i < adjustedTemplate.structure.length; i++) {
             const dayDef = adjustedTemplate.structure[i];
             const dayIndex = trainingDayIndices[i];
@@ -666,12 +689,12 @@ export const trainingGeneratorMixin = () => ({
             weeklyMuscleSchedule[dayIndex] = dayMuscles;
         }
 
-        // Add other sports days to plan
+        // Add other sports days to plan + Recovery-Integration (Issue 5)
         if (a.hasOtherSports && a.otherSportsDays.length > 0) {
             const sportName = a.otherSports || 'Andere Sportart';
+            const sportLoad = this._sportMuscleLoad(a.otherSports);
             for (const dayIdx of a.otherSportsDays) {
                 if (!plan[dayIdx]) plan[dayIdx] = [];
-                // Only add if not already a training day
                 if (plan[dayIdx].length === 0) {
                     plan[dayIdx].push({
                         name: sportName,
@@ -681,6 +704,13 @@ export const trainingGeneratorMixin = () => ({
                         _isOtherSport: true
                     });
                     dayMetas.push({ dayIndex: dayIdx, label: sportName, estimatedTime: 0, isOtherSport: true });
+                }
+                // Issue 5: Sport-Muskeln in Recovery-Tracking eintragen
+                const sportMuscles = new Set(Object.keys(sportLoad).filter(m => sportLoad[m] >= 0.5));
+                if (sportMuscles.size > 0) {
+                    weeklyMuscleSchedule[dayIdx] = weeklyMuscleSchedule[dayIdx]
+                        ? new Set([...weeklyMuscleSchedule[dayIdx], ...sportMuscles])
+                        : sportMuscles;
                 }
             }
         }
@@ -884,6 +914,21 @@ export const trainingGeneratorMixin = () => ({
      */
     _remainingWeeklyBudget(muscle, weeklyBudget, weeklyUsed) {
         return Math.max(0, (weeklyBudget[muscle] || 0) - (weeklyUsed[muscle] || 0));
+    },
+
+    /**
+     * Ermittelt Muskelbelastungs-Profil fuer eine Sportart.
+     * Matched den Sport-Namen fuzzy gegen SPORT_MUSCLE_LOAD Keys.
+     * @param {string} sportName - Name der Sportart (z.B. "Fussball", "Swimming")
+     * @returns {Object} Map: { muscle: loadFactor 0-1 } oder {} bei unbekanntem Sport
+     */
+    _sportMuscleLoad(sportName) {
+        if (!sportName) return {};
+        const normalized = sportName.toLowerCase();
+        for (const [key, profile] of Object.entries(SPORT_MUSCLE_LOAD)) {
+            if (normalized.includes(key)) return { ...profile };
+        }
+        return {};
     },
 
     _applyMuscleFocus(template, focus) {

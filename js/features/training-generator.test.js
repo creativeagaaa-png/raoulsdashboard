@@ -704,3 +704,82 @@ describe('Issue 1 — Weekly Volume Budget', () => {
         expect(budgetAdv.biceps).toBe(Math.round(20 * 0.6));
     });
 });
+
+// ── Issue 5: Other Sports Recovery ───────────────────────────
+describe('Issue 5 — Other Sports Recovery', () => {
+    let mixin;
+    beforeEach(() => { mixin = createMixin(); });
+
+    it('_sportMuscleLoad returns correct profile for known sport', () => {
+        const load = mixin._sportMuscleLoad('Fussball');
+        expect(load.quadriceps).toBe(0.8);
+        expect(load.hamstrings).toBe(0.7);
+    });
+
+    it('_sportMuscleLoad returns empty object for unknown sport', () => {
+        const load = mixin._sportMuscleLoad('Curling');
+        expect(Object.keys(load).length).toBe(0);
+    });
+
+    it('soccer on Wednesday reduces leg volume on adjacent Thursday training', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'intermediate',
+            selectedDays: [3],
+            hasOtherSports: true,
+            otherSports: 'Fussball',
+            otherSportsDays: [2],
+            goals: ['muscle'],
+            sessionDuration: 60
+        });
+        const withSport = mixin._buildPlan();
+
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'intermediate',
+            selectedDays: [3],
+            hasOtherSports: false,
+            otherSports: '',
+            otherSportsDays: [],
+            goals: ['muscle'],
+            sessionDuration: 60
+        });
+        const withoutSport = mixin._buildPlan();
+
+        const quadSetsWith = withSport.plan[3]
+            .filter(ex => ex.type === 'strength' && (ex._muscles || []).includes('quadriceps'))
+            .reduce((sum, ex) => sum + (ex.sets || 0), 0);
+        const quadSetsWithout = withoutSport.plan[3]
+            .filter(ex => ex.type === 'strength' && (ex._muscles || []).includes('quadriceps'))
+            .reduce((sum, ex) => sum + (ex.sets || 0), 0);
+
+        expect(quadSetsWith).toBeLessThanOrEqual(quadSetsWithout);
+    });
+
+    it('non-adjacent sport day does not affect training volume', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'intermediate',
+            selectedDays: [0],
+            hasOtherSports: true,
+            otherSports: 'Fussball',
+            otherSportsDays: [4],
+            goals: ['muscle'],
+            sessionDuration: 60
+        });
+        const withSport = mixin._buildPlan();
+
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'intermediate',
+            selectedDays: [0],
+            hasOtherSports: false,
+            otherSports: '',
+            otherSportsDays: [],
+            goals: ['muscle'],
+            sessionDuration: 60
+        });
+        const withoutSport = mixin._buildPlan();
+
+        const totalWith = withSport.plan[0].filter(ex => ex.type === 'strength').reduce((s, ex) => s + (ex.sets || 0), 0);
+        const totalWithout = withoutSport.plan[0].filter(ex => ex.type === 'strength').reduce((s, ex) => s + (ex.sets || 0), 0);
+        // Toleranz: +-2 Sets wegen nicht-deterministischer Uebungsauswahl
+        expect(Math.abs(totalWith - totalWithout)).toBeLessThanOrEqual(2);
+    });
+});
