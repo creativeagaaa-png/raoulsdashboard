@@ -134,12 +134,12 @@
                         <i class="ph-bold ph-sparkle text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-white" x-text="generatorStep <= 9 ? 'Plan erstellen' : 'Dein Trainingsplan'"></h2>
+                        <h2 class="text-lg font-bold text-white" x-text="generatorStep <= 10 ? 'Plan erstellen' : 'Dein Trainingsplan'"></h2>
                         <p class="text-[10px] text-muted uppercase tracking-widest font-mono"
-                           x-show="generatorStep <= 9"
-                           x-text="'Schritt ' + generatorStep + ' von 9'"></p>
+                           x-show="generatorStep <= 10"
+                           x-text="'Schritt ' + generatorStep + ' von 10'"></p>
                         <p class="text-[10px] text-muted uppercase tracking-widest font-mono"
-                           x-show="generatorStep === 10"
+                           x-show="generatorStep === 11"
                            x-text="generatorMeta ? generatorMeta.templateName + ' — Vorschau' : 'Vorschau'"></p>
                     </div>
                 </div>
@@ -150,9 +150,9 @@
             </div>
 
             <!-- Progress Bar -->
-            <div x-show="generatorStep <= 9" class="mt-4 h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div x-show="generatorStep <= 10" class="mt-4 h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div class="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
-                     :style="'width: ' + (generatorStep / 9 * 100) + '%'"></div>
+                     :style="'width: ' + (generatorStep / 10 * 100) + '%'"></div>
             </div>
         </div>
 
@@ -246,8 +246,47 @@
                 </button>
             </div>
 
-            <!-- ── STEP 3: Trainingsziel ───────────────── -->
+            <!-- ── STEP 3: Training Level ──────────────── -->
             <div x-show="generatorStep === 3 && !generatorLoading"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-x-4"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 class="space-y-4">
+                <h3 class="text-sm font-bold text-white">Wie lange trainierst du schon?</h3>
+                <p class="text-[11px] text-muted">Hilft uns Volumen und Intensitaet anzupassen</p>
+                <div class="grid grid-cols-3 gap-2.5">
+                    <button type="button" @click="generatorAnswers.trainingLevel = 'beginner'"
+                            class="p-3.5 rounded-xl border transition-all duration-200 text-center active:scale-[0.97]"
+                            :class="generatorAnswers.trainingLevel === 'beginner'
+                                ? 'bg-blue-500/10 border-blue-500/25 text-blue-400'
+                                : 'bg-white/5 border-white/5 text-muted hover:border-white/10'">
+                        <i class="ph-bold ph-plant text-lg"></i>
+                        <p class="text-xs font-bold mt-1.5">Anfaenger</p>
+                        <p class="text-[10px] text-muted mt-1">0–12 Monate</p>
+                    </button>
+                    <button type="button" @click="generatorAnswers.trainingLevel = 'intermediate'"
+                            class="p-3.5 rounded-xl border transition-all duration-200 text-center active:scale-[0.97]"
+                            :class="generatorAnswers.trainingLevel === 'intermediate'
+                                ? 'bg-blue-500/10 border-blue-500/25 text-blue-400'
+                                : 'bg-white/5 border-white/5 text-muted hover:border-white/10'">
+                        <i class="ph-bold ph-barbell text-lg"></i>
+                        <p class="text-xs font-bold mt-1.5">Fortgeschritten</p>
+                        <p class="text-[10px] text-muted mt-1">1–3 Jahre</p>
+                    </button>
+                    <button type="button" @click="generatorAnswers.trainingLevel = 'advanced'"
+                            class="p-3.5 rounded-xl border transition-all duration-200 text-center active:scale-[0.97]"
+                            :class="generatorAnswers.trainingLevel === 'advanced'
+                                ? 'bg-blue-500/10 border-blue-500/25 text-blue-400'
+                                : 'bg-white/5 border-white/5 text-muted hover:border-white/10'">
+                        <i class="ph-bold ph-trophy text-lg"></i>
+                        <p class="text-xs font-bold mt-1.5">Profi</p>
+                        <p class="text-[10px] text-muted mt-1">3+ Jahre</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── STEP 4: Trainingsziel ───────────────── -->
+            <div x-show="generatorStep === 4 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -290,8 +329,8 @@
                 </div>
             </div>
 
-            <!-- ── STEP 4: Muskel-Schwerpunkt ──────────── -->
-            <div x-show="generatorStep === 4 && !generatorLoading"
+            <!-- ── STEP 5: Muskel-Schwerpunkt ──────────── -->
+            <div x-show="generatorStep === 5 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -342,8 +381,8 @@
                 </button>
             </div>
 
-            <!-- ── STEP 5: Andere Sportarten ───────────── -->
-            <div x-show="generatorStep === 5 && !generatorLoading"
+            <!-- ── STEP 6: Andere Sportarten ───────────── -->
+            <div x-show="generatorStep === 6 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -399,8 +438,8 @@
                 </div>
             </div>
 
-            <!-- ── STEP 6: Zeit pro Training ───────────── -->
-            <div x-show="generatorStep === 6 && !generatorLoading"
+            <!-- ── STEP 7: Zeit pro Training ───────────── -->
+            <div x-show="generatorStep === 7 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -420,8 +459,8 @@
                 </template>
             </div>
 
-            <!-- ── STEP 7: Verletzungen (Chips + Text) ────── -->
-            <div x-show="generatorStep === 7 && !generatorLoading"
+            <!-- ── STEP 8: Verletzungen (Chips + Text) ────── -->
+            <div x-show="generatorStep === 8 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -464,8 +503,8 @@
                 </div>
             </div>
 
-            <!-- ── STEP 8: Praeferenzen (Strukturiert) ────── -->
-            <div x-show="generatorStep === 8 && !generatorLoading"
+            <!-- ── STEP 9: Praeferenzen (Strukturiert) ────── -->
+            <div x-show="generatorStep === 9 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -538,8 +577,8 @@
                 </div>
             </div>
 
-            <!-- ── STEP 9: Zusammenfassung ───────────────── -->
-            <div x-show="generatorStep === 9 && !generatorLoading"
+            <!-- ── STEP 10: Zusammenfassung ──────────────── -->
+            <div x-show="generatorStep === 10 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -563,48 +602,55 @@
                         </div>
                     </button>
                     <button type="button" @click="generatorStep = 3" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
+                        <span class="text-[11px] text-muted">Training Level</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().level"></span>
+                            <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
+                        </div>
+                    </button>
+                    <button type="button" @click="generatorStep = 4" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Ziele</span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().goals"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
-                    <button type="button" @click="generatorStep = 4" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
+                    <button type="button" @click="generatorStep = 5" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Schwerpunkt</span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().focus"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
-                    <button type="button" @click="generatorStep = 5" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
+                    <button type="button" @click="generatorStep = 6" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Andere Sportart</span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().otherSports"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
-                    <button type="button" @click="generatorStep = 6" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
+                    <button type="button" @click="generatorStep = 7" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Trainingsdauer</span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().duration"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
-                    <button type="button" @click="generatorStep = 7" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
+                    <button type="button" @click="generatorStep = 8" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Verletzungen</span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-white" x-text="generatorSummaryLabels().injuries"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
-                    <button x-show="generatorAnswers.preferredEquipment.length > 0" type="button" @click="generatorStep = 8" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
+                    <button x-show="generatorAnswers.preferredEquipment.length > 0" type="button" @click="generatorStep = 9" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Bevorzugtes Equipment</span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-emerald-400" x-text="generatorSummaryLabels().preferredEquip"></span>
                             <i class="ph ph-pencil-simple text-[10px] text-muted"></i>
                         </div>
                     </button>
-                    <button x-show="generatorAnswers.avoidedEquipment.length > 0" type="button" @click="generatorStep = 8" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
+                    <button x-show="generatorAnswers.avoidedEquipment.length > 0" type="button" @click="generatorStep = 9" class="w-full flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/8 transition-all active:scale-[0.98] text-left">
                         <span class="text-[11px] text-muted">Vermiedenes Equipment</span>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-rose-400" x-text="generatorSummaryLabels().avoidedEquip"></span>
@@ -623,8 +669,8 @@
                 </div>
             </div>
 
-            <!-- ── STEP 10: PLAN PREVIEW ────────────────── -->
-            <div x-show="generatorStep === 10 && !generatorLoading"
+            <!-- ── STEP 11: PLAN PREVIEW ────────────────── -->
+            <div x-show="generatorStep === 11 && !generatorLoading"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 translate-x-4"
                  x-transition:enter-end="opacity-100 translate-x-0"
@@ -834,8 +880,8 @@
 
         <!-- Footer -->
         <div class="p-6 border-t border-(--glass-border) bg-surface z-20 shrink-0">
-            <!-- Wizard Navigation (Steps 1-9) -->
-            <div x-show="generatorStep >= 1 && generatorStep <= 9 && !generatorLoading" class="flex gap-3">
+            <!-- Wizard Navigation (Steps 1-10) -->
+            <div x-show="generatorStep >= 1 && generatorStep <= 10 && !generatorLoading" class="flex gap-3">
                 <button x-show="generatorStep === 1"
                         type="button" @click="backToSelection()"
                         class="flex-1 py-3.5 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
@@ -846,20 +892,20 @@
                         class="flex-1 py-3.5 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">
                     Zurueck
                 </button>
-                <button x-show="generatorStep < 9"
+                <button x-show="generatorStep < 10"
                         type="button" @click="generatorNextStep()"
                         class="flex-1 py-3.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-gray-200 active:scale-[0.97] transition-all shadow-lg shadow-white/5">
                     Weiter
                 </button>
-                <button x-show="generatorStep === 9"
+                <button x-show="generatorStep === 10"
                         type="button" @click="generatePlan()"
                         class="flex-1 py-3.5 rounded-xl bg-blue-500 text-white font-bold text-xs hover:bg-blue-600 active:scale-[0.97] transition-all shadow-lg shadow-blue-500/20">
                     <i class="ph-bold ph-sparkle text-xs mr-1"></i> Plan generieren
                 </button>
             </div>
 
-            <!-- Preview Actions (Step 10) -->
-            <div x-show="generatorStep === 10 && !generatorLoading" class="space-y-2.5">
+            <!-- Preview Actions (Step 11) -->
+            <div x-show="generatorStep === 11 && !generatorLoading" class="space-y-2.5">
                 <div class="flex gap-3">
                     <button type="button" @click="regeneratePlan()"
                             class="flex-1 py-3.5 rounded-xl border border-white/5 text-muted font-bold text-xs hover:bg-white/5 active:scale-[0.97] transition-all">

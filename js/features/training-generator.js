@@ -167,6 +167,7 @@ export const trainingGeneratorMixin = () => ({
     generatorSummaryLabels() {
         const a = this.generatorAnswers;
         const equipLabels = { full_gym: 'Fitnessstudio', home_gym: 'Home-Gym', bodyweight: 'Bodyweight' };
+        const levelLabels = { beginner: 'Anfaenger', intermediate: 'Fortgeschritten', advanced: 'Profi' };
         const goalLabels = { muscle: 'Muskelaufbau', fat_loss: 'Fettabbau', endurance: 'Ausdauer', general: 'Allg. Fitness' };
         const focusLabels = { upper: 'Nur Oberkoerper', lower: 'Nur Unterkoerper', balanced: 'Ausgewogen' };
         const durationLabels = { 30: '30 Minuten', 45: '45 Minuten', 60: '60 Minuten', 90: '90+ Minuten' };
@@ -185,6 +186,7 @@ export const trainingGeneratorMixin = () => ({
             days: dayNames || '–',
             daysCount: a.selectedDays.length,
             equipment: equipLabels[a.equipment] || '–',
+            level: levelLabels[a.trainingLevel] || '–',
             goals: a.goals.map(g => goalLabels[g] || g).join(', ') || '–',
             focus: focusLabels[a.muscleFocus] || '–',
             otherSports: otherSportsLabel,
@@ -278,11 +280,12 @@ export const trainingGeneratorMixin = () => ({
         // Validation per step
         if (this.generatorStep === 1 && a.selectedDays.length === 0) return;
         if (this.generatorStep === 2 && !a.equipment) return;
-        if (this.generatorStep === 3 && a.goals.length === 0) return;
-        if (this.generatorStep === 4 && !a.muscleFocus) return;
-        if (this.generatorStep === 6 && !a.sessionDuration) return;
+        if (this.generatorStep === 3 && !a.trainingLevel) return;
+        if (this.generatorStep === 4 && a.goals.length === 0) return;
+        if (this.generatorStep === 5 && !a.muscleFocus) return;
+        if (this.generatorStep === 7 && !a.sessionDuration) return;
 
-        if (this.generatorStep < 9) {
+        if (this.generatorStep < 10) {
             this.generatorStep++;
         }
     },
@@ -337,7 +340,7 @@ export const trainingGeneratorMixin = () => ({
             await this._enrichWithHistory(result.plan);
             this.generatedPlan = result.plan;
             this.generatorMeta = result.meta;
-            this.generatorStep = 10; // Preview
+            this.generatorStep = 11; // Preview
         } catch (e) {
             console.error('Plan generation failed:', e);
             this.showToast('Fehler bei der Plan-Erstellung. Bitte versuche es erneut.');
