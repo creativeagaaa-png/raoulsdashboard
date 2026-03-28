@@ -7,6 +7,7 @@ import { calculateBMI, calculateTrend, calculateOracle, getBMIRanges } from './u
 import * as Supa from './store/supabase.js';
 import { settingsMixin } from './store/settings.js';
 import { trainingMixin } from './features/training.js';
+import { trainingGeneratorMixin } from './features/training-generator.js';
 import { workoutMixin } from './features/workout.js';
 import { restTimerMixin } from './features/rest-timer.js';
 import { caloriesMixin } from './features/calories.js';
@@ -21,6 +22,7 @@ import { exportWeightCSV } from './utils/export.js';
 import bmiDetailModal from '../templates/modals/bmi-detail.html?raw';
 import settingsModal from '../templates/modals/settings.html?raw';
 import trainingModal from '../templates/modals/training.html?raw';
+import trainingGeneratorModal from '../templates/modals/training-generator.html?raw';
 import profileModal from '../templates/modals/profile.html?raw';
 import weightEntryModal from '../templates/modals/weight-entry.html?raw';
 import confirmModal from '../templates/modals/confirm.html?raw';
@@ -44,6 +46,7 @@ if (modalsContainer) {
         bmiDetailModal,
         settingsModal,
         trainingModal,
+        trainingGeneratorModal,
         profileModal,
         weightEntryModal,
         confirmModal,
@@ -172,6 +175,7 @@ function app() {
         // --- MIXINS ---
         ...settingsMixin(),
         ...trainingMixin(),
+        ...trainingGeneratorMixin(),
         ...workoutMixin(),
         ...restTimerMixin(),
         ...caloriesMixin(),

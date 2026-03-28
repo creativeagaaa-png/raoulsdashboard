@@ -404,7 +404,7 @@
 
                 <!-- Bearbeiten Button -->
                 <div class="text-center">
-                    <button @click="openTraining()" class="inline-flex items-center gap-1.5 text-muted text-xs px-5 py-2.5 rounded-xl border border-white/[0.06] hover:bg-white/5 transition-all cursor-pointer">
+                    <button @click="openTrainingSelection()" class="inline-flex items-center gap-1.5 text-muted text-xs px-5 py-2.5 rounded-xl border border-white/[0.06] hover:bg-white/5 transition-all cursor-pointer">
                         <i class="ph ph-pencil-simple text-sm"></i> Trainingsplan bearbeiten
                     </button>
                 </div>
@@ -866,7 +866,7 @@
                     <i class="ph ph-caret-right text-sm text-white/20"></i>
                 </button>
 
-                <button @click="openTraining(); closeProfileDropdown()" class="quick-menu-item group">
+                <button @click="openTrainingSelection(); closeProfileDropdown()" class="quick-menu-item group">
                     <div class="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0 relative group-active:scale-90 transition-transform">
                         <i class="ph-bold ph-barbell text-lg text-blue-400"></i>
                         <span x-show="!isRestDay" class="absolute -top-1 -right-1 w-3 h-3 bg-[#0a84ff] rounded-full border-2 border-surface animate-pulse" aria-hidden="true"></span>
