@@ -642,6 +642,40 @@ export const exercises = [
         avoidWhenInjured: ['schulter'],
         priority: 3
     },
+    {
+        id: 'front-raise-dumbbell',
+        name: 'Frontheben (Kurzhanteln)',
+        type: 'strength',
+        muscleGroups: ['shoulders', 'front_delts'],
+        primaryMuscle: 'shoulders',
+        equipment: 'dumbbell',
+        difficulty: 'beginner',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter'],
+        priority: 3
+    },
+    {
+        id: 'front-raise-cable',
+        name: 'Frontheben (Kabel)',
+        type: 'strength',
+        muscleGroups: ['shoulders', 'front_delts'],
+        primaryMuscle: 'shoulders',
+        equipment: 'cable',
+        difficulty: 'beginner',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['push'],
+        avoidWhenInjured: ['schulter'],
+        priority: 3
+    },
 
     // ── BICEPS ──────────────────────────────────────────
     {
@@ -1194,6 +1228,23 @@ export const exercises = [
         avoidWhenInjured: ['ruecken'],
         priority: 2
     },
+    {
+        id: 'sliding-leg-curl',
+        name: 'Sliding Leg Curls',
+        type: 'strength',
+        muscleGroups: ['hamstrings'],
+        primaryMuscle: 'hamstrings',
+        equipment: 'bodyweight',
+        difficulty: 'intermediate',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '8-12',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['knie'],
+        priority: 3
+    },
 
     // ── GLUTES ──────────────────────────────────────────
     {
@@ -1353,6 +1404,40 @@ export const exercises = [
         compound: false,
         defaultSets: 3,
         defaultReps: '15-25',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['wade', 'achilles'],
+        priority: 2
+    },
+    {
+        id: 'dumbbell-calf-raise',
+        name: 'Wadenheben (Kurzhanteln)',
+        type: 'strength',
+        muscleGroups: ['calves'],
+        primaryMuscle: 'calves',
+        equipment: 'dumbbell',
+        difficulty: 'beginner',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['legs'],
+        avoidWhenInjured: ['wade', 'achilles'],
+        priority: 3
+    },
+    {
+        id: 'band-calf-raise',
+        name: 'Wadenheben (Band)',
+        type: 'strength',
+        muscleGroups: ['calves'],
+        primaryMuscle: 'calves',
+        equipment: 'band',
+        difficulty: 'beginner',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '15-20',
         defaultWeight: 0,
         tags: ['legs'],
         avoidWhenInjured: ['wade', 'achilles'],
@@ -1601,6 +1686,23 @@ export const exercises = [
         tags: ['pull'],
         avoidWhenInjured: ['ruecken', 'handgelenk'],
         priority: 4
+    },
+    {
+        id: 'cable-shrugs',
+        name: 'Schulterheben (Kabel)',
+        type: 'strength',
+        muscleGroups: ['traps'],
+        primaryMuscle: 'traps',
+        equipment: 'cable',
+        difficulty: 'beginner',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['pull'],
+        avoidWhenInjured: ['schulter', 'nacken'],
+        priority: 3
     },
 
     // ── FOREARMS ────────────────────────────────────────
@@ -1947,5 +2049,39 @@ export const exercises = [
         tags: ['pull', 'core'],
         avoidWhenInjured: ['ruecken'],
         priority: 2
+    },
+    {
+        id: 'superman',
+        name: 'Superman',
+        type: 'strength',
+        muscleGroups: ['lower_back', 'glutes'],
+        primaryMuscle: 'lower_back',
+        equipment: 'bodyweight',
+        difficulty: 'beginner',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '12-15',
+        defaultWeight: 0,
+        tags: ['core'],
+        avoidWhenInjured: ['ruecken'],
+        priority: 3
+    },
+    {
+        id: 'bird-dog',
+        name: 'Bird-Dog',
+        type: 'strength',
+        muscleGroups: ['lower_back', 'abs', 'glutes'],
+        primaryMuscle: 'lower_back',
+        equipment: 'bodyweight',
+        difficulty: 'beginner',
+        compound: false,
+        movementPattern: 'isolation',
+        defaultSets: 3,
+        defaultReps: '10-12',
+        defaultWeight: 0,
+        tags: ['core'],
+        avoidWhenInjured: ['ruecken'],
+        priority: 3
     }
 ];
