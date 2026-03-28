@@ -657,7 +657,7 @@ export const trainingGeneratorMixin = () => ({
             dayExercises.push(...sorted);
 
             // Estimated time
-            const estimatedTime = this._estimateTime(dayExercises, primaryGoal);
+            const estimatedTime = Math.round(this._estimateTime(dayExercises, primaryGoal));
 
             // Superset pairing for short sessions (≤30 min)
             if (a.sessionDuration <= 30) {
