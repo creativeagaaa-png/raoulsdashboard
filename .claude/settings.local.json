@@ -82,7 +82,9 @@
       "Bash(find /Users/raoulagachi/Codes/AGAsDashboard/supabase -type f -name *.ts -o -name *.js -o -name *.sql)",
       "Bash(find /Users/raoulagachi/Codes/AGAsDashboard/docs -type f -name *.md)",
       "Bash(/tmp/final_report.txt:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(file /Users/raoulagachi/Codes/AGAsDashboard/dist/assets/*.js)",
+      "Bash(ls -lah /Users/raoulagachi/Codes/AGAsDashboard/dist/assets/index-*)"
     ]
   }
 }

@@ -451,3 +451,60 @@ export async function deletePushSubscription() {
         .eq('user_id', userId);
     if (error) throw error;
 }
+
+// ── Avatar / Profilbild ──────────────────────────────
+
+export async function uploadAvatar(file) {
+    const userId = await requireUserId();
+    const ext = file.name.split('.').pop().toLowerCase();
+    const filePath = `${userId}/avatar.${ext}`;
+
+    // Alte Avatare loeschen (falls Dateiendung gewechselt)
+    const { data: existing } = await requireDb().storage
+        .from('avatars')
+        .list(userId);
+    if (existing && existing.length > 0) {
+        const toDelete = existing.map(f => `${userId}/${f.name}`);
+        await requireDb().storage.from('avatars').remove(toDelete);
+    }
+
+    // Neues Bild hochladen
+    const { error: uploadErr } = await requireDb().storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+    if (uploadErr) throw uploadErr;
+
+    // Public URL generieren
+    const { data: urlData } = requireDb().storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+    const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+
+    // URL in Settings speichern
+    await requireDb()
+        .from('settings')
+        .update({ avatar_url: avatarUrl })
+        .eq('user_id', userId);
+
+    return avatarUrl;
+}
+
+export async function deleteAvatar() {
+    const userId = await requireUserId();
+
+    // Dateien im User-Ordner loeschen
+    const { data: existing } = await requireDb().storage
+        .from('avatars')
+        .list(userId);
+    if (existing && existing.length > 0) {
+        const toDelete = existing.map(f => `${userId}/${f.name}`);
+        await requireDb().storage.from('avatars').remove(toDelete);
+    }
+
+    // URL aus Settings entfernen
+    await requireDb()
+        .from('settings')
+        .update({ avatar_url: null })
+        .eq('user_id', userId);
+}

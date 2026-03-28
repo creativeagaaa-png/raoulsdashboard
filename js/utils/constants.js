@@ -26,6 +26,61 @@ export const ACTIVITY_LEVELS = {
     extra_active:      { factor: 1.9,   label: 'Extrem aktiv',  description: 'Sehr intensiv, körperliche Arbeit' }
 };
 
+// ── German Labels ─────────────────────────────────
+export const EQUIPMENT_LABELS = {
+    barbell: 'Langhantel',
+    dumbbell: 'Kurzhantel',
+    machine: 'Maschine',
+    cable: 'Kabelzug',
+    bodyweight: 'Koerpergewicht',
+    band: 'Widerstandsband'
+};
+
+export const MUSCLE_LABELS = {
+    chest: 'Brust',
+    back: 'Ruecken',
+    shoulders: 'Schultern',
+    front_delts: 'Vordere Schulter',
+    side_delts: 'Seitliche Schulter',
+    rear_delts: 'Hintere Schulter',
+    biceps: 'Bizeps',
+    triceps: 'Trizeps',
+    quadriceps: 'Oberschenkel (vorne)',
+    hamstrings: 'Oberschenkel (hinten)',
+    glutes: 'Gesaess',
+    calves: 'Waden',
+    abs: 'Bauch',
+    forearms: 'Unterarme',
+    traps: 'Nacken/Trapez',
+    lower_back: 'Unterer Ruecken'
+};
+
+// ── Injury Regions (Chips) ─────────────────────────
+export const INJURY_REGIONS = [
+    { id: 'schulter', label: 'Schulter' },
+    { id: 'knie', label: 'Knie' },
+    { id: 'ruecken', label: 'Ruecken' },
+    { id: 'handgelenk', label: 'Handgelenk' },
+    { id: 'nacken', label: 'Nacken' },
+    { id: 'hufte', label: 'Huefte' },
+    { id: 'ellbogen', label: 'Ellbogen' }
+];
+
+export const INJURY_KEYWORD_MAP = {
+    schulter: ['schulter', 'rotatorenmanschette', 'deltoid'],
+    knie: ['knie', 'meniskus', 'kreuzband', 'patella'],
+    ruecken: ['ruecken', 'bandscheibe', 'lower_back', 'wirbel', 'ischias', 'lumbal'],
+    handgelenk: ['handgelenk', 'hand', 'carpaltunnel'],
+    nacken: ['nacken', 'hws', 'cervical'],
+    hufte: ['hufte', 'huefte', 'leiste', 'adduktor'],
+    ellbogen: ['ellbogen', 'tennisarm', 'golferarm']
+};
+
+// ── Muscle Focus Groups ────────────────────────────
+export const UPPER_MUSCLES = ['chest', 'back', 'shoulders', 'front_delts', 'side_delts', 'rear_delts', 'biceps', 'triceps', 'traps', 'forearms'];
+export const LOWER_MUSCLES = ['quadriceps', 'hamstrings', 'glutes', 'calves'];
+export const CORE_MUSCLES = ['abs', 'lower_back'];
+
 export const CALORIE_CONSTANTS = {
     KCAL_PER_KG_FAT: 7700,
     MIN_CALORIES_MALE: 1500,

@@ -13,6 +13,7 @@ export const settingsMixin = () => ({
     profileOpen: false,
     profileForm: { ...DEFAULT_PROFILE },
     profileDirty: false,
+    avatarUploading: false,
 
     async saveSettings() {
         if (!this._debouncedSaveSettings) {
@@ -112,5 +113,51 @@ export const settingsMixin = () => ({
         });
     },
 
-    markProfileDirty() { this.profileDirty = true; }
+    markProfileDirty() { this.profileDirty = true; },
+
+    // ── Avatar / Profilbild ──────────────────────────
+    async handleAvatarUpload(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validierung
+        const maxSize = 2 * 1024 * 1024; // 2 MB
+        if (file.size > maxSize) {
+            this.showToast('Bild ist zu gross (max. 2 MB)');
+            return;
+        }
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowed.includes(file.type)) {
+            this.showToast('Nur JPG, PNG oder WebP erlaubt');
+            return;
+        }
+
+        this.avatarUploading = true;
+        try {
+            const url = await Supa.uploadAvatar(file);
+            this.avatarUrl = url;
+            this.showToast('Profilbild gespeichert');
+        } catch (e) {
+            console.error('Avatar upload failed:', e);
+            this.showToast('Profilbild konnte nicht hochgeladen werden');
+        } finally {
+            this.avatarUploading = false;
+            // Reset file input
+            event.target.value = '';
+        }
+    },
+
+    async removeAvatar() {
+        this.avatarUploading = true;
+        try {
+            await Supa.deleteAvatar();
+            this.avatarUrl = '';
+            this.showToast('Profilbild entfernt');
+        } catch (e) {
+            console.error('Avatar delete failed:', e);
+            this.showToast('Profilbild konnte nicht entfernt werden');
+        } finally {
+            this.avatarUploading = false;
+        }
+    }
 });

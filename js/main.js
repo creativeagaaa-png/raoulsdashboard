@@ -92,8 +92,9 @@ function app() {
         authAnimationPending: false,
         dottedSurface: null,
 
-        // Display Name
+        // Display Name & Avatar
         displayName: '',
+        avatarUrl: '',
 
         // Onboarding
         onboardingOpen: false,
@@ -772,6 +773,7 @@ function app() {
                     this.weeklyGoalRate = settings.weekly_goal_rate != null ? Number(settings.weekly_goal_rate) : 0;
                     this.checklistItems = settings.checklist_items || [...DEFAULT_PROFILE.checklistItems];
                     this.displayName = settings.display_name || '';
+                    this.avatarUrl = settings.avatar_url || '';
                 }
 
                 // Onboarding check: no settings = new user, no display_name = existing user

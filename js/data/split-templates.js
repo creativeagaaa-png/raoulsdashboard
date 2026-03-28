@@ -8,6 +8,29 @@ export const REPS_SCHEMES = {
 };
 
 export const splitTemplates = [
+    // ── 1 TAG ───────────────────────────────────────
+    {
+        id: 'full-body-1',
+        name: 'Ganzkoerper Express 1x',
+        daysPerWeek: 1,
+        suitableFor: ['beginner', 'intermediate'],
+        goals: ['general', 'fat_loss', 'muscle'],
+        structure: [
+            {
+                label: 'Ganzkoerper',
+                muscleTargets: [
+                    { muscle: 'chest', compound: 1, isolation: 0 },
+                    { muscle: 'back', compound: 1, isolation: 0 },
+                    { muscle: 'quadriceps', compound: 1, isolation: 0 },
+                    { muscle: 'shoulders', compound: 0, isolation: 1 },
+                    { muscle: 'biceps', compound: 0, isolation: 1 },
+                    { muscle: 'triceps', compound: 0, isolation: 1 },
+                    { muscle: 'abs', compound: 0, isolation: 1 }
+                ]
+            }
+        ]
+    },
+
     // ── 2 TAGE ──────────────────────────────────────
     {
         id: 'full-body-2',
@@ -454,6 +477,73 @@ export const splitTemplates = [
                 muscleTargets: [
                     { muscle: 'hamstrings', compound: 1, isolation: 1 },
                     { muscle: 'quadriceps', compound: 1, isolation: 1 },
+                    { muscle: 'glutes', compound: 1, isolation: 0 },
+                    { muscle: 'calves', compound: 0, isolation: 1 }
+                ]
+            }
+        ]
+    },
+
+    // ── 7 TAGE ──────────────────────────────────────
+    {
+        id: 'ppl-rest-ppl-7',
+        name: 'PPL 2x + Active Recovery 7x',
+        daysPerWeek: 7,
+        suitableFor: ['advanced'],
+        goals: ['muscle'],
+        structure: [
+            {
+                label: 'Push A',
+                muscleTargets: [
+                    { muscle: 'chest', compound: 1, isolation: 1 },
+                    { muscle: 'shoulders', compound: 1, isolation: 1 },
+                    { muscle: 'triceps', compound: 0, isolation: 1 }
+                ]
+            },
+            {
+                label: 'Pull A',
+                muscleTargets: [
+                    { muscle: 'back', compound: 1, isolation: 1 },
+                    { muscle: 'biceps', compound: 0, isolation: 1 },
+                    { muscle: 'rear_delts', compound: 0, isolation: 1 }
+                ]
+            },
+            {
+                label: 'Legs A',
+                muscleTargets: [
+                    { muscle: 'quadriceps', compound: 1, isolation: 1 },
+                    { muscle: 'hamstrings', compound: 1, isolation: 0 },
+                    { muscle: 'calves', compound: 0, isolation: 1 }
+                ]
+            },
+            {
+                label: 'Active Recovery',
+                muscleTargets: [
+                    { muscle: 'abs', compound: 0, isolation: 2 },
+                    { muscle: 'lower_back', compound: 0, isolation: 1 }
+                ]
+            },
+            {
+                label: 'Push B',
+                muscleTargets: [
+                    { muscle: 'shoulders', compound: 1, isolation: 1 },
+                    { muscle: 'chest', compound: 1, isolation: 1 },
+                    { muscle: 'triceps', compound: 0, isolation: 1 }
+                ]
+            },
+            {
+                label: 'Pull B',
+                muscleTargets: [
+                    { muscle: 'back', compound: 1, isolation: 1 },
+                    { muscle: 'biceps', compound: 0, isolation: 1 },
+                    { muscle: 'traps', compound: 0, isolation: 1 }
+                ]
+            },
+            {
+                label: 'Legs B',
+                muscleTargets: [
+                    { muscle: 'hamstrings', compound: 1, isolation: 1 },
+                    { muscle: 'quadriceps', compound: 1, isolation: 0 },
                     { muscle: 'glutes', compound: 1, isolation: 0 },
                     { muscle: 'calves', compound: 0, isolation: 1 }
                 ]
