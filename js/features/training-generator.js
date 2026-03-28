@@ -399,31 +399,118 @@ export const trainingGeneratorMixin = () => ({
             if (dayIndex === undefined) break;
 
             const dayExercises = [];
+            const dayUsedPatterns = new Set();
+            const daySetsPerMuscle = {};
+            // Reserve 2 slots for warmup + cooldown
+            const maxStrengthExercises = PHYSIO_CONSTRAINTS.MAX_EXERCISES_PER_SESSION - 2;
+            let strengthCount = 0;
 
             // Warm-up
+            const warmupMin = PHYSIO_CONSTRAINTS.WARMUP_MINUTES[a.sessionDuration] || 5;
             dayExercises.push({
                 name: 'Aufwaermen',
                 type: 'cardio',
-                duration: a.sessionDuration <= 30 ? '5 min' : '5-10 min',
+                duration: warmupMin + ' min',
                 note: 'Leichtes Cardio + dynamisches Stretching',
                 _isWarmup: true
             });
 
             for (const target of dayDef.muscleTargets) {
+                if (strengthCount >= maxStrengthExercises) break;
+
                 const equipmentUsedForMuscle = [];
 
                 const compounds = this._pickExercises(
-                    available, target.muscle, true, target.compound, usedExerciseIds, equipmentUsedForMuscle
+                    available, target.muscle, true, target.compound, usedExerciseIds, equipmentUsedForMuscle, dayUsedPatterns
                 );
                 compounds.forEach(ex => { if (ex.equipment) equipmentUsedForMuscle.push(ex.equipment); });
-                dayExercises.push(...compounds.map(ex => this._formatExercise(ex, primaryScheme, primaryGoal, true)));
+
+                for (const ex of compounds) {
+                    if (strengthCount >= maxStrengthExercises) break;
+                    const formatted = this._formatExercise(ex, primaryScheme, primaryGoal, true);
+
+                    // Volume cap check
+                    const muscles = formatted._muscles || [];
+                    let blocked = false;
+                    for (const m of muscles) {
+                        const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
+                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const current = daySetsPerMuscle[m] || 0;
+                        const remaining = cap - current;
+                        if (remaining < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (blocked) continue;
+
+                    // Cap sets if needed for any muscle
+                    let cappedSets = formatted.sets || 3;
+                    for (const m of muscles) {
+                        const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
+                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const current = daySetsPerMuscle[m] || 0;
+                        const remaining = cap - current;
+                        cappedSets = Math.min(cappedSets, remaining);
+                    }
+                    cappedSets = Math.max(cappedSets, PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE);
+                    formatted.sets = cappedSets;
+
+                    // Track volume
+                    for (const m of muscles) {
+                        daySetsPerMuscle[m] = (daySetsPerMuscle[m] || 0) + cappedSets;
+                    }
+
+                    dayExercises.push(formatted);
+                    strengthCount++;
+                }
+
+                if (strengthCount >= maxStrengthExercises) continue;
 
                 const isolations = this._pickExercises(
-                    available, target.muscle, false, target.isolation, usedExerciseIds, equipmentUsedForMuscle
+                    available, target.muscle, false, target.isolation, usedExerciseIds, equipmentUsedForMuscle, dayUsedPatterns
                 );
-                // Use secondary scheme for isolations if multi-goal
                 const isoScheme = secondaryScheme || primaryScheme;
-                dayExercises.push(...isolations.map(ex => this._formatExercise(ex, isoScheme, secondaryGoal || primaryGoal, false)));
+
+                for (const ex of isolations) {
+                    if (strengthCount >= maxStrengthExercises) break;
+                    const formatted = this._formatExercise(ex, isoScheme, secondaryGoal || primaryGoal, false);
+
+                    // Volume cap check
+                    const muscles = formatted._muscles || [];
+                    let blocked = false;
+                    for (const m of muscles) {
+                        const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
+                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const current = daySetsPerMuscle[m] || 0;
+                        const remaining = cap - current;
+                        if (remaining < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (blocked) continue;
+
+                    // Cap sets if needed
+                    let cappedSets = formatted.sets || 3;
+                    for (const m of muscles) {
+                        const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
+                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const current = daySetsPerMuscle[m] || 0;
+                        const remaining = cap - current;
+                        cappedSets = Math.min(cappedSets, remaining);
+                    }
+                    cappedSets = Math.max(cappedSets, PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE);
+                    formatted.sets = cappedSets;
+
+                    // Track volume
+                    for (const m of muscles) {
+                        daySetsPerMuscle[m] = (daySetsPerMuscle[m] || 0) + cappedSets;
+                    }
+
+                    dayExercises.push(formatted);
+                    strengthCount++;
+                }
             }
 
             // Cardio (separate tracking, allow repeats across days)
@@ -436,14 +523,62 @@ export const trainingGeneratorMixin = () => ({
             dayExercises.push({
                 name: 'Cooldown / Stretching',
                 type: 'cardio',
-                duration: '5 min',
+                duration: PHYSIO_CONSTRAINTS.COOLDOWN_MINUTES + ' min',
                 note: 'Statisches Dehnen der beanspruchten Muskelgruppen',
                 _isCooldown: true
             });
 
             // Time adjustment (exclude warmup/cooldown from adjustment)
             const adjustableExercises = dayExercises.filter(ex => !ex._isWarmup && !ex._isCooldown);
-            this._adjustForDuration(adjustableExercises, a.sessionDuration);
+            const adjustableMinutes = a.sessionDuration - warmupMin - PHYSIO_CONSTRAINTS.COOLDOWN_MINUTES;
+            this._adjustForDuration(adjustableExercises, adjustableMinutes);
+
+            // Sync back: remove exercises that _adjustForDuration spliced out
+            const adjustableSet = new Set(adjustableExercises);
+            for (let k = dayExercises.length - 1; k >= 0; k--) {
+                const ex = dayExercises[k];
+                if (!ex._isWarmup && !ex._isCooldown && (ex.type === 'strength' || ex.type === 'cardio' || ex.type === 'distance')) {
+                    if (!adjustableSet.has(ex)) {
+                        dayExercises.splice(k, 1);
+                    }
+                }
+            }
+
+            // Post-adjustment: re-enforce volume caps (duration boost may have pushed sets over)
+            for (const ex of dayExercises) {
+                if (ex.type !== 'strength' || !ex._muscles) continue;
+                for (const m of ex._muscles) {
+                    const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
+                    const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                    // Recalculate total for this muscle in this day
+                    let total = 0;
+                    for (const other of dayExercises) {
+                        if (other.type !== 'strength' || !other._muscles) continue;
+                        if (other._muscles.includes(m)) total += (other.sets || 0);
+                    }
+                    if (total > cap) {
+                        const excess = total - cap;
+                        ex.sets = Math.max(PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE, (ex.sets || 3) - excess);
+                    }
+                }
+            }
+            // Remove exercises that got capped below minimum
+            for (let k = dayExercises.length - 1; k >= 0; k--) {
+                if (dayExercises[k].type === 'strength' && (dayExercises[k].sets || 0) < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
+                    dayExercises.splice(k, 1);
+                }
+            }
+
+            // Post-sort: compounds before isolations, then reassemble
+            const warmup = dayExercises.filter(ex => ex._isWarmup);
+            const cooldown = dayExercises.filter(ex => ex._isCooldown);
+            const cardioEntries = dayExercises.filter(ex => !ex._isWarmup && !ex._isCooldown && (ex.type === 'cardio' || ex.type === 'distance'));
+            const strengthEntries = dayExercises.filter(ex => ex.type === 'strength');
+            const compoundEntries = strengthEntries.filter(ex => ex._compound);
+            const isolationEntries = strengthEntries.filter(ex => !ex._compound);
+            const sorted = [...warmup, ...compoundEntries, ...isolationEntries, ...cardioEntries, ...cooldown];
+            dayExercises.length = 0;
+            dayExercises.push(...sorted);
 
             // Estimated time
             const estimatedTime = this._estimateTime(dayExercises);
@@ -630,15 +765,34 @@ export const trainingGeneratorMixin = () => ({
         return a;
     },
 
-    _pickExercises(available, muscle, isCompound, count, usedIds, usedEquipmentForMuscle = null) {
+    _pickExercises(available, muscle, isCompound, count, usedIds, usedEquipmentForMuscle = null, usedPatterns = null) {
         if (count <= 0) return [];
 
         let candidates = available.filter(ex =>
-            (ex.primaryMuscle === muscle || ex.muscleGroups.includes(muscle)) &&
+            ex.primaryMuscle === muscle &&
             ex.compound === isCompound &&
             ex.type === 'strength' &&
             !usedIds.has(ex.id)
         );
+
+        // Fallback: try muscleGroups.includes if primaryMuscle match returned 0
+        if (candidates.length === 0) {
+            candidates = available.filter(ex =>
+                ex.muscleGroups.includes(muscle) &&
+                ex.compound === isCompound &&
+                ex.type === 'strength' &&
+                !usedIds.has(ex.id)
+            );
+        }
+
+        // Movement pattern dedup: filter out candidates whose pattern is already used
+        if (usedPatterns && isCompound) {
+            const filtered = candidates.filter(ex => {
+                const pattern = ex.movementPattern || 'isolation';
+                return pattern === 'isolation' || !usedPatterns.has(pattern);
+            });
+            if (filtered.length > 0) candidates = filtered;
+        }
 
         const byPriority = {};
         for (const ex of candidates) {
@@ -673,7 +827,13 @@ export const trainingGeneratorMixin = () => ({
             }
         }
 
-        picked.forEach(ex => usedIds.add(ex.id));
+        picked.forEach(ex => {
+            usedIds.add(ex.id);
+            if (usedPatterns && ex.compound) {
+                const pattern = ex.movementPattern || 'isolation';
+                if (pattern !== 'isolation') usedPatterns.add(pattern);
+            }
+        });
         return picked;
     },
 
@@ -685,7 +845,8 @@ export const trainingGeneratorMixin = () => ({
             _muscles: ex.muscleGroups || [ex.primaryMuscle],
             _primaryMuscle: ex.primaryMuscle,
             _equipment: ex.equipment,
-            _exerciseId: ex.id
+            _exerciseId: ex.id,
+            _movementPattern: ex.movementPattern || 'isolation'
         };
 
         if (entry.type === 'strength') {
@@ -722,7 +883,9 @@ export const trainingGeneratorMixin = () => ({
         usedCardioIds.add(picked.id);
 
         const durations = { 30: '10 min', 45: '15 min', 60: '20 min', 90: '25 min' };
-        const duration = durations[answers.sessionDuration] || '15 min';
+        const rawDuration = durations[answers.sessionDuration] || '15 min';
+        const cappedMins = Math.min(parseInt(rawDuration) || 15, PHYSIO_CONSTRAINTS.MAX_CARDIO_DURATION_MINUTES);
+        const duration = cappedMins + ' min';
 
         if (picked.type === 'cardio') {
             return { name: picked.name, type: 'cardio', duration, note: '', _muscles: [], _exerciseId: picked.id };
@@ -930,6 +1093,7 @@ export const trainingGeneratorMixin = () => ({
                 delete ex._exerciseId;
                 delete ex._isOtherSport;
                 delete ex._supersetGroup;
+                delete ex._movementPattern;
             }
         }
         this.trainingPlan = clean;
@@ -976,6 +1140,7 @@ export const trainingGeneratorMixin = () => ({
                 delete ex._exerciseId;
                 delete ex._isOtherSport;
                 delete ex._supersetGroup;
+                delete ex._movementPattern;
             }
         }
         this.trainingPlan = clean;
