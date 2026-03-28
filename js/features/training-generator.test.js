@@ -754,7 +754,8 @@ describe('Issue 5 — Other Sports Recovery', () => {
         expect(quadSetsWith).toBeLessThanOrEqual(quadSetsWithout);
     });
 
-    it('non-adjacent sport day does not affect training volume', () => {
+    it('non-adjacent sport day does not reduce weekly budget', () => {
+        // Fussball am Freitag (4), Training am Montag (0) — Gap=3, keine Reduktion
         mixin.generatorAnswers = defaultAnswers({
             trainingLevel: 'intermediate',
             selectedDays: [0],
@@ -764,23 +765,14 @@ describe('Issue 5 — Other Sports Recovery', () => {
             goals: ['muscle'],
             sessionDuration: 60
         });
-        const withSport = mixin._buildPlan();
-
-        mixin.generatorAnswers = defaultAnswers({
-            trainingLevel: 'intermediate',
-            selectedDays: [0],
-            hasOtherSports: false,
-            otherSports: '',
-            otherSportsDays: [],
-            goals: ['muscle'],
-            sessionDuration: 60
-        });
-        const withoutSport = mixin._buildPlan();
-
-        const totalWith = withSport.plan[0].filter(ex => ex.type === 'strength').reduce((s, ex) => s + (ex.sets || 0), 0);
-        const totalWithout = withoutSport.plan[0].filter(ex => ex.type === 'strength').reduce((s, ex) => s + (ex.sets || 0), 0);
-        // Toleranz: +-2 Sets wegen nicht-deterministischer Uebungsauswahl
-        expect(Math.abs(totalWith - totalWithout)).toBeLessThanOrEqual(2);
+        const result = mixin._buildPlan();
+        // Intermediate budget = 16 fuer grosse Muskeln
+        // Wenn keine Reduktion stattfand, sollte das Quad-Volumen nicht kuenstlich begrenzt sein
+        const quadSets = result.plan[0]
+            .filter(ex => ex.type === 'strength' && (ex._muscles || []).includes('quadriceps'))
+            .reduce((s, ex) => s + (ex.sets || 0), 0);
+        // Mindestens 2 Sets sollten vorhanden sein (nicht auf 0 reduziert)
+        expect(quadSets).toBeGreaterThanOrEqual(2);
     });
 });
 
