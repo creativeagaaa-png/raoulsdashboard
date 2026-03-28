@@ -601,3 +601,106 @@ describe('Issue 3 — Equipment Compatibility in Template Selection', () => {
         expect(result.meta.templateId).toBeDefined();
     });
 });
+
+// ── Issue 1: Weekly Volume Validation ────────────────────────
+describe('Issue 1 — Weekly Volume Budget', () => {
+    let mixin;
+    beforeEach(() => { mixin = createMixin(); });
+
+    it('no muscle exceeds 20 sets per week (advanced, 6 days)', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'advanced',
+            selectedDays: [0, 1, 2, 3, 4, 5],
+            goals: ['muscle'],
+            sessionDuration: 60
+        });
+        const result = mixin._buildPlan();
+        const weeklySets = {};
+        for (const day of result.plan) {
+            for (const ex of day) {
+                if (ex.type !== 'strength' || !ex._muscles) continue;
+                for (const m of ex._muscles) {
+                    weeklySets[m] = (weeklySets[m] || 0) + (ex.sets || 0);
+                }
+            }
+        }
+        for (const [muscle, sets] of Object.entries(weeklySets)) {
+            expect(sets, `${muscle} hat ${sets} Sets/Woche`).toBeLessThanOrEqual(20);
+        }
+    });
+
+    it('beginner does not exceed 12 sets per week per muscle', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'beginner',
+            selectedDays: [0, 2, 4],
+            goals: ['muscle'],
+            sessionDuration: 60
+        });
+        const result = mixin._buildPlan();
+        const weeklySets = {};
+        for (const day of result.plan) {
+            for (const ex of day) {
+                if (ex.type !== 'strength' || !ex._muscles) continue;
+                for (const m of ex._muscles) {
+                    weeklySets[m] = (weeklySets[m] || 0) + (ex.sets || 0);
+                }
+            }
+        }
+        for (const [muscle, sets] of Object.entries(weeklySets)) {
+            expect(sets, `${muscle} hat ${sets} Sets/Woche (beginner)`).toBeLessThanOrEqual(12);
+        }
+    });
+
+    it('intermediate does not exceed 16 sets per week per muscle', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'intermediate',
+            selectedDays: [0, 1, 2, 3],
+            goals: ['muscle'],
+            sessionDuration: 60
+        });
+        const result = mixin._buildPlan();
+        const weeklySets = {};
+        for (const day of result.plan) {
+            for (const ex of day) {
+                if (ex.type !== 'strength' || !ex._muscles) continue;
+                for (const m of ex._muscles) {
+                    weeklySets[m] = (weeklySets[m] || 0) + (ex.sets || 0);
+                }
+            }
+        }
+        for (const [muscle, sets] of Object.entries(weeklySets)) {
+            expect(sets, `${muscle} hat ${sets} Sets/Woche (intermediate)`).toBeLessThanOrEqual(16);
+        }
+    });
+
+    it('session cap still applies as secondary constraint', () => {
+        mixin.generatorAnswers = defaultAnswers({
+            trainingLevel: 'advanced',
+            selectedDays: [0],
+            goals: ['muscle'],
+            sessionDuration: 90
+        });
+        const result = mixin._buildPlan();
+        for (const day of result.plan) {
+            const setsPerMuscle = {};
+            for (const ex of day) {
+                if (ex.type !== 'strength' || !ex._muscles) continue;
+                for (const m of ex._muscles) {
+                    setsPerMuscle[m] = (setsPerMuscle[m] || 0) + (ex.sets || 0);
+                }
+            }
+            for (const [muscle, sets] of Object.entries(setsPerMuscle)) {
+                expect(sets, `${muscle} session cap`).toBeLessThanOrEqual(10);
+            }
+        }
+    });
+
+    it('_createWeeklyVolumeBudget returns correct values per level', () => {
+        const budgetBeg = mixin._createWeeklyVolumeBudget('beginner');
+        const budgetAdv = mixin._createWeeklyVolumeBudget('advanced');
+        expect(budgetBeg.chest).toBe(12);
+        expect(budgetBeg.biceps).toBe(Math.round(12 * 0.6));
+        expect(budgetAdv.chest).toBe(20);
+        expect(budgetAdv.biceps).toBe(Math.round(20 * 0.6));
+    });
+});

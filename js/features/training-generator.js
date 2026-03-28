@@ -2,7 +2,7 @@
 
 import { WEEKDAYS, WEEKDAY_SHORT, EQUIPMENT_LABELS, MUSCLE_LABELS, INJURY_REGIONS, INJURY_KEYWORD_MAP, UPPER_MUSCLES, LOWER_MUSCLES, CORE_MUSCLES } from '../utils/constants.js';
 import { getTodayWeekdayIndex } from '../utils/formatting.js';
-import { exercises, EQUIPMENT_MAP } from '../data/exercises.js';
+import { exercises, EQUIPMENT_MAP, MUSCLE_GROUPS } from '../data/exercises.js';
 import { splitTemplates, REPS_SCHEMES } from '../data/split-templates.js';
 import { WEEKLY_VOLUME_BUDGET, TRAINING_LEVELS, TRAINING_LEVEL_LABELS, EQUIPMENT_COMPATIBILITY_THRESHOLD, EQUIPMENT_SCORE_BONUS, EQUIPMENT_SCORE_EXCLUDE_BELOW, EQUIPMENT_SCORE_PENALTY, PERIODIZATION, SPORT_MUSCLE_LOAD, SPORT_RECOVERY_REDUCTION, WARMUP_BY_MUSCLE, MAX_WARMUP_ELEMENTS, WARMUP_FALLBACK } from '../data/training-constants.js';
 
@@ -431,6 +431,10 @@ export const trainingGeneratorMixin = () => ({
         // Estimated time per day for meta
         const dayMetas = [];
 
+        // Issue 1: Weekly Volume Budget — beschraenkt Gesamt-Sets pro Muskel pro Woche
+        const weeklyBudget = this._createWeeklyVolumeBudget(level);
+        const weeklyUsed = {};
+
         for (let i = 0; i < adjustedTemplate.structure.length; i++) {
             const dayDef = adjustedTemplate.structure[i];
             const dayIndex = trainingDayIndices[i];
@@ -467,15 +471,16 @@ export const trainingGeneratorMixin = () => ({
                     if (strengthCount >= maxStrengthExercises) break;
                     const formatted = this._formatExercise(ex, primaryScheme, primaryGoal, true);
 
-                    // Volume cap check
+                    // Volume cap check — session + weekly budget
                     const muscles = formatted._muscles || [];
                     let blocked = false;
                     for (const m of muscles) {
                         const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
-                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
-                        const current = daySetsPerMuscle[m] || 0;
-                        const remaining = cap - current;
-                        if (remaining < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
+                        const sessionCap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const sessionRemaining = sessionCap - (daySetsPerMuscle[m] || 0);
+                        const weeklyRemaining = this._remainingWeeklyBudget(m, weeklyBudget, weeklyUsed);
+                        const effectiveRemaining = Math.min(sessionRemaining, weeklyRemaining);
+                        if (effectiveRemaining < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
                             blocked = true;
                             break;
                         }
@@ -486,17 +491,18 @@ export const trainingGeneratorMixin = () => ({
                     let cappedSets = formatted.sets || 3;
                     for (const m of muscles) {
                         const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
-                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
-                        const current = daySetsPerMuscle[m] || 0;
-                        const remaining = cap - current;
-                        cappedSets = Math.min(cappedSets, remaining);
+                        const sessionCap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const sessionRemaining = sessionCap - (daySetsPerMuscle[m] || 0);
+                        const weeklyRemaining = this._remainingWeeklyBudget(m, weeklyBudget, weeklyUsed);
+                        cappedSets = Math.min(cappedSets, sessionRemaining, weeklyRemaining);
                     }
                     cappedSets = Math.max(cappedSets, PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE);
                     formatted.sets = cappedSets;
 
-                    // Track volume
+                    // Track volume (session + weekly)
                     for (const m of muscles) {
                         daySetsPerMuscle[m] = (daySetsPerMuscle[m] || 0) + cappedSets;
+                        weeklyUsed[m] = (weeklyUsed[m] || 0) + cappedSets;
                     }
 
                     dayExercises.push(formatted);
@@ -514,36 +520,38 @@ export const trainingGeneratorMixin = () => ({
                     if (strengthCount >= maxStrengthExercises) break;
                     const formatted = this._formatExercise(ex, isoScheme, secondaryGoal || primaryGoal, false);
 
-                    // Volume cap check
+                    // Volume cap check — session + weekly budget
                     const muscles = formatted._muscles || [];
                     let blocked = false;
                     for (const m of muscles) {
                         const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
-                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
-                        const current = daySetsPerMuscle[m] || 0;
-                        const remaining = cap - current;
-                        if (remaining < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
+                        const sessionCap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const sessionRemaining = sessionCap - (daySetsPerMuscle[m] || 0);
+                        const weeklyRemaining = this._remainingWeeklyBudget(m, weeklyBudget, weeklyUsed);
+                        const effectiveRemaining = Math.min(sessionRemaining, weeklyRemaining);
+                        if (effectiveRemaining < PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE) {
                             blocked = true;
                             break;
                         }
                     }
                     if (blocked) continue;
 
-                    // Cap sets if needed
+                    // Cap sets if needed for any muscle
                     let cappedSets = formatted.sets || 3;
                     for (const m of muscles) {
                         const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(m);
-                        const cap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
-                        const current = daySetsPerMuscle[m] || 0;
-                        const remaining = cap - current;
-                        cappedSets = Math.min(cappedSets, remaining);
+                        const sessionCap = isSmall ? PHYSIO_CONSTRAINTS.MAX_SETS_SMALL_MUSCLE : PHYSIO_CONSTRAINTS.MAX_SETS_PER_MUSCLE_PER_SESSION;
+                        const sessionRemaining = sessionCap - (daySetsPerMuscle[m] || 0);
+                        const weeklyRemaining = this._remainingWeeklyBudget(m, weeklyBudget, weeklyUsed);
+                        cappedSets = Math.min(cappedSets, sessionRemaining, weeklyRemaining);
                     }
                     cappedSets = Math.max(cappedSets, PHYSIO_CONSTRAINTS.MIN_SETS_PER_EXERCISE);
                     formatted.sets = cappedSets;
 
-                    // Track volume
+                    // Track volume (session + weekly)
                     for (const m of muscles) {
                         daySetsPerMuscle[m] = (daySetsPerMuscle[m] || 0) + cappedSets;
+                        weeklyUsed[m] = (weeklyUsed[m] || 0) + cappedSets;
                     }
 
                     dayExercises.push(formatted);
@@ -725,6 +733,26 @@ export const trainingGeneratorMixin = () => ({
             }
         }
 
+        // Issue 1: Finale Weekly-Volume-Validierung — nach allen Post-Adjustments
+        // Stellt sicher, dass kein Muskel das Wochen-Budget ueberschreitet
+        const finalWeeklyUsed = {};
+        for (const dayIdx of trainingDayIndices) {
+            const dayExercises = plan[dayIdx];
+            if (!dayExercises) continue;
+            for (const ex of dayExercises) {
+                if (ex.type !== 'strength' || !ex._muscles) continue;
+                for (const m of ex._muscles) {
+                    const budget = weeklyBudget[m] || 0;
+                    const used = finalWeeklyUsed[m] || 0;
+                    const remaining = budget - used;
+                    if (remaining < (ex.sets || 0)) {
+                        ex.sets = Math.max(0, remaining);
+                    }
+                    finalWeeklyUsed[m] = (finalWeeklyUsed[m] || 0) + (ex.sets || 0);
+                }
+            }
+        }
+
         const meta = {
             templateName: adjustedTemplate.name,
             templateId: adjustedTemplate.id,
@@ -827,6 +855,35 @@ export const trainingGeneratorMixin = () => ({
         }
 
         return totalNeeded === 0 ? 1 : totalFulfilled / totalNeeded;
+    },
+
+    /**
+     * Erstellt woechentliches Volumen-Budget pro Muskelgruppe basierend auf Trainings-Level.
+     * @param {string} level - 'beginner' | 'intermediate' | 'advanced'
+     * @returns {Object} Map: { muscle: maxSetsPerWeek }
+     */
+    _createWeeklyVolumeBudget(level) {
+        const maxSets = level === 'beginner' ? WEEKLY_VOLUME_BUDGET.BEGINNER_MAX
+            : level === 'advanced' ? WEEKLY_VOLUME_BUDGET.ADVANCED_MAX
+            : WEEKLY_VOLUME_BUDGET.INTERMEDIATE_MAX;
+
+        const budget = {};
+        for (const muscle of MUSCLE_GROUPS) {
+            const isSmall = PHYSIO_CONSTRAINTS.SMALL_MUSCLES.includes(muscle);
+            budget[muscle] = isSmall ? Math.round(maxSets * WEEKLY_VOLUME_BUDGET.SMALL_MUSCLE_FACTOR) : maxSets;
+        }
+        return budget;
+    },
+
+    /**
+     * Berechnet verbleibendes woechentliches Budget fuer eine Muskelgruppe.
+     * @param {string} muscle - Muskelgruppen-ID
+     * @param {Object} weeklyBudget - Budget-Map aus _createWeeklyVolumeBudget
+     * @param {Object} weeklyUsed - Bisher verbrauchte Sets pro Muskel
+     * @returns {number} Verbleibende Sets
+     */
+    _remainingWeeklyBudget(muscle, weeklyBudget, weeklyUsed) {
+        return Math.max(0, (weeklyBudget[muscle] || 0) - (weeklyUsed[muscle] || 0));
     },
 
     _applyMuscleFocus(template, focus) {
