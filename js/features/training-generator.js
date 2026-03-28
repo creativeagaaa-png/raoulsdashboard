@@ -476,7 +476,7 @@ export const trainingGeneratorMixin = () => ({
                 name: 'Aufwaermen',
                 type: 'cardio',
                 duration: warmupMin + ' min',
-                note: 'Leichtes Cardio + dynamisches Stretching',
+                note: this._generateWarmupNote(dayDef.muscleTargets),
                 _isWarmup: true
             });
 
@@ -945,6 +945,32 @@ export const trainingGeneratorMixin = () => ({
             weeklyNotes: [...PERIODIZATION.WEEKLY_NOTES],
             deloadReminder: 'Nach 3 Wochen Training: Deload-Woche einlegen (50% Volumen, gleiches Gewicht)'
         };
+    },
+
+    /**
+     * Generiert muskelspezifische Warmup-Note basierend auf den Muskelzielen des Tages.
+     * Priorisiert Compound-Muskeln und begrenzt auf MAX_WARMUP_ELEMENTS.
+     * @param {Array} muscleTargets - Array aus { muscle, compound, isolation }
+     * @returns {string} Warmup-Beschreibung
+     */
+    _generateWarmupNote(muscleTargets) {
+        if (!muscleTargets || muscleTargets.length === 0) return WARMUP_FALLBACK;
+
+        // Sortiere: Compound-Muskeln zuerst (compound > 0)
+        const sorted = [...muscleTargets].sort((a, b) => (b.compound || 0) - (a.compound || 0));
+
+        const seen = new Set();
+        const elements = [];
+        for (const target of sorted) {
+            if (elements.length >= MAX_WARMUP_ELEMENTS) break;
+            const warmup = WARMUP_BY_MUSCLE[target.muscle];
+            if (warmup && !seen.has(warmup)) {
+                seen.add(warmup);
+                elements.push(warmup);
+            }
+        }
+
+        return elements.length > 0 ? elements.join(', ') : WARMUP_FALLBACK;
     },
 
     _applyMuscleFocus(template, focus) {

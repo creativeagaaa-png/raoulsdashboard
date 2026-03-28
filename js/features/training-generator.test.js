@@ -811,3 +811,58 @@ describe('Issue 4 — Periodization Notes', () => {
         expect(notes[3].toLowerCase()).toContain('deload');
     });
 });
+
+// ── Issue 6: Muskelspezifisches Warmup ───────────────────────
+describe('Issue 6 — Muscle-Specific Warmup', () => {
+    let mixin;
+    beforeEach(() => { mixin = createMixin(); });
+
+    it('_generateWarmupNote returns muscle-specific warmup for chest targets', () => {
+        const note = mixin._generateWarmupNote([
+            { muscle: 'chest', compound: 1, isolation: 1 },
+            { muscle: 'triceps', compound: 0, isolation: 1 }
+        ]);
+        expect(note).toContain('Schulterrotation');
+        expect(note).toContain('Liegestuetze');
+    });
+
+    it('_generateWarmupNote returns leg-specific warmup for leg targets', () => {
+        const note = mixin._generateWarmupNote([
+            { muscle: 'quadriceps', compound: 1, isolation: 0 },
+            { muscle: 'hamstrings', compound: 1, isolation: 0 },
+            { muscle: 'glutes', compound: 0, isolation: 1 }
+        ]);
+        expect(note).toContain('Hueftmobilitaet');
+        expect(note).toContain('Kniebeugen');
+    });
+
+    it('_generateWarmupNote returns fallback for empty targets', () => {
+        const note = mixin._generateWarmupNote([]);
+        expect(note).toBe('Leichtes Cardio + dynamisches Stretching');
+    });
+
+    it('_generateWarmupNote limits to 4 elements', () => {
+        const note = mixin._generateWarmupNote([
+            { muscle: 'chest', compound: 1, isolation: 0 },
+            { muscle: 'back', compound: 1, isolation: 0 },
+            { muscle: 'quadriceps', compound: 1, isolation: 0 },
+            { muscle: 'hamstrings', compound: 1, isolation: 0 },
+            { muscle: 'shoulders', compound: 1, isolation: 0 },
+            { muscle: 'biceps', compound: 0, isolation: 1 }
+        ]);
+        const elements = note.split(', ');
+        expect(elements.length).toBeLessThanOrEqual(4);
+    });
+
+    it('warmup note in generated plan is not the generic fallback', () => {
+        mixin.generatorAnswers = defaultAnswers();
+        const result = mixin._buildPlan();
+        const trainingDays = result.plan.filter(day => day.length > 0);
+        for (const day of trainingDays) {
+            const warmup = day.find(ex => ex._isWarmup);
+            if (warmup) {
+                expect(warmup.note).not.toBe('Leichtes Cardio + dynamisches Stretching');
+            }
+        }
+    });
+});
