@@ -783,12 +783,16 @@ export const trainingGeneratorMixin = () => ({
             }
         }
 
+        // Issue 4: Periodisierung
+        const periodization = this._generatePeriodizationNotes();
+
         const meta = {
             templateName: adjustedTemplate.name,
             templateId: adjustedTemplate.id,
             restNote: primaryScheme.restNote,
             level,
-            dayMetas
+            dayMetas,
+            periodization
         };
 
         return { plan, meta };
@@ -929,6 +933,18 @@ export const trainingGeneratorMixin = () => ({
             if (normalized.includes(key)) return { ...profile };
         }
         return {};
+    },
+
+    /**
+     * Generiert Periodisierungs-Hinweise fuer den Mesozyklus (4 Wochen).
+     * @returns {Object} { mesocycleWeeks, weeklyNotes, deloadReminder }
+     */
+    _generatePeriodizationNotes() {
+        return {
+            mesocycleWeeks: PERIODIZATION.MESOCYCLE_WEEKS,
+            weeklyNotes: [...PERIODIZATION.WEEKLY_NOTES],
+            deloadReminder: 'Nach 3 Wochen Training: Deload-Woche einlegen (50% Volumen, gleiches Gewicht)'
+        };
     },
 
     _applyMuscleFocus(template, focus) {

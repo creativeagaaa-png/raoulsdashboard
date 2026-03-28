@@ -30,7 +30,7 @@ vi.mock('../data/training-constants.js', () => ({
     EQUIPMENT_SCORE_BONUS: 8,
     EQUIPMENT_SCORE_EXCLUDE_BELOW: 0.5,
     EQUIPMENT_SCORE_PENALTY: -20,
-    PERIODIZATION: { MESOCYCLE_WEEKS: 4, DELOAD_WEEK: 4, DELOAD_VOLUME_FACTOR: 0.5, WEEKLY_SET_INCREMENT: 1, WEEKLY_NOTES: ['W1', 'W2', 'W3', 'W4'] },
+    PERIODIZATION: { MESOCYCLE_WEEKS: 4, DELOAD_WEEK: 4, DELOAD_VOLUME_FACTOR: 0.5, WEEKLY_SET_INCREMENT: 1, WEEKLY_NOTES: ['Woche 1: Basisvolumen — Technik und Bewegungsqualitaet priorisieren', 'Woche 2: +1 Satz pro Uebung — progressive Ueberlastung', 'Woche 3: +1 Satz oder +2.5kg — Peak-Woche', 'Woche 4: DELOAD — 50% Volumen, gleiches Gewicht, Erholung priorisieren'] },
     SPORT_MUSCLE_LOAD: { fussball: { quadriceps: 0.8, hamstrings: 0.7, calves: 0.6 }, schwimmen: { back: 0.7, shoulders: 0.8 }, laufen: { quadriceps: 0.6, calves: 0.8 } },
     SPORT_RECOVERY_REDUCTION: 0.4,
     WARMUP_BY_MUSCLE: { chest: 'Schulterrotation + leichte Liegestuetze', back: 'Cat-Cow + Band Pull-Aparts', shoulders: 'Schulterkreisen + Band Dislocates', quadriceps: 'Hueftmobilitaet + Kniebeugen ohne Gewicht', hamstrings: 'Beinpendel + Rumaenisches Kreuzheben ohne Gewicht', glutes: 'Hueftkreise + Glute Bridges', biceps: 'Armkreisen + leichte Curls', triceps: 'Armkreisen + Trizeps-Stretches', abs: 'Cat-Cow + Dead Bugs', calves: 'Wadenheben einbeinig + Fusskreise', forearms: 'Handgelenk-Rotation + Finger-Spreizen', traps: 'Nackenkreisen + Schulterheben ohne Gewicht', lower_back: 'Cat-Cow + Beckenneigung', front_delts: 'Schulterrotation + Frontheben ohne Gewicht', side_delts: 'Schulterkreisen + Seitheben ohne Gewicht', rear_delts: 'Band Pull-Aparts + Reverse Flys ohne Gewicht' },
@@ -781,5 +781,33 @@ describe('Issue 5 — Other Sports Recovery', () => {
         const totalWithout = withoutSport.plan[0].filter(ex => ex.type === 'strength').reduce((s, ex) => s + (ex.sets || 0), 0);
         // Toleranz: +-2 Sets wegen nicht-deterministischer Uebungsauswahl
         expect(Math.abs(totalWith - totalWithout)).toBeLessThanOrEqual(2);
+    });
+});
+
+// ── Issue 4: Periodisierung ──────────────────────────────────
+describe('Issue 4 — Periodization Notes', () => {
+    let mixin;
+    beforeEach(() => { mixin = createMixin(); });
+
+    it('meta contains periodization with 4 weekly notes', () => {
+        mixin.generatorAnswers = defaultAnswers();
+        const result = mixin._buildPlan();
+        expect(result.meta.periodization).toBeDefined();
+        expect(result.meta.periodization.weeklyNotes).toHaveLength(4);
+        expect(result.meta.periodization.mesocycleWeeks).toBe(4);
+    });
+
+    it('deload reminder mentions 50% volume', () => {
+        mixin.generatorAnswers = defaultAnswers();
+        const result = mixin._buildPlan();
+        expect(result.meta.periodization.deloadReminder).toContain('50%');
+    });
+
+    it('weekly notes contain progression keywords', () => {
+        mixin.generatorAnswers = defaultAnswers();
+        const result = mixin._buildPlan();
+        const notes = result.meta.periodization.weeklyNotes;
+        expect(notes[0].toLowerCase()).toContain('basisvolumen');
+        expect(notes[3].toLowerCase()).toContain('deload');
     });
 });
